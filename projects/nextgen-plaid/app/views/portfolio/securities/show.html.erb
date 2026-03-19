@@ -1,0 +1,13 @@
+<%= render Portfolio::SecurityDetailComponent.new(
+      security_id: @security_id,
+      enrichment: @enrichment,
+      holdings: @holdings,
+      holdings_summary: @holdings_summary,
+      holdings_by_account: @holdings_by_account,
+      transactions: @transactions,
+      transaction_totals: @transaction_totals,
+      transaction_total_count: @transaction_total_count,
+      page: @tx_page,
+      per_page: @tx_per_page,
+      return_to: @return_to
+    ) %>

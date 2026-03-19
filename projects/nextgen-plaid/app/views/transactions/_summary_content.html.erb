@@ -1,0 +1,172 @@
+<% if @summary.present? %>
+  <%= render "transactions/warning", warning: @warning %>
+  
+  <%# Filter bar for date range and search %>
+  <%= render Transactions::FilterBarComponent.new(
+    search_term: @search_term,
+    date_from: @date_from,
+    date_to: @date_to,
+    view_type: "summary"
+  ) %>
+  
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-sm opacity-70">Total Transactions</h2>
+        <p class="text-3xl font-bold"><%= @summary[:count] || 0 %></p>
+      </div>
+    </div>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-sm opacity-70">Total Inflow</h2>
+        <p class="text-3xl font-bold text-success">
+          <%= number_to_currency(@summary[:total_inflow] || 0) %>
+        </p>
+      </div>
+    </div>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-sm opacity-70">Total Outflow</h2>
+        <p class="text-3xl font-bold text-error">
+          <%= number_to_currency(@summary[:total_outflow] || 0) %>
+        </p>
+      </div>
+    </div>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-sm opacity-70">Net</h2>
+        <p class="text-3xl font-bold <%= (@summary[:net].to_f >= 0) ? 'text-success' : 'text-error' %>">
+          <%= number_to_currency(@summary[:net] || 0) %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <%# Top Recurring Expenses from RecurringTransaction model %>
+  <% if @top_recurring.present? %>
+    <div class="card bg-base-100 shadow mb-6">
+      <div class="card-body">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="card-title text-sm">Top Recurring Expenses</h2>
+          <%= link_to "See all recurring →", transactions_regular_path(recurring: true), class: "text-sm link link-primary" %>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="table table-zebra table-sm">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Frequency</th>
+                <th class="text-right">Avg Amount</th>
+                <th>Last Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @top_recurring.each do |item| %>
+                <tr>
+                  <td class="font-medium"><%= item[:description] %></td>
+                  <td><span class="badge badge-ghost badge-sm"><%= item[:frequency] %></span></td>
+                  <td class="text-right text-error"><%= number_to_currency(item[:average_amount]) %></td>
+                  <td class="text-sm opacity-70"><%= item[:last_date]&.strftime("%b %d, %Y") || "N/A" %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @summary[:top_categories].present? %>
+    <div class="card bg-base-100 shadow mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-sm">Top Categories</h2>
+        <div class="overflow-x-auto">
+          <table class="table table-zebra table-sm">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th class="text-right">Count</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @summary[:top_categories].each do |cat| %>
+                <tr>
+                  <td><%= cat[:name] %></td>
+                  <td class="text-right"><%= cat[:count] %></td>
+                  <td class="text-right <%= cat[:total].to_f >= 0 ? 'text-success' : 'text-error' %>">
+                    <%= number_to_currency(cat[:total]) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @summary[:top_merchants].present? %>
+    <div class="card bg-base-100 shadow mb-6">
+      <div class="card-body">
+        <h2 class="card-title text-sm">Top Merchants</h2>
+        <div class="overflow-x-auto">
+          <table class="table table-zebra table-sm">
+            <thead>
+              <tr>
+                <th>Merchant</th>
+                <th class="text-right">Count</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @summary[:top_merchants].each do |merchant| %>
+                <tr>
+                  <td><%= merchant[:name] %></td>
+                  <td class="text-right"><%= merchant[:count] %></td>
+                  <td class="text-right <%= merchant[:total].to_f >= 0 ? 'text-success' : 'text-error' %>">
+                    <%= number_to_currency(merchant[:total]) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @summary[:monthly_totals].present? %>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <h2 class="card-title text-sm">Monthly Totals</h2>
+        <div class="overflow-x-auto">
+          <table class="table table-zebra table-sm">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @summary[:monthly_totals].each do |month, total| %>
+                <tr>
+                  <td><%= month %></td>
+                  <td class="text-right <%= total.to_f >= 0 ? 'text-success' : 'text-error' %>">
+                    <%= number_to_currency(total) %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="alert alert-info">
+    <div>
+      <span>No transactions found. Summary will appear once transactions are synced.</span>
+    </div>
+  </div>
+<% end %>

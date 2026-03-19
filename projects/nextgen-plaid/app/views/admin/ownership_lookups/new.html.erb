@@ -1,0 +1,13 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="mb-6">
+    <%= link_to "← Back to Ownership Lookups", admin_ownership_lookups_path, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+  </div>
+
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="border-b pb-4 mb-4">
+      <h2 class="text-2xl font-bold text-gray-900">New Ownership Lookup</h2>
+    </div>
+
+    <%= render "form", ownership_lookup: @ownership_lookup %>
+  </div>
+</div>

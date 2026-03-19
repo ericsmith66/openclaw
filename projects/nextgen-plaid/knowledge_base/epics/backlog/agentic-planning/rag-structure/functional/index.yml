@@ -1,0 +1,391 @@
+# Functional Index: Application Capabilities Organized by User-Facing Features
+# Purpose: Answers "What does the app do?" for PRD generation research phase
+# Query Pattern: fetch:functional:<capability>:<feature>
+
+functional_index:
+  summary: "NextGen Plaid application capabilities organized by user-facing features"
+  last_updated: "2026-01-17"
+  
+  capabilities:
+    
+    # ============================================================================
+    # AUTHENTICATION & USER MANAGEMENT
+    # ============================================================================
+    - name: "authentication"
+      summary: "User login, signup, session management via Devise"
+      status: "production"
+      owner: "Core Rails"
+      
+      features:
+        - name: "user_login"
+          summary: "Standard Devise authentication flow"
+          routes:
+            - "/users/sign_in"
+            - "/users/sign_out"
+            - "/users/sign_up"
+            - "/users/password"
+          models: ["User"]
+          services: ["Devise"]
+          controllers: ["Devise::SessionsController", "Devise::RegistrationsController"]
+          status: "production"
+          prd: null
+          notes: "Standard Devise setup, no customization"
+        
+        - name: "dashboard_routing"
+          summary: "Authenticated users routed to dashboard, public to welcome"
+          routes:
+            - "/" 
+            - "/dashboard"
+          models: ["User"]
+          controllers: ["DashboardController", "WelcomeController"]
+          status: "production"
+          prd: null
+          notes: "Authenticated root vs public root routing"
+        
+        - name: "oauth_flow"
+          summary: "OAuth initiation and callback (INCOMPLETE)"
+          routes:
+            - "/plaid_oauth/initiate"
+            - "/plaid_oauth/callback"
+          models: []
+          services: []
+          controllers: []
+          status: "incomplete"
+          prd: null
+          notes: "🛑 ORPHAN ROUTES - No controller specified, OAuth flow not implemented"
+    
+    # ============================================================================
+    # FINANCIAL DATA SYNC (PLAID INTEGRATION)
+    # ============================================================================
+    - name: "financial_sync"
+      summary: "Plaid integration for account/transaction/holdings sync"
+      status: "production"
+      owner: "Plaid Integration Team"
+      
+      features:
+        - name: "plaid_link"
+          summary: "Plaid Link token generation and public token exchange"
+          routes:
+            - "/plaid/link_token"
+            - "/plaid/exchange"
+          models: ["PlaidItem", "Account"]
+          services: ["PlaidService"]
+          controllers: ["PlaidController"]
+          jobs: []
+          status: "production"
+          prd: "PRD-PLAID-001"
+          notes: "Core onboarding flow for connecting financial institutions"
+        
+        - name: "plaid_webhook"
+          summary: "Webhook receiver for Plaid events"
+          routes:
+            - "/plaid/webhook"
+          models: ["PlaidItem", "Account", "Holding", "Transaction"]
+          services: ["PlaidService"]
+          controllers: ["PlaidWebhookController"]
+          jobs: ["SyncHoldingsJob", "SyncTransactionsJob"]
+          status: "production"
+          prd: "PRD-PLAID-002"
+          notes: "Handles INITIAL_UPDATE, HISTORICAL_UPDATE, DEFAULT_UPDATE events"
+        
+        - name: "manual_refresh"
+          summary: "Manual refresh trigger for Plaid items"
+          routes:
+            - "/plaid_items/:id/refresh"
+          models: ["PlaidItem"]
+          services: ["PlaidService"]
+          controllers: ["PlaidRefreshesController"]
+          jobs: ["SyncHoldingsJob", "SyncTransactionsJob"]
+          status: "production"
+          prd: "PRD-PLAID-002"
+          notes: "User-initiated refresh for stale data"
+        
+        - name: "sync_logs"
+          summary: "View Plaid sync logs and status"
+          routes:
+            - "/plaid/sync_logs"
+          models: ["PlaidItem", "Account"]
+          services: ["PlaidService"]
+          controllers: ["PlaidController"]
+          status: "production"
+          prd: null
+          notes: "Debugging and monitoring interface"
+    
+    # ============================================================================
+    # AGENT ORCHESTRATION (AI WORKFLOWS)
+    # ============================================================================
+    - name: "agent_orchestration"
+      summary: "AI agent workflows for PRD generation and development assistance"
+      status: "production"
+      owner: "SAP Agent Team"
+      
+      features:
+        - name: "prd_generation"
+          summary: "SAP agent generates PRDs from user requests"
+          routes:
+            - "/agent_hub"
+            - "/admin/sap_collaborate"
+            - "/admin/sap_collaborate/ask"
+          models: ["Artifact", "SapRun", "SapMessage"]
+          services: ["SapAgent", "AiFinancialAdvisor", "SapAgent::RagProvider"]
+          controllers: ["AgentHubsController", "Admin::SapCollaborateController"]
+          jobs: ["SapAgentJob"]
+          status: "production"
+          prd: "PRD-AH-011"
+          notes: "Core SAP agent capability, reactive mode (zero-shot + validation)"
+        
+        - name: "agent_hub_interface"
+          summary: "Real-time agent conversation and monitoring interface"
+          routes:
+            - "/agent_hub"
+            - "/agent_hub/messages/:agent_id"
+            - "/agent_hub/uploads"
+          models: ["SapRun", "SapMessage", "Artifact"]
+          services: ["SapAgent"]
+          controllers: ["AgentHubsController", "AgentHub::UploadsController"]
+          status: "production"
+          prd: "PRD-AH-011"
+          notes: "Owner-only interface for agent interactions"
+        
+        - name: "agent_hub_actions"
+          summary: "Agent Hub collection actions (model switching, context inspection, etc.)"
+          routes:
+            - "/agent_hubs/update_model"
+            - "/agent_hubs/inspect_context"
+            - "/agent_hubs/archive_run"
+            - "/agent_hubs/create_conversation"
+            - "/agent_hubs/switch_conversation"
+            - "/agent_hubs/archive_conversation"
+          models: ["SapRun", "SapMessage"]
+          services: ["SapAgent"]
+          controllers: ["AgentHubsController"]
+          status: "production"
+          prd: "PRD-AH-011"
+          notes: "Collection actions for agent management"
+        
+        - name: "agent_monitoring"
+          summary: "Agent performance monitoring and metrics"
+          routes:
+            - "/agents/monitor"
+          models: ["SapRun", "Artifact"]
+          services: ["SapAgent"]
+          controllers: ["Agents::MonitorController"]
+          status: "in_development"
+          prd: "PRD-AH-012E"
+          notes: "Validation scoring and quality metrics"
+        
+        - name: "rag_context_integration"
+          summary: "RAG provider for context-aware agent responses"
+          routes: []
+          models: ["Snapshot", "Artifact"]
+          services: ["SapAgent::RagProvider"]
+          controllers: []
+          jobs: ["FinancialSnapshotJob"]
+          status: "production"
+          prd: "PRD-0120-RAG"
+          notes: "Context map + daily snapshots for LLM context"
+    
+    # ============================================================================
+    # MISSION CONTROL (ADMIN TOOLS)
+    # ============================================================================
+    - name: "mission_control"
+      summary: "Owner-only admin panel for system management and debugging"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "sync_controls"
+          summary: "Manual triggers for all Plaid sync operations"
+          routes:
+            - "/mission_control/sync_holdings_now"
+            - "/mission_control/sync_transactions_now"
+            - "/mission_control/sync_liabilities_now"
+            - "/mission_control/refresh_everything_now"
+          models: ["PlaidItem", "Account", "Holding", "Transaction"]
+          services: ["PlaidService"]
+          controllers: ["MissionControlController"]
+          jobs: ["SyncHoldingsJob", "SyncTransactionsJob", "SyncLiabilitiesJob"]
+          status: "production"
+          prd: null
+          notes: "Emergency sync controls for debugging"
+        
+        - name: "plaid_item_management"
+          summary: "Relink, remove, and manage Plaid items"
+          routes:
+            - "/mission_control/relink/:id"
+            - "/mission_control/relink_success/:id"
+            - "/mission_control/remove_item/:id"
+          models: ["PlaidItem"]
+          services: ["PlaidService"]
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "Handle expired/broken Plaid connections"
+        
+        - name: "webhook_management"
+          summary: "Fire webhooks and update webhook URLs"
+          routes:
+            - "/mission_control/fire_webhook/:id"
+            - "/mission_control/update_webhook_url/:id"
+          models: ["PlaidItem"]
+          services: ["PlaidService"]
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "Testing and debugging webhook flows"
+        
+        - name: "system_monitoring"
+          summary: "View logs, costs, and system health"
+          routes:
+            - "/mission_control/logs"
+            - "/mission_control/costs"
+            - "/mission_control/costs/export.csv"
+          models: []
+          services: []
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "JSON logs and CSV cost exports"
+        
+        - name: "nuke_command"
+          summary: "Dangerous: Delete all Plaid data (dev/test only)"
+          routes:
+            - "/mission_control/nuke"
+          models: ["PlaidItem", "Account", "Holding", "Transaction"]
+          services: []
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "⚠️ DANGEROUS - Should be disabled in production"
+    
+    # ============================================================================
+    # ADMIN NAMESPACE (CRUD & TOOLS)
+    # ============================================================================
+    - name: "admin_tools"
+      summary: "Admin namespace for CRUD operations and AI workflow tools"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "user_management"
+          summary: "Admin CRUD for users"
+          routes:
+            - "/admin/users"
+          models: ["User"]
+          services: []
+          controllers: ["Admin::UsersController"]
+          status: "production"
+          prd: "PRD-UI-4"
+          notes: "Full CRUD for user management"
+        
+        - name: "account_management"
+          summary: "Admin CRUD for accounts"
+          routes:
+            - "/admin/accounts"
+          models: ["Account"]
+          services: []
+          controllers: ["Admin::AccountsController"]
+          status: "production"
+          prd: "PRD-UI-4"
+          notes: "Full CRUD for account management"
+        
+        - name: "ai_workflow_viewer"
+          summary: "View AI workflow status and history"
+          routes:
+            - "/admin/ai_workflow"
+          models: ["SapRun", "Artifact"]
+          services: []
+          controllers: ["Admin::AiWorkflowController"]
+          status: "production"
+          prd: null
+          notes: "Monitoring interface for AI workflows"
+        
+        - name: "health_check"
+          summary: "System health check endpoint"
+          routes:
+            - "/admin/health"
+          models: []
+          services: []
+          controllers: ["Admin::HealthController"]
+          status: "production"
+          prd: null
+          notes: "Basic health check for monitoring"
+        
+        - name: "rag_inspector"
+          summary: "Inspect RAG context and debug context selection"
+          routes:
+            - "/admin/rag_inspector"
+          models: ["Snapshot"]
+          services: ["SapAgent::RagProvider"]
+          controllers: ["Admin::RagInspectorController"]
+          status: "production"
+          prd: "PRD-AH-011D"
+          notes: "Debug tool for RAG context issues"
+    
+    # ============================================================================
+    # MODEL INSPECTION (READ-ONLY VIEWS)
+    # ============================================================================
+    - name: "model_inspection"
+      summary: "Read-only views for financial data models"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "holdings_viewer"
+          summary: "View holdings data"
+          routes:
+            - "/holdings"
+          models: ["Holding"]
+          services: []
+          controllers: ["HoldingsController"]
+          status: "production"
+          prd: null
+          notes: "Index and show actions only"
+        
+        - name: "transactions_viewer"
+          summary: "View transactions data"
+          routes:
+            - "/transactions"
+          models: ["Transaction"]
+          services: []
+          controllers: ["TransactionsController"]
+          status: "production"
+          prd: null
+          notes: "Index and show actions only"
+        
+        - name: "accounts_viewer"
+          summary: "View accounts data"
+          routes:
+            - "/accounts"
+          models: ["Account"]
+          services: []
+          controllers: ["AccountsController"]
+          status: "production"
+          prd: null
+          notes: "Index and show actions only"
+    
+    # ============================================================================
+    # INFRASTRUCTURE
+    # ============================================================================
+    - name: "infrastructure"
+      summary: "Core infrastructure services (WebSocket, ActionCable)"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "action_cable"
+          summary: "WebSocket support for Turbo Streams and live updates"
+          routes:
+            - "/cable"
+          models: []
+          services: ["ActionCable"]
+          controllers: []
+          status: "production"
+          prd: null
+          notes: "Required for Turbo Streams and real-time features"
+
+# Query Examples:
+# - fetch:functional:authentication → Returns all authentication features
+# - fetch:functional:agent_orchestration:prd_generation → Returns PRD generation feature details
+# - search:functional:plaid → Returns all features mentioning Plaid
+# - fetch:functional:* → Returns all capabilities (summary level)

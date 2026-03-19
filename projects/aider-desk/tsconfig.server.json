@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "outDir": "out",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/main/*"
+      ],
+      "@common/*": [
+        "src/common/*"
+      ],
+    }
+  },
+  "include": [
+    "src/main/**/*",
+    "src/common/**/*"
+  ],
+  "exclude": ["node_modules", "src/main/index.ts"]
+}

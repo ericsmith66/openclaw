@@ -1,0 +1,243 @@
+# Overwatch Knowledge Base
+
+## Overview
+This knowledge base contains DevOps documentation, assessments, and operational guides for the agent-forge project ecosystem.
+
+## Key Documents
+
+### 1. DevOps Assessment
+**File:** `devops-assessment.md`
+**Purpose:** Comprehensive assessment of current DevOps state across all agent-forge projects
+**Last Updated:** February 16, 2026
+
+**Quick Summary:**
+- **Projects Assessed:** 9 total projects
+- **Environment:** Private network with ATT Fiber, Cloudflare Tunnel, Ubiquiti UDM-SE
+- **Critical Gaps:** No IaC, no observability, no runbooks, no secrets management
+- **Production Server:** M3 Ultra at 192.168.4.253
+- **Public Endpoint:** api.higroundsolution.com
+
+### 2. Remote Instance Inspection
+**File:** `remote-instance-inspection.md`
+**Purpose:** Detailed inspection of the NextGen Plaid instance running on 192.168.4.253
+**Last Updated:** February 16, 2026
+
+**Key Findings:**
+- **Environment:** Development (not production) with Puma on port 3000
+- **Databases:** Development databases only (`nextgen_plaid_development*`)
+- **Status:** Active with substantial data, using production Plaid API keys
+- **Services:** NextGen Plaid, Smart Proxy (port 3002), Tailwind watcher
+
+### 3. Deployment Guides
+**File:** `deployment-strategy-overview.md`
+**Purpose:** Comprehensive deployment strategies for running multiple Rails applications on single server
+**Last Updated:** February 16, 2026
+
+**Individual Application Guides:**
+- **NextGen Plaid:** `deployment-nextgen-plaid.md` - Financial Rails app deployment
+- **Eureka HomeKit:** `deployment-eureka-homekit.md` - HomeKit integration Rails app deployment
+
+**Key Recommendations:**
+- **Docker Compose:** Recommended for simplicity and small teams
+- **Kamal (MRSK):** Alternative for Rails-optimized deployments
+- **Hybrid Approach:** For resource-constrained environments
+
+### 4. Database Synchronization Plan
+**File:** `database-sync-plan.md`
+**Purpose:** Plan for Ruby script to fetch databases from remote server (192.168.4.253) and restore locally
+**Last Updated:** February 16, 2026
+
+**Key Features Planned:**
+- SSH-based database dump/restore for NextGen Plaid
+- Support for primary, queue, and cable databases
+- Safety features: dry-run mode, local backups
+- Ruby implementation (project preference)
+
+### 5. Immediate Action Checklist
+**File:** `checklist-immediate-actions.md`
+**Purpose:** 7-day action plan for critical DevOps improvements
+**Last Updated:** February 16, 2026
+
+**Top Priorities:**
+1. Secrets audit and management
+2. Basic observability setup
+3. Network documentation
+4. Backup verification
+
+### 6. Project Inventory
+| Project | Status | Critical Needs | Deployment Guide |
+|---------|--------|----------------|------------------|
+| aider-desk | ✅ Basic CI, Docker | Runbook, Deployment Pipeline | Not yet created |
+| eureka-homekit | ✅ Security CI, Docker | Testing, Runbook | ✅ Available |
+| nextgen-plaid | ✅ Full CI/CD, Docker | Runbook, Structured Logging | ✅ Available |
+| SmartProxy | ❌ No automation | CI/CD, Health Monitoring | Not yet created |
+
+## Deployment Quick Start
+
+### For NextGen Plaid
+1. Review `deployment-nextgen-plaid.md`
+2. Choose Docker Compose approach (recommended)
+3. Set up production server with Docker
+4. Configure Cloudflare Tunnel for `plaid.api.higroundsolution.com`
+5. Deploy using docker-compose
+
+### For Eureka HomeKit
+1. Review `deployment-eureka-homekit.md`
+2. Note HomeKit-specific networking requirements
+3. Configure Cloudflare Tunnel for `homekit.api.higroundsolution.com`
+4. Deploy using docker-compose with host networking for device discovery
+
+### Multi-App Deployment
+Review `deployment-strategy-overview.md` for strategies to run both applications on the same server.
+
+## Database Sync Quick Start
+
+### Current Status
+- **Remote Server:** 192.168.4.253 has development databases for NextGen Plaid
+- **Databases Available:** `nextgen_plaid_development`, `nextgen_plaid_development_queue`, `nextgen_plaid_development_cable`
+- **SSH Access:** Confirmed working
+- **PostgreSQL:** Version 16.11 on both local and remote
+- **Environment:** Development (confirmed via inspection)
+
+### Implementation Resources
+1. **Plan:** Review `database-sync-plan.md` for implementation details
+2. **Prototype:** `database-sync-prototype.rb` - Working prototype
+3. **Testing:** `test-database-connectivity.rb` - Connectivity verification
+4. **Examples:** `database-sync-examples.sh` - Bash command examples
+
+### Next Steps
+1. Review the inspection findings in `remote-instance-inspection.md`
+2. Provide feedback on the proposed sync approach
+3. Approve for implementation (estimated 2-3 days)
+
+## Environment Details
+
+### Network Architecture
+```
+Internet → ATT Fiber → Ubiquiti UDM-SE → Cloudflare Tunnel → api.higroundsolution.com
+                                     ↓
+                             192.168.4.253 (Production M3 Ultra)
+                                     ↓
+                         Development Rails Server (Port 3000)
+                         Smart Proxy Server (Port 3002)
+```
+
+### Development Environment
+- **Primary Host:** M3 Ultra macOS (development)
+- **Production Host:** M3 Ultra at 192.168.4.253 (running development environment)
+- **Projects Location:** `/Users/ericsmith66/development/agent-forge/projects/`
+
+### Public Access
+- **Domain:** api.higroundsolution.com
+- **Access Method:** Cloudflare Tunnel
+- **Single Exposed IP:** Behind Cloudflare protection
+- **Recommended Subdomains:**
+  - `plaid.api.higroundsolution.com` → NextGen Plaid
+  - `homekit.api.higroundsolution.com` → Eureka HomeKit
+
+## DevOps Standards Reference
+
+### Infrastructure as Code (IaC)
+- **Standard:** Terraform
+- **Status:** Not implemented
+- **Priority:** High
+
+### Observability & Logging
+- **Standard:** Structured JSON logging
+- **Tools:** Prometheus + Loki + Grafana
+- **Status:** Not implemented
+- **Priority:** High
+
+### Automation & Runbooks
+- **Standard:** RUNBOOK.md in each repository
+- **Format:** Markdown with troubleshooting steps
+- **Status:** Not implemented
+- **Priority:** High
+
+### Security
+- **Standards:** Secrets management, least privilege, regular scanning
+- **Tools:** Vault/Doppler, Brakeman, Dependabot
+- **Status:** Partial implementation
+- **Priority:** High
+
+## Quick Reference Commands
+
+### Project Locations
+```bash
+# All projects
+cd /Users/ericsmith66/development/agent-forge/projects
+
+# Individual projects
+cd aider-desk          # TypeScript/Electron desktop app
+cd eureka-homekit      # Ruby on Rails HomeKit integration
+cd nextgen-plaid       # Ruby on Rails financial app
+cd SmartProxy          # Ruby/Sinatra proxy service
+cd overwatch           # DevOps monitoring and management
+```
+
+### Remote Server Access
+```bash
+# SSH to production server
+ssh ericsmith66@192.168.4.253
+
+# Check running processes
+ssh ericsmith66@192.168.4.253 "ps aux | grep -E '(rails|puma|thin|passenger|rack)' | grep -v grep"
+
+# List remote databases
+ssh ericsmith66@192.168.4.253 "/opt/homebrew/Cellar/postgresql@16/16.11_1/bin/psql -l"
+```
+
+### Local Development
+```bash
+# List local databases
+psql -l
+
+# Test database connectivity
+cd /Users/ericsmith66/development/agent-forge/projects/overwatch/knowledge_base
+ruby test-database-connectivity.rb
+```
+
+### Docker Compose Commands
+```bash
+# Build and start
+docker-compose build
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Run migrations
+docker-compose exec app bin/rails db:migrate
+```
+
+## Contact & Escalation
+
+### Primary Contacts
+- **DevOps Lead:** [To be designated]
+- **Infrastructure:** [To be designated]
+- **Security:** [To be designated]
+
+### Vendor Contacts
+- **Cloudflare:** Tunnel management
+- **ATT Fiber:** Internet service
+- **Ubiquiti:** Network equipment
+
+## Document Maintenance
+
+### Review Cycle
+- **Monthly:** First 3 months
+- **Quarterly:** Thereafter
+- **Trigger-Based:** After significant environment changes
+
+### Update Process
+1. Update relevant documentation in this knowledge base
+2. Update `devops-assessment.md` with changes
+3. Notify relevant stakeholders
+4. Archive previous versions if significant changes
+
+---
+
+**Note:** This is a living knowledge base. All operational documentation should be maintained here for consistency and accessibility.

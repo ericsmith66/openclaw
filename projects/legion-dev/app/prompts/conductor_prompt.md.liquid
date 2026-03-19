@@ -1,0 +1,30 @@
+## Execution State: {{ phase }}
+
+### Workflow Details
+- **Workflow ID:** {{ workflow_id }}
+- **Attempt:** {{ attempt }}
+
+### Task Summary
+- **Total Tasks:** {{ tasks.size }}
+- **Completed:** {{ scores.completed_count }}
+- **Failed:** {{ scores.failed_count }}
+- **Pending:** {{ scores.pending_count }}
+- **Skipped:** {{ scores.skipped_count }}
+- **Average Score:** {{ scores.average_score }}
+
+### Task Details
+{% for task in tasks %}
+#### Task {{ task.position }}: {{ task.type | upcase }}
+- **Status:** {{ task.status }}
+- **Score:** {% if task.score %}{{ task.score }}{% else %}N/A{% endif %}
+- **Agent:** {{ task.agent }}
+- **Files Score:** {{ task.files_score }}
+- **Concepts Score:** {{ task.concepts_score }}
+- **Dependencies Score:** {{ task.dependencies_score }}
+{% endfor %}
+
+### Feedback
+{{ scores.last_feedback }}
+
+### Current Phase: {{ phase }}
+Begin working on pending tasks in order of dependency.

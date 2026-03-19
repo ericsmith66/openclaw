@@ -1,0 +1,80 @@
+# examples:
+#   periodic_cleanup:
+#     class: CleanSoftDeletedRecordsJob
+#     queue: background
+#     args: [ 1000, { batch_size: 500 } ]
+#     schedule: every hour
+#   periodic_cleanup_with_command:
+#     command: "SoftDeletedRecord.due.delete_all"
+#     priority: 2
+#     schedule: at 5am every day
+
+development:
+  # clear_solid_queue_finished_jobs:
+  #   command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+  #   schedule: every hour at minute 12
+  # daily_plaid_sync_fallback:
+  #   class: DailyPlaidSyncJob
+  #   schedule: at 2am every day
+  # daily_auto_sync:
+  #   class: SyncAllItemsJob
+  #   schedule: at 3am every day
+  # rotate_agent_logs:
+  #   command: "rake logs:rotate"
+  #   schedule: at 3am every day
+  # daily_sap_rag_snapshot:
+  #   command: "rake sap:rag:snapshot"
+  #   schedule: at 3am every day
+  # daily_financial_snapshot:
+  #   class: FinancialSnapshotJob
+  #   schedule: at 12am every day
+  # weekly_sap_rag_cleanup:
+  #   command: "rake sap:rag:cleanup"
+  #   schedule: at 4am every Sunday
+  # weekly_null_field_detection:
+  #   class: NullFieldDetectionJob
+  #   schedule: at 5am every Sunday
+  # weekly_holdings_enrichment:
+  #   class: HoldingsEnrichmentJob
+  #   schedule: at 4am every Sunday
+  # weekly_plaid_api_response_retention:
+  #   class: PlaidApiResponsesRetentionJob
+  #   schedule: at 4am every Sunday
+  # daily_holdings_snapshots:
+  #   command: "User.joins(:plaid_items).distinct.find_each { |u| CreateHoldingsSnapshotsJob.perform_later(user_id: u.id) }"
+  #   schedule: at 1:30am every day
+
+production:
+  clear_solid_queue_finished_jobs:
+    command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
+    schedule: every hour at minute 12
+  daily_plaid_sync_fallback:
+    class: DailyPlaidSyncJob
+    schedule: at 2am every day
+  daily_auto_sync:
+    class: SyncAllItemsJob
+    schedule: at 3am every day
+  rotate_agent_logs:
+    command: "rake logs:rotate"
+    schedule: at 3am every day
+  daily_sap_rag_snapshot:
+    command: "rake sap:rag:snapshot"
+    schedule: at 3am every day
+  daily_financial_snapshot:
+    class: FinancialSnapshotJob
+    schedule: at 12am every day
+  weekly_sap_rag_cleanup:
+    command: "rake sap:rag:cleanup"
+    schedule: at 4am every Sunday
+  weekly_null_field_detection:
+    class: NullFieldDetectionJob
+    schedule: at 5am every Sunday
+  weekly_holdings_enrichment:
+    class: HoldingsEnrichmentJob
+    schedule: at 4am every Sunday
+  weekly_plaid_api_response_retention:
+    class: PlaidApiResponsesRetentionJob
+    schedule: at 4am every Sunday
+  daily_holdings_snapshots:
+    command: "User.joins(:plaid_items).distinct.find_each { |u| CreateHoldingsSnapshotsJob.perform_later(user_id: u.id) }"
+    schedule: at 1:30am every day

@@ -1,0 +1,33 @@
+<%= helpers.turbo_frame_tag "model-selector-frame" do %>
+  <div class="flex items-center gap-2" data-controller="model-selector">
+    <div class="dropdown dropdown-end">
+      <label tabindex="0" class="btn btn-sm btn-outline <%= 'btn-disabled' if disabled? %>">
+        Model: <%= display_name_for(conversation.llm_model) %>
+      </label>
+      <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-56">
+        <% if disabled? %>
+          <li class="px-2 py-1 text-xs text-base-content/60">
+            Models unavailable. Using default: <%= display_name_for(conversation.llm_model) %>
+          </li>
+        <% else %>
+          <% available_models.each do |model| %>
+            <li>
+            <%= button_to display_name_for(model),
+                  persona_chat_update_model_path(persona_id: persona_id, id: conversation.id),
+                  method: :patch,
+                  params: { llm_model: model },
+                  form: { data: { turbo_frame: "model-selector-frame" } },
+                  class: "text-left w-full" %>
+            </li>
+          <% end %>
+        <% end %>
+      </ul>
+    </div>
+
+    <div class="hidden" data-model-selector-target="toast"><%= toast %></div>
+
+    <div class="text-xs text-base-content/60">
+      <span class="badge badge-info badge-outline">Educational simulation</span>
+    </div>
+  </div>
+<% end %>

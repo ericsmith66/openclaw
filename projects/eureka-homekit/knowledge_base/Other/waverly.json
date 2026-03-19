@@ -1,0 +1,179 @@
+{
+  "residence": {
+    "name": "Smith Residence",
+    "address": "1149 Waverly Street, Houston, TX 77008",
+    "total_living_sq_ft": 4300,
+    "first_level_living_sq_ft": 2800,
+    "second_level_living_sq_ft": 1500
+  },
+  "levels": [
+    {
+      "level": "First Level",
+      "rooms": [
+        {
+          "name": "Master Closet",
+          "dimensions": "8'-0\" × 10'-0\"",
+          "square_footage": 80
+        },
+        {
+          "name": "Master Bath",
+          "dimensions": "10'-0\" × 12'-0\"",
+          "square_footage": 120
+        },
+        {
+          "name": "Master Bedroom",
+          "dimensions": "15'-0\" × 18'-0\"",
+          "square_footage": 270
+        },
+        {
+          "name": "Foyer",
+          "dimensions": "10'-0\" × 10'-0\"",
+          "square_footage": 100
+        },
+        {
+          "name": "Vestibule",
+          "dimensions": "5'-0\" × 10'-0\"",
+          "square_footage": 50
+        },
+        {
+          "name": "Coffee Bar",
+          "dimensions": "5'-0\" × 8'-0\"",
+          "square_footage": 40
+        },
+        {
+          "name": "Living Room",
+          "dimensions": "15'-0\" × 20'-0\"",
+          "square_footage": 300
+        },
+        {
+          "name": "Dining Room / Library",
+          "dimensions": "12'-0\" × 16'-6\"",
+          "square_footage": 200
+        },
+        {
+          "name": "Main Kitchen",
+          "dimensions": "14'-0\" × 18'-0\"",
+          "square_footage": 250
+        },
+        {
+          "name": "Scullery",
+          "dimensions": "8'-0\" × 10'-0\"",
+          "square_footage": 80
+        },
+        {
+          "name": "Laundry",
+          "dimensions": "7'-0\" × 10'-0\"",
+          "square_footage": 70
+        },
+        {
+          "name": "Workroom",
+          "dimensions": "10'-0\" × 15'-0\"",
+          "square_footage": 150
+        },
+        {
+          "name": "Powder Bath #1",
+          "dimensions": "5'-0\" × 8'-0\"",
+          "square_footage": 40
+        },
+        {
+          "name": "Powder Bath #2",
+          "dimensions": "5'-0\" × 8'-0\"",
+          "square_footage": 40
+        },
+        {
+          "name": "Garage #1",
+          "dimensions": "20'-0\" × 30'-0\"",
+          "square_footage": 600,
+          "note": "Non-living / vehicle storage"
+        },
+        {
+          "name": "Outdoor Kitchen",
+          "dimensions": "10'-0\" × 20'-0\"",
+          "square_footage": 200,
+          "note": "Outdoor / non-conditioned"
+        },
+        {
+          "name": "Front Porch",
+          "dimensions": "10'-0\" × 15'-0\"",
+          "square_footage": 150,
+          "note": "Covered / non-conditioned"
+        },
+        {
+          "name": "Side Porch",
+          "dimensions": "8'-0\" × 12'-6\"",
+          "square_footage": 100,
+          "note": "Covered / non-conditioned"
+        },
+        {
+          "name": "Sitting Area",
+          "dimensions": "10'-0\" × 12'-0\"",
+          "square_footage": 120,
+          "note": "Outdoor"
+        },
+        {
+          "name": "Pool / Spa",
+          "dimensions": "20'-0\" × 25'-0\"",
+          "square_footage": 500,
+          "note": "Reference only, separate permit"
+        }
+      ]
+    },
+    {
+      "level": "Second Level",
+      "rooms": [
+        {
+          "name": "Aerial Studio",
+          "dimensions": "12'-0\" × 16'-6\"",
+          "square_footage": 200
+        },
+        {
+          "name": "Bedroom #1",
+          "dimensions": "12'-0\" × 15'-0\"",
+          "square_footage": 180
+        },
+        {
+          "name": "Bedroom #2",
+          "dimensions": "11'-0\" × 14'-6\"",
+          "square_footage": 160
+        },
+        {
+          "name": "Bedroom #3",
+          "dimensions": "10'-0\" × 15'-0\"",
+          "square_footage": 150
+        },
+        {
+          "name": "Home Office",
+          "dimensions": "10'-0\" × 12'-0\"",
+          "square_footage": 120
+        },
+        {
+          "name": "3/4 Bath",
+          "dimensions": "6'-0\" × 8'-0\"",
+          "square_footage": 50,
+          "note": "Multiple instances"
+        },
+        {
+          "name": "Full Bath",
+          "dimensions": "6'-0\" × 10'-0\"",
+          "square_footage": 60
+        },
+        {
+          "name": "Mech",
+          "dimensions": "5'-0\" × 8'-0\"",
+          "square_footage": 40
+        },
+        {
+          "name": "Kitchenette",
+          "dimensions": "8'-0\" × 10'-0\"",
+          "square_footage": 80
+        },
+        {
+          "name": "Garage Apt (Living/Bath/Closet)",
+          "dimensions": "20'-0\" × 20'-0\"",
+          "square_footage": 400,
+          "note": "Combined apartment space"
+        }
+      ]
+    }
+  ]
+}

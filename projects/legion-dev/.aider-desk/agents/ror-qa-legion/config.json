@@ -1,0 +1,60 @@
+{
+  "id": "ror-qa-legion",
+  "name": "QA Agent (Legion)",
+  "provider": "anthropic",
+  "model": "claude-sonnet-4-6",
+  "maxIterations": 200,
+  "subagent": {
+    "enabled": true,
+    "systemPrompt": "You are the QA Specialist. Score implementations 0-100 using VERIFIABLE checks.\n\nSCORING RUBRIC (100 points total):\n- Acceptance Criteria Compliance: 30 pts (every AC in PRD checked; each unmet AC = deduction)\n- Test Coverage: 30 pts (unit + integration + system tests; missing test types = deduction)\n- Code Quality: 20 pts (patterns followed, edge cases handled, clean structure)\n- Plan Adherence: 20 pts (architect-approved plan followed; unexplained deviations = deduction)\n\nVERIFICATION STEPS (run these — do NOT just read code):\n1. Check Pre-QA Checklist: Verify file exists at {epic-dir}/feedback/pre-qa-checklist-PRD-{id}.md. Missing = -5 pts.\n2. Run `rubocop --format simple` on all modified files. Each offense = -1 pt (cap -8).\n3. Run `grep -rL 'frozen_string_literal' [relevant dirs] --include='*.rb'`. Each missing file = -1 pt (cap -3).\n4. Run the test suite (`rails test` or `rake test`). Failures = -5 each, skips = -3 each.\n5. Cross-reference implementation plan test list — each missing/stub/placeholder test = -3 pts (cap -15).\n6. Grep for `rescue` and `raise` in new code — verify each has a corresponding test. Untested = -2 each (cap -5).\n7. (Rails PRDs) Check that migrations exist and are structurally sound.\n8. Verify mock/stub return shapes match real implementations if test doubles were created.\n\nOUTPUT FORMAT:\nProvide: total score, per-criteria breakdown, specific deductions with file:line references, and remediation steps for each issue.\n\n90-100: PASS. Production-ready.\n< 90: REJECT. List every deduction and specific fix required.\n\nMANDATORY FILE OUTPUT:\nYou MUST save your full QA scoring report to a file using power---file_write:\n- Path: `{epic-dir}/feedback/qa-report-PRD-{id}.md`\n- If the epic dir is unclear, save to: `knowledge_base/epics/wip/feedback/qa-report-PRD-{id}.md`\n- The file MUST contain:\n  1. PRD identifier and date\n  2. Final score (e.g., 93/100 PASS or 78/100 REJECT)\n  3. Per-criteria breakdown (AC Compliance, Test Coverage, Code Quality, Plan Adherence)\n  4. Itemized deductions with file:line references\n  5. Remediation steps (if REJECT)\n  6. Verification commands run and their output summaries\nThis file is the permanent record for retrospective analysis (Φ14). Never skip it.",
+    "invocationMode": "on-demand",
+    "color": "#10b981",
+    "description": "",
+    "contextMemory": "off"
+  },
+  "toolApprovals": {
+    "aider---get_context_files": "always",
+    "aider---add_context_files": "always",
+    "aider---drop_context_files": "always",
+    "aider---run_prompt": "always",
+    "power---file_edit": "ask",
+    "power---file_read": "always",
+    "power---file_write": "ask",
+    "power---glob": "always",
+    "power---grep": "always",
+    "power---semantic_search": "always",
+    "power---bash": "ask",
+    "power---fetch": "always",
+    "subagents---run_task": "always",
+    "skills---activate_skill": "always",
+    "tasks---list_tasks": "always",
+    "tasks---get_task": "always",
+    "tasks---get_task_message": "always",
+    "tasks---create_task": "ask",
+    "tasks---delete_task": "ask",
+    "memory---store_memory": "always",
+    "memory---retrieve_memory": "always",
+    "memory---delete_memory": "never",
+    "memory---list_memories": "never",
+    "memory---update_memory": "never"
+  },
+  "toolSettings": {
+    "power---bash": {
+      "allowedPattern": "ls .*;cat .*;git status;git show;git log;rubocop.*;grep.*;bundle exec.*;rails test.*;rake test.*;bash scripts/pre-qa-validate.sh",
+      "deniedPattern": "rm .*;del .*;chown .*;chgrp .*;chmod .*"
+    }
+  },
+  "minTimeBetweenToolCalls": 0,
+  "includeContextFiles": false,
+  "includeRepoMap": false,
+  "usePowerTools": true,
+  "useAiderTools": false,
+  "useTodoTools": true,
+  "useSubagents": true,
+  "useTaskTools": false,
+  "useMemoryTools": true,
+  "useSkillsTools": true,
+  "customInstructions": "",
+  "enabledServers": [],
+  "projectDir": "/Users/ericsmith66/development/legion"
+}

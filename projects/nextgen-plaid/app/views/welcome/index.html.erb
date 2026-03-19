@@ -1,0 +1,30 @@
+<div style="padding:60px; background:#0f172a; color:white; min-height:100vh; font-family:system-ui;">
+  <h1 style="font-size:56px; text-align:center;">
+    NextGen Plaid
+  </h1>
+
+  <div style="max-width:900px; margin:0 auto; background:#1e293b; padding:40px; border-radius:20px;">
+    <% if user_signed_in? %>
+      <p>You are signed in as <strong><%= current_user.email %></strong>.</p>
+      <p>
+        <%= link_to "Go to dashboard", authenticated_root_path, style: "color:#60a5fa;" %>
+      </p>
+      <p>
+        <%= button_to "Sign out", destroy_user_session_path, method: :delete, form: { data: { turbo: false } } %>
+      </p>
+    <% else %>
+      <p>
+        <%= link_to "Sign in", new_user_session_path, style: "color:#60a5fa;" %>
+      </p>
+    <% end %>
+
+    <% if Rails.env.development? %>
+      <hr style="border:1px solid #444; margin:40px 0;">
+      <h2 style="margin-bottom:10px;">Development Debug</h2>
+      <p>Signed in? <%= user_signed_in? ? "YES" : "NO" %></p>
+      <p>Current user: <%= current_user.inspect %></p>
+      <h3 style="margin-top:20px;">Session</h3>
+      <pre style="background:#000; padding:20px; border-radius:12px; overflow:auto;"><%= session.to_hash.inspect %></pre>
+    <% end %>
+  </div>
+</div>

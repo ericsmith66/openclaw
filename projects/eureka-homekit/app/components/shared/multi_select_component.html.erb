@@ -1,0 +1,38 @@
+<div data-controller="multi-select" class="space-y-2">
+  <!-- Toolbar -->
+  <div class="flex items-center justify-between p-2 bg-base-200 rounded-lg" data-multi-select-target="toolbar">
+    <div class="flex items-center gap-2">
+      <button type="button"
+              class="btn btn-xs btn-ghost"
+              data-action="click->multi-select#selectAll"
+              aria-label="Select all items">
+        Select All
+      </button>
+      <button type="button"
+              class="btn btn-xs btn-ghost"
+              data-action="click->multi-select#deselectAll"
+              aria-label="Deselect all items">
+        Deselect All
+      </button>
+    </div>
+    <span class="badge badge-primary badge-sm" data-multi-select-target="countBadge">
+      <span data-multi-select-target="count"><%= selected_count %></span> / <%= items_count %> selected
+    </span>
+  </div>
+
+  <!-- Checkbox list -->
+  <div class="space-y-1 max-h-64 overflow-y-auto">
+    <% @items.each do |item| %>
+      <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200 cursor-pointer transition-colors">
+        <input type="checkbox"
+               class="checkbox checkbox-sm checkbox-primary"
+               value="<%= item_id(item) %>"
+               data-multi-select-target="checkbox"
+               data-action="change->multi-select#toggleSelection"
+               <%= "checked" if selected?(item) %>
+               aria-label="Select <%= item_label(item) %>">
+        <span class="text-sm font-medium"><%= item_label(item) %></span>
+      </label>
+    <% end %>
+  </div>
+</div>

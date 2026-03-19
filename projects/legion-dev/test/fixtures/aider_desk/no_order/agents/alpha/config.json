@@ -1,0 +1,7 @@
+{
+  "id": "alpha-id",
+  "name": "Alpha Agent",
+  "provider": "anthropic",
+  "model": "claude-opus",
+  "maxIterations": 150
+}

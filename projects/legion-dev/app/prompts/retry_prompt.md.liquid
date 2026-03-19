@@ -1,0 +1,32 @@
+{% comment %}
+Retry Prompt Template - FR-2, FR-3
+
+This template renders accumulated context from prior retry attempts.
+The context is provided via the `accumulated_context` variable which is a hash
+with keys like `attempt_1`, `attempt_2`, etc.
+
+Each attempt contains:
+- `retry_context`: The original prompt and context from that attempt
+- `review_feedback`: The feedback including score and issues from that attempt
+
+FR-2: Render accumulated context with clear labeled sections for each prior attempt's feedback
+FR-3: Include original prompt plus Attempt N feedback with score and issues
+{% endcomment %}
+
+{% if accumulated_context and accumulated_context.size > 0 %}
+## Prior Attempts Context
+
+{% for attempt_key, attempt_data in accumulated_context %}
+### {{ attempt_key | upcase }}
+
+#### Original Prompt (Attempt {{ attempt_key | replace: 'attempt_', '' | plus: 0 }})
+{{ attempt_data.retry_context }}
+
+#### Attempt {{ attempt_key | replace: 'attempt_', '' | plus: 0 }} Feedback
+{{ attempt_data.review_feedback }}
+
+---
+{% endfor %}
+{% endif %}
+
+{{ previous_result }}

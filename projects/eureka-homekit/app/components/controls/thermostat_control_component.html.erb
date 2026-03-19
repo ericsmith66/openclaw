@@ -1,0 +1,72 @@
+<div data-controller="thermostat-control"
+     data-thermostat-control-accessory-id-value="<%= @accessory.uuid %>"
+     data-thermostat-control-unit-value="<%= display_unit == 'F' ? 'F' : 'C' %>"
+     data-thermostat-control-offline-value="<%= offline?.to_s %>">
+  
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="card-title"><%= @accessory.name %></h2>
+        <button data-action="thermostat-control#toggle_unit" 
+                class="btn btn-sm btn-ghost"
+                disabled="<%= offline? ? 'disabled' : nil %>"
+                title="Toggle display unit (Display Only - does not change device settings)">
+          °<%= display_unit %>
+        </button>
+      </div>
+
+      <!-- Current Temperature -->
+      <div class="flex items-center justify-between mb-6">
+        <span class="text-gray-500">Current</span>
+        <span class="text-4xl font-bold" data-thermostat-control-target="currentTemp">
+          <%= display_unit == 'F' ? "#{current_temp_fahrenheit.round(1)}°F" : "#{current_temp_celsius.round(1)}°C" %>
+        </span>
+      </div>
+
+      <!-- Target Temperature Slider -->
+      <div class="mb-6">
+        <div class="flex justify-between mb-2">
+          <span class="text-gray-500">Target</span>
+          <span data-thermostat-control-target="targetTempValue" class="font-mono">
+            <!-- Value populated by JS -->
+          </span>
+        </div>
+        <input type="range" 
+               min="<%= min_temp %>"
+               max="<%= max_temp %>"
+               step="0.5"
+               value="<%= displayed_target_temp.round(1) %>"
+               data-thermostat-control-target="targetTempSlider"
+               data-action="input->thermostat-control#update_target_temp"
+               disabled="<%= offline? ? 'disabled' : nil %>"
+               class="range range-primary w-full h-2">
+      </div>
+
+      <!-- Mode Selection -->
+      <div class="mb-6">
+        <span class="text-gray-500 block mb-2">Mode</span>
+        <select data-thermostat-control-target="modeSelect"
+                data-action="change->thermostat-control#update_mode"
+                disabled="<%= offline? ? 'disabled' : nil %>"
+                class="select select-bordered w-full max-w-xs">
+          <option value="0" <%= target_mode == 0 ? 'selected' : '' %>>Off</option>
+          <option value="1" <%= target_mode == 1 ? 'selected' : '' %>>Heat</option>
+          <option value="2" <%= target_mode == 2 ? 'selected' : '' %>>Cool</option>
+          <option value="3" <%= target_mode == 3 ? 'selected' : '' %>>Auto</option>
+        </select>
+      </div>
+
+      <!-- Status Indicators -->
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-red-500<%= heating? ? '' : ' opacity-30' %>"></div>
+          <span class="text-sm text-gray-500">Heating</span>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 rounded-full bg-blue-500<%= cooling? ? '' : ' opacity-30' %>"></div>
+          <span class="text-sm text-gray-500">Cooling</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,56 @@
+<div data-controller="light-control"
+     data-light-control-accessory-id-value="<%= @accessory.uuid %>"
+     data-light-control-offline-value="<%= offline?.to_s %>"
+     class="<%= compact? ? 'card-compact' : '' %>">
+
+  <% if offline? %>
+    <span class="badge badge-error badge-sm">Offline</span>
+  <% end %>
+
+  <div class="flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <svg class="w-6 h-6 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6v-6.2l.85-.6V11.1z"/>
+      </svg>
+      <span class="font-medium text-gray-900"><%= @accessory.name %></span>
+    </div>
+
+    <div class="flex items-center space-x-2">
+      <% if support_state? %>
+        <button data-action="light-control#toggle"
+                data-light-control-target="toggleButton"
+                <%= 'disabled' if offline? %>
+                class="btn btn-ghost btn-xs <%= on? ? 'btn-primary' : 'btn-ghost' %>">
+          <%= on? ? 'On' : 'Off' %>
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <% if supports_dimming? %>
+    <div class="mt-2">
+      <div class="flex items-center space-x-2">
+        <input type="range"
+               min="0" max="100"
+               value="<%= brightness %>"
+               data-light-control-target="brightnessSlider"
+               data-action="input->light-control#update_brightness"
+               <%= 'disabled' if offline? %>
+               class="range range-xs range-secondary w-full h-1">
+        <span data-light-control-target="brightnessValue"><%= brightness %>%</span>
+      </div>
+    </div>
+  <% end %>
+
+  <% if supports_color? %>
+    <div class="mt-2 flex items-center space-x-2">
+      <button data-action="light-control#open_color_picker"
+              data-light-control-target="colorButton"
+              <%= 'disabled' if offline? %>
+              class="btn btn-ghost btn-xs">
+        Color
+        <span class="w-3 h-3 rounded-full ml-1" style="background-color: hsl(<%= hue %>, <%= saturation %>%, 50%);"></span>
+      </button>
+    </div>
+  <% end %>
+</div>

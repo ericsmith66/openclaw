@@ -1,0 +1,30 @@
+<%= render ::Layouts::ApplicationLayout.new(
+  title: "Scenes",
+  homes: current_homes,
+  grouped_events: HomekitEvent.recent_grouped(limit: 15),
+  sidebar_title: "Recent Activity"
+) do %>
+  <div class="space-y-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <%= render Shared::BreadcrumbComponent.new(items: [
+          { label: 'Dashboard', path: root_path },
+          { label: 'Scenes', path: nil }
+        ]) %>
+        <h1 class="text-3xl font-bold tracking-tight mt-2">Scenes</h1>
+      </div>
+
+      <div class="flex gap-3">
+        <%= form_with url: scenes_path, method: :get, class: "flex gap-3" do |f| %>
+          <%= f.select :home_id, options_for_select(@homes.map { |h| [h.name, h.id] }, params[:home_id]),
+            { include_blank: 'All Homes' }, class: "select select-bordered" %>
+          <%= f.text_field :search, placeholder: "Search scenes...", value: params[:search],
+            class: "input input-bordered" %>
+          <%= f.submit "Filter", class: "btn btn-primary" %>
+        <% end %>
+      </div>
+    </div>
+
+    <%= render Scenes::ListComponent.new(scenes: @scenes, show_home: params[:home_id].blank?) %>
+  </div>
+<% end %>

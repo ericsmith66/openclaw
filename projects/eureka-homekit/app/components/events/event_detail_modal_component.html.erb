@@ -1,0 +1,47 @@
+<dialog id="event-detail-modal" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box bg-base-100 p-0 overflow-hidden border border-base-200">
+    <div class="p-6 border-b border-base-200 bg-base-200/30">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-base-100 flex items-center justify-center shadow-sm border border-base-200">
+          <%= helpers.lucide_icon(icon_name, size: 24, class: @event ? event_severity_color(@event) : "text-info") %>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg"><%= summary.presence || "Event Details" %></h3>
+          <p class="text-xs opacity-60"><%= time_ago %> • <%= formatted_timestamp %></p>
+        </div>
+        <form method="dialog" class="ml-auto">
+          <button class="btn btn-sm btn-circle btn-ghost">✕</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="p-6 space-y-6">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-base-200/50 p-4 rounded-xl border border-base-200">
+          <p class="text-[10px] uppercase font-bold tracking-widest opacity-40 mb-1">Accessory</p>
+          <p class="text-sm font-semibold"><%= accessory_name %></p>
+        </div>
+        <div class="bg-base-200/50 p-4 rounded-xl border border-base-200">
+          <p class="text-[10px] uppercase font-bold tracking-widest opacity-40 mb-1">Room</p>
+          <p class="text-sm font-semibold"><%= room_name %></p>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[10px] uppercase font-bold tracking-widest opacity-40 mb-3">Raw Event Data</p>
+        <div class="bg-neutral text-neutral-content p-4 rounded-xl font-mono text-xs overflow-x-auto shadow-inner">
+          <pre><code><%= raw_payload %></code></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-4 border-t border-base-200 bg-base-200/10 flex justify-end">
+      <form method="dialog">
+        <button class="btn btn-primary">Close</button>
+      </form>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>

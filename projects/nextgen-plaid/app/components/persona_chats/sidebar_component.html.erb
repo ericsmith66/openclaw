@@ -1,0 +1,28 @@
+<%= helpers.turbo_frame_tag "conversation-sidebar-frame" do %>
+  <div class="p-4 flex flex-col gap-3" data-controller="conversation-sidebar">
+    <%= button_to "New Conversation",
+          persona_chat_create_conversation_path(persona_id: persona_id),
+          method: :post,
+          form: { data: { turbo_stream: true } },
+          class: "btn btn-primary w-full min-h-11",
+          aria: { label: "Start new conversation" } %>
+
+    <% if conversations.blank? %>
+      <div class="text-sm text-base-content/70 p-4">
+        No conversations yet—start a new chat!
+      </div>
+    <% else %>
+      <div class="flex flex-col gap-2">
+        <%= helpers.turbo_frame_tag "conversation-sidebar-list-frame" do %>
+          <%= render partial: "persona_chats/sidebar_list",
+                locals: {
+                  persona_id: persona_id,
+                  conversations: conversations,
+                  next_page: next_page,
+                  active_conversation_id: active_conversation_id
+                } %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

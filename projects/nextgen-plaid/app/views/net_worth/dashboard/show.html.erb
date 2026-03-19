@@ -1,0 +1,95 @@
+<div class="p-4 sm:p-6 overflow-x-hidden">
+  <div class="breadcrumbs text-sm mb-3" aria-label="Breadcrumb">
+    <ul>
+      <li><%= link_to "Home", authenticated_root_path, class: "link link-hover" %></li>
+      <li>Net Worth</li>
+    </ul>
+  </div>
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+    <div class="min-w-0">
+      <h1 class="text-xl sm:text-2xl font-bold">Net Worth Dashboard</h1>
+      <div class="text-sm opacity-70">As of <%= @snapshot_data["as_of"].to_s %></div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2 justify-end">
+      <%= render NetWorth::SyncStatusWidgetComponent.new(user: current_user, snapshot: @snapshot, status: :complete) %>
+      <%= render NetWorth::ExportSnapshotDropdownComponent.new(snapshot: @snapshot) %>
+    </div>
+  </div>
+
+  <% if @stale %>
+    <div class="alert alert-warning mb-6">
+      <span>Data may be outdated</span>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 min-w-0">
+    <div class="lg:col-span-2 min-w-0">
+      <% raw_summary = (@snapshot_data["net_worth_summary"] || @snapshot_data[:net_worth_summary] || {}).to_h %>
+      <% summary = {
+        total: (raw_summary["total"] || raw_summary[:total] || @snapshot_data["total_net_worth"] || @snapshot_data[:total_net_worth] || 0),
+        day_delta_usd: (raw_summary["day_delta_usd"] || raw_summary[:day_delta_usd] || @snapshot_data["delta_day"] || @snapshot_data[:delta_day] || 0),
+        day_delta_pct: (raw_summary["day_delta_pct"] || raw_summary[:day_delta_pct]),
+        thirty_day_delta_usd: (raw_summary["thirty_day_delta_usd"] || raw_summary[:thirty_day_delta_usd] || @snapshot_data["delta_30d"] || @snapshot_data[:delta_30d] || 0),
+        thirty_day_delta_pct: (raw_summary["thirty_day_delta_pct"] || raw_summary[:thirty_day_delta_pct])
+      } %>
+
+      <% timestamp = @snapshot&.created_at %>
+      <% if timestamp.nil? %>
+        <% as_of = @snapshot_data["as_of"] || @snapshot_data[:as_of] %>
+        <% timestamp = Time.zone.parse(as_of.to_s) rescue nil %>
+      <% end %>
+
+      <%= turbo_frame_tag "net-worth-summary-frame" do %>
+        <%= render NetWorth::SummaryCardComponent.new(summary: summary, timestamp: timestamp) %>
+      <% end %>
+    </div>
+
+    <div class="min-w-0">
+      <%= turbo_frame_tag "performance-chart-frame" do %>
+        <%= render NetWorth::PerformanceComponent.new(data: @snapshot_data) %>
+      <% end %>
+    </div>
+
+    <div class="min-w-0">
+      <%= turbo_frame_tag "allocation-pie-frame" do %>
+        <%= render NetWorth::AssetAllocationComponent.new(allocation_data: @snapshot_data["asset_allocation"] || @snapshot_data[:asset_allocation]) %>
+      <% end %>
+    </div>
+
+    <div class="min-w-0">
+      <%= turbo_frame_tag "sector-table-frame", src: net_worth_sectors_path, loading: :lazy do %>
+        <div class="card bg-base-100 shadow-xl" aria-busy="true" aria-live="polite">
+          <div class="card-body">
+            <div class="flex items-center justify-between">
+              <h2 class="card-title">Sector Weights</h2>
+            </div>
+            <div class="mt-4 space-y-3">
+              <div class="skeleton h-4 w-2/3"></div>
+              <div class="skeleton h-4 w-1/2"></div>
+              <div class="skeleton h-32 w-full"></div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="min-w-0">
+      <% top_holdings = (@snapshot_data["top_holdings"] || @snapshot_data[:top_holdings] || []) %>
+      <%= turbo_frame_tag "holdings-summary-frame" do %>
+        <%= render NetWorth::HoldingsSummaryComponent.new(top_holdings: top_holdings, expanded: false) %>
+      <% end %>
+    </div>
+
+    <div class="lg:col-span-3 min-w-0">
+      <%= turbo_frame_tag "transactions-summary-frame" do %>
+        <%= render NetWorth::TransactionsSummaryComponent.new(data: @snapshot_data) %>
+      <% end %>
+    </div>
+
+    <div class="lg:col-span-3">
+      <%= render RecentActivityComponent.new(data: @snapshot_data) %>
+    </div>
+  </div>
+</div>

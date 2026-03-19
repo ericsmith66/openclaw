@@ -1,0 +1,85 @@
+{
+  "ts": "2026-03-09T15:23:45Z",
+  "request_id": "8bc69ef2-b099-4e34-a3de-020b2f856406",
+  "correlation_id": null,
+  "agent": "unknown",
+  "model": "grok-4",
+  "request_bytes": 428,
+  "response_status": 200,
+  "response_bytes": 509,
+  "usage": {
+    "prompt_tokens": 1,
+    "completion_tokens": 1,
+    "total_tokens": 2
+  },
+  "request": {
+    "model": "grok-4",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello"
+      },
+      {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_1",
+            "type": "function",
+            "function": {
+              "name": "proxy_tools",
+              "arguments": "{\"query\":\"test query\",\"num_results\":2}"
+            }
+          }
+        ]
+      },
+      {
+        "role": "tool",
+        "tool_call_id": "call_1",
+        "content": "{\"error\":\"tool_not_allowed\",\"message\":\"Tool 'proxy_tools' requires a model with '-with-live-search' suffix.\"}"
+      }
+    ],
+    "stream": false
+  },
+  "response": {
+    "id": "chatcmpl-2",
+    "object": "chat.completion",
+    "created": 2,
+    "model": "grok-4",
+    "choices": [
+      {
+        "index": 0,
+        "finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "Final answer"
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1,
+      "completion_tokens": 1,
+      "total_tokens": 2
+    },
+    "smart_proxy": {
+      "tool_loop": {
+        "loop_count": 1,
+        "max_loops": 3
+      },
+      "tools_used": [
+        {
+          "name": "proxy_tools",
+          "tool_call_id": "call_1"
+        }
+      ],
+      "tool_results": {
+        "proxy_tools": [
+          {
+            "error": "tool_not_allowed",
+            "message": "Tool 'proxy_tools' requires a model with '-with-live-search' suffix."
+          }
+        ]
+      }
+    }
+  }
+}

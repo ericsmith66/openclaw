@@ -1,0 +1,32 @@
+---
+transactions:
+- date: '2026-01-10'
+  name: Buy AAPL
+  amount: -5250.00
+  subtype: buy
+  quantity: 30.0
+  price: 175.00
+  fees: 0.00
+  security_id: sec_aapl_mock
+  security_name: Apple Inc.
+  iso_currency_code: USD
+  account_name: Schwab Brokerage
+  account_type: investment
+  transaction_id: mock_inv_001
+  source: manual
+  type: InvestmentTransaction
+- date: '2026-01-12'
+  name: Sell TSLA
+  amount: 3000.00
+  subtype: sell
+  quantity: 10.0
+  price: 300.00
+  fees: 5.00
+  security_id: sec_tsla_mock
+  security_name: Tesla Inc.
+  iso_currency_code: USD
+  account_name: Fidelity Brokerage
+  account_type: investment
+  transaction_id: mock_inv_002
+  source: manual
+  type: InvestmentTransaction

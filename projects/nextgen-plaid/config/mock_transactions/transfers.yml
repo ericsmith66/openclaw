@@ -1,0 +1,24 @@
+---
+transactions:
+- date: '2026-01-20'
+  name: Transfer to Savings
+  amount: -1000.00
+  subtype: transfer
+  account_name: Chase Checking
+  account_type: depository
+  target_account_name: Chase Savings
+  target_account_type: depository
+  transaction_id: mock_xfr_001
+  source: manual
+  type: RegularTransaction
+- date: '2026-01-19'
+  name: External Transfer
+  amount: 500.00
+  subtype: deposit
+  account_name: Wells Fargo Checking
+  account_type: depository
+  target_account_name: External Bank
+  target_account_type: depository
+  transaction_id: mock_xfr_002
+  source: manual
+  type: RegularTransaction

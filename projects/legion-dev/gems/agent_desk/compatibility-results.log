@@ -1,0 +1,168 @@
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-1695' not found"}
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-6925' not found"}
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-1750' not found"}
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-6795' not found"}
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-509' not found"}
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-8586' not found"}
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-5871' not found"}
+[AgentDesk] 400 Error Details: {"error"=>"model 'nonexistent-model-xyz-4911' not found"}
+
+[1m╔═══════════════════════════════════════════════════════════╗[0m
+[1m║     Epic 4C — Model Compatibility Test Suite             ║[0m
+[1m╚═══════════════════════════════════════════════════════════╝[0m
+
+  [2mEndpoint:[0m  http://192.168.4.253:3001
+  [2mProject:[0m   /Users/ericsmith66/development/agent-forge/gems/agent_desk
+  [2mTimeout:[0m   120s per test
+  [2mModels:[0m    8
+  [2mSkipping:[0m  nomic-embed-text:latest, vanilj/palmyra-fin-70b-32k:latest
+
+[2m[1/8][0m
+[1m[36m━━━ Testing: qwen3-coder-next:latest ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(0ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(5502ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(2ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(246ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(203ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(287ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(1811ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(7ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(8.1s total)[0m
+
+[2m[2/8][0m
+[1m[36m━━━ Testing: grok-4 ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(1ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(10685ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(2ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(5227ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(10396ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(3332ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(9276ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(16ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(38.9s total)[0m
+
+[2m[3/8][0m
+[1m[36m━━━ Testing: grok-4-latest ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(0ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(13833ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(1ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(6168ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(9215ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(6506ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(8238ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(15ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(44.0s total)[0m
+
+[2m[4/8][0m
+[1m[36m━━━ Testing: grok-4-1-fast-reasoning ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(0ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(4986ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(1ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(1024ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(2379ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(1787ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(4561ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(14ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(14.8s total)[0m
+
+[2m[5/8][0m
+[1m[36m━━━ Testing: grok-4-1-fast-non-reasoning ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(0ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(3659ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(2ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(444ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(458ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(558ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(958ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(10ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(6.1s total)[0m
+
+[2m[6/8][0m
+[1m[36m━━━ Testing: grok-code-fast-1 ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(0ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(13319ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(1ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(861ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(11370ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(2197ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(3182ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(25ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(31.0s total)[0m
+
+[2m[7/8][0m
+[1m[36m━━━ Testing: grok-3 ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(0ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(3454ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(1ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(409ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(363ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(431ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(2795ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(18ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(7.5s total)[0m
+
+[2m[8/8][0m
+[1m[36m━━━ Testing: grok-3-mini ━━━[0m
+  T01 Core Types (PRD-0010)... [32mPASS[0m [2m(0ms)[0m
+  T02 Tool DSL (PRD-0020)... [32mPASS[0m [2m(0ms)[0m
+  T03 Hooks (PRD-0030)... [32mPASS[0m [2m(0ms)[0m
+  T04 Profile (PRD-0040)... [32mPASS[0m [2m(0ms)[0m
+  T05 Power Tools (PRD-0050)... [32mPASS[0m [2m(13169ms)[0m
+  T06 Prompt Templates (PRD-0060)... [32mPASS[0m [2m(1ms)[0m
+  T07 Runner Loop (PRD-0090)... [32mPASS[0m [2m(1751ms)[0m
+  T08 ModelManager (PRD-0091)... [32mPASS[0m [2m(1799ms)[0m
+  T09 MessageBus (PRD-0095)... [32mPASS[0m [2m(1948ms)[0m
+  T10 Conversation History... [32mPASS[0m [2m(8113ms)[0m
+  T11 Error Handling... [32mPASS[0m [2m(17ms)[0m
+  T12 Clean Shutdown... [32mPASS[0m [2m(1ms)[0m
+  [32m[1mResult: 12/12 passed[0m [2m(26.8s total)[0m
+
+
+[1m╔═══════════════════════════════════════════════════════════╗[0m
+[1m║     Compatibility Matrix                                 ║[0m
+[1m╚═══════════════════════════════════════════════════════════╝[0m
+
+  Model                        T01 T02 T03 T04 T05 T06 T07 T08 T09 T10 T11 T12  Score
+  ───────────────────────────────────────────────────────────────────────────────────
+  qwen3-coder-next:latest      [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+  grok-4                       [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+  grok-4-latest                [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+  grok-4-1-fast-reasoning      [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+  grok-4-1-fast-non-reasoning  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+  grok-code-fast-1             [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+  grok-3                       [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+  grok-3-mini                  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m  [32m✓[0m   [32m12/12[0m
+
+[2m  T01=CoreTypes T02=ToolDSL T03=Hooks T04=Profile T05=PowerTools T06=Templates[0m
+[2m  T07=Runner T08=ModelMgr T09=MsgBus T10=History T11=ErrorHandling T12=Shutdown[0m
+
+[1m  8/8 models fully compatible[0m
+

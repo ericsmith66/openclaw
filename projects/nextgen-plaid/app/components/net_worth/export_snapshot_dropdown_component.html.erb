@@ -1,0 +1,32 @@
+<div class="dropdown dropdown-end">
+  <% if enabled? %>
+    <div tabindex="0" role="button" class="btn btn-outline" aria-label="Export snapshot">
+      Export Snapshot
+    </div>
+
+    <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-48 p-2 shadow">
+      <li>
+        <%= link_to "Download JSON (summary)",
+              download_api_snapshot_path(snapshot, format: :json),
+              data: { turbo: false },
+              aria: { label: "Download snapshot JSON (summary)" } %>
+      </li>
+      <li>
+        <%= link_to "Download JSON (full)",
+              download_api_snapshot_path(snapshot, format: :json, include_holdings_export: true),
+              data: { turbo: false },
+              aria: { label: "Download snapshot JSON (full)" } %>
+      </li>
+      <li>
+        <%= link_to "Download CSV",
+              download_api_snapshot_path(snapshot, format: :csv),
+              data: { turbo: false },
+              aria: { label: "Download snapshot CSV" } %>
+      </li>
+    </ul>
+  <% else %>
+    <span class="tooltip" data-tip="No snapshot available yet">
+      <button type="button" class="btn btn-outline" disabled aria-label="Export snapshot (disabled)">Export Snapshot</button>
+    </span>
+  <% end %>
+</div>

@@ -1,0 +1,32 @@
+<div class="p-4 sm:p-6 overflow-x-hidden">
+  <div class="breadcrumbs text-sm mb-3" aria-label="Breadcrumb">
+    <ul>
+      <li><%= link_to "Home", authenticated_root_path, class: "link link-hover" %></li>
+      <li>Portfolio</li>
+      <li>Holdings</li>
+    </ul>
+  </div>
+
+  <h1 class="text-xl sm:text-2xl font-bold mb-4">Holdings</h1>
+
+  <%= turbo_frame_tag Portfolio::HoldingsGridComponent::HOLDINGS_GRID_TURBO_FRAME_ID do %>
+    <%= render Portfolio::HoldingsGridComponent.new(
+          user: current_user,
+          holdings_groups: @holdings_groups,
+          summary: @summary,
+          total_count: @total_count,
+          page: @page,
+          per_page: @per_page,
+          sort: @sort,
+          dir: @dir,
+          asset_tab: @asset_tab,
+          search_term: @search_term,
+          snapshot_id: @snapshot_id,
+          compare_to: @compare_to,
+          comparison: @comparison,
+          saved_account_filters: @saved_account_filters,
+          saved_account_filter_id: @saved_account_filter_id,
+          show_large_all_warning: @show_large_all_warning
+        ) %>
+  <% end %>
+</div>

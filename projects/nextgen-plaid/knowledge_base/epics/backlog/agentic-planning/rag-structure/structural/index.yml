@@ -1,0 +1,714 @@
+# Structural Index: Application Architecture Organized by Technical Layers
+# Purpose: Answers "How is the app built?" for PRD generation planning/execution phases
+# Query Pattern: fetch:structural:<layer>:<component>
+
+structural_index:
+  summary: "NextGen Plaid application architecture organized by technical layers"
+  last_updated: "2026-01-17"
+  
+  layers:
+    
+    # ============================================================================
+    # DATA LAYER (Models, Schema, Database)
+    # ============================================================================
+    - name: "data_layer"
+      summary: "Database schema, models, and data persistence"
+      
+      components:
+        - name: "core_models"
+          summary: "Core application models (User, authentication)"
+          files:
+            - path: "app/models/user.rb"
+              summary: "User authentication and profile management"
+              tables: ["users"]
+              associations:
+                - "has_many :plaid_items"
+                - "has_many :snapshots"
+                - "has_many :artifacts"
+                - "has_many :sap_runs"
+              key_methods: ["owner?", "admin?"]
+              
+            - path: "app/models/application_record.rb"
+              summary: "Base model class for all ActiveRecord models"
+              tables: []
+              associations: []
+              notes: "Inherits from ActiveRecord::Base"
+        
+        - name: "agent_models"
+          summary: "AI agent workflow and artifact models"
+          files:
+            - path: "app/models/artifact.rb"
+              summary: "Agent workflow artifacts (PRDs, plans, epics)"
+              tables: ["artifacts"]
+              associations:
+                - "belongs_to :user"
+                - "has_many :sap_runs"
+              state_machine: true
+              phases: ["backlog", "in_analysis", "in_development", "in_qa", "completed", "rejected"]
+              key_methods: ["transition_to!", "can_transition_to?", "owner_persona"]
+              notes: "Central model for SDLC workflow, tracks PRDs and development artifacts"
+            
+            - path: "app/models/sap_run.rb"
+              summary: "SAP agent execution runs and conversation history"
+              tables: ["sap_runs"]
+              associations:
+                - "belongs_to :user"
+                - "belongs_to :artifact, optional: true"
+                - "has_many :sap_messages"
+              key_methods: ["complete!", "fail!", "output_json"]
+              notes: "Tracks individual agent interactions and outputs"
+            
+            - path: "app/models/sap_message.rb"
+              summary: "Individual messages in SAP agent conversations"
+              tables: ["sap_messages"]
+              associations:
+                - "belongs_to :sap_run"
+              key_methods: ["role", "content"]
+              notes: "Stores conversation history for agent context"
+            
+            - path: "app/models/snapshot.rb"
+              summary: "Daily user data snapshots for RAG context"
+              tables: ["snapshots"]
+              associations:
+                - "belongs_to :user"
+              key_methods: ["data", "anonymize"]
+              notes: "JSONB storage for daily financial/project state"
+            
+            - path: "app/models/backlog_item.rb"
+              summary: "Backlog items and task tracking"
+              tables: ["backlog_items"]
+              associations:
+                - "belongs_to :user, optional: true"
+              key_methods: ["priority", "status"]
+              notes: "Task management for development workflow"
+            
+            - path: "app/models/ai_workflow_run.rb"
+              summary: "AI workflow execution tracking"
+              tables: ["ai_workflow_runs"]
+              associations: []
+              key_methods: ["status", "result"]
+              notes: "Tracks multi-step AI workflow executions"
+        
+        - name: "plaid_models"
+          summary: "Plaid integration and financial data models"
+          files:
+            - path: "app/models/plaid_item.rb"
+              summary: "Plaid connection tokens and institution links"
+              tables: ["plaid_items"]
+              associations:
+                - "belongs_to :user"
+                - "has_many :accounts"
+              encrypted_fields: ["access_token"]
+              key_methods: ["refresh!", "relink_required?", "institution_name"]
+              notes: "Stores encrypted Plaid access tokens"
+            
+            - path: "app/models/account.rb"
+              summary: "Financial accounts from Plaid"
+              tables: ["accounts"]
+              associations:
+                - "belongs_to :plaid_item"
+                - "has_many :holdings"
+                - "has_many :transactions"
+              key_methods: ["balance", "account_type", "official_name"]
+              notes: "Checking, savings, investment, credit accounts"
+            
+            - path: "app/models/holding.rb"
+              summary: "Investment holdings (stocks, bonds, funds)"
+              tables: ["holdings"]
+              associations:
+                - "belongs_to :account"
+              key_methods: ["quantity", "institution_value", "ticker_symbol"]
+              notes: "Synced from Plaid investments endpoint"
+            
+            - path: "app/models/transaction.rb"
+              summary: "Financial transactions"
+              tables: ["transactions"]
+              associations:
+                - "belongs_to :account"
+                - "has_one :enriched_transaction"
+              key_methods: ["amount", "date", "merchant_name", "category"]
+              notes: "Synced from Plaid transactions endpoint"
+            
+            - path: "app/models/enriched_transaction.rb"
+              summary: "AI-enriched transaction data"
+              tables: ["enriched_transactions"]
+              associations:
+                - "belongs_to :transaction"
+              key_methods: ["enriched_category", "confidence"]
+              notes: "AI-enhanced categorization and insights"
+            
+            - path: "app/models/option_contract.rb"
+              summary: "Options contracts from investment accounts"
+              tables: ["option_contracts"]
+              associations:
+                - "belongs_to :holding, optional: true"
+              key_methods: ["strike_price", "expiration_date", "contract_type"]
+              notes: "Calls and puts from Plaid"
+            
+            - path: "app/models/fixed_income.rb"
+              summary: "Fixed income securities (bonds, CDs)"
+              tables: ["fixed_incomes"]
+              associations:
+                - "belongs_to :holding, optional: true"
+              key_methods: ["interest_rate", "maturity_date"]
+              notes: "Bond holdings from Plaid"
+            
+            - path: "app/models/plaid_api_call.rb"
+              summary: "Plaid API call logging and cost tracking"
+              tables: ["plaid_api_calls"]
+              associations:
+                - "belongs_to :user, optional: true"
+              key_methods: ["endpoint", "cost", "response_time"]
+              notes: "Tracks API usage for billing and monitoring"
+        
+        - name: "supporting_models"
+          summary: "Supporting models for categorization and metadata"
+          files:
+            - path: "app/models/personal_finance_category.rb"
+              summary: "Plaid personal finance category taxonomy"
+              tables: ["personal_finance_categories"]
+              associations: []
+              key_methods: ["primary", "detailed"]
+              notes: "Plaid's standardized category hierarchy"
+            
+            - path: "app/models/transaction_code.rb"
+              summary: "Transaction type codes"
+              tables: ["transaction_codes"]
+              associations: []
+              key_methods: ["code", "description"]
+              notes: "ISO transaction codes"
+            
+            - path: "app/models/queue_record.rb"
+              summary: "Job queue records (Solid Queue)"
+              tables: ["solid_queue_*"]
+              associations: []
+              notes: "Solid Queue internal tables"
+        
+        - name: "schema"
+          summary: "Complete database schema definition"
+          files:
+            - path: "db/schema.rb"
+              summary: "Rails schema with all table definitions"
+              tables:
+                - "users"
+                - "artifacts"
+                - "sap_runs"
+                - "sap_messages"
+                - "snapshots"
+                - "backlog_items"
+                - "plaid_items"
+                - "accounts"
+                - "holdings"
+                - "transactions"
+                - "enriched_transactions"
+                - "option_contracts"
+                - "fixed_incomes"
+                - "plaid_api_calls"
+                - "personal_finance_categories"
+                - "transaction_codes"
+                - "ai_workflow_runs"
+                - "solid_queue_*"
+              notes: "Authoritative source for database structure"
+    
+    # ============================================================================
+    # SERVICE LAYER (Business Logic, External Integrations)
+    # ============================================================================
+    - name: "service_layer"
+      summary: "Business logic and external integrations"
+      
+      components:
+        - name: "ai_services"
+          summary: "AI and LLM integration services"
+          files:
+            - path: "app/services/ai_financial_advisor.rb"
+              summary: "LLM proxy routing (Grok/Ollama)"
+              dependencies: ["SmartProxy", "SapAgent::Router"]
+              key_methods: ["ask", "route_to_model"]
+              notes: "Central LLM call interface with request tracking"
+            
+            - path: "app/services/sap_agent_service.rb"
+              summary: "SAP agent orchestration service"
+              dependencies: ["SapAgent::Command", "SapAgent::RagProvider"]
+              key_methods: ["process", "generate_prd"]
+              notes: "High-level SAP agent interface"
+            
+            - path: "app/services/sap_agent/command.rb"
+              summary: "Base command class for SAP agent operations"
+              dependencies: ["Logger"]
+              key_methods: ["execute", "validate!", "call_proxy"]
+              notes: "Command pattern base class"
+            
+            - path: "app/services/sap_agent/artifact_command.rb"
+              summary: "Artifact generation command (PRDs, plans)"
+              dependencies: ["SapAgent::Command", "SapAgent::RagProvider"]
+              key_methods: ["execute", "prompt", "validate_artifact!"]
+              notes: "Handles PRD generation with retry logic"
+            
+            - path: "app/services/sap_agent/prd_strategy.rb"
+              summary: "PRD validation and storage strategy"
+              dependencies: []
+              key_methods: ["validate_output!", "parse_output", "store!"]
+              notes: "Validates PRD structure (5-8 AC bullets, required sections)"
+            
+            - path: "app/services/sap_agent/rag_provider.rb"
+              summary: "RAG context gathering for LLM calls"
+              dependencies: ["Snapshot", "Artifact", "context_map.md"]
+              key_methods: ["build_prefix", "fetch_snapshot", "fetch_backlog"]
+              notes: "Builds context from snapshots, docs, schema (4K char limit)"
+            
+            - path: "app/services/sap_agent/router.rb"
+              summary: "Routes requests to Grok vs Ollama"
+              dependencies: []
+              key_methods: ["route"]
+              notes: "Model selection logic"
+        
+        - name: "plaid_services"
+          summary: "Plaid API integration services"
+          files:
+            - path: "app/services/plaid_service.rb"
+              summary: "Core Plaid API client"
+              dependencies: ["Plaid gem"]
+              key_methods: ["link_token_create", "item_public_token_exchange", "accounts_get"]
+              notes: "Wrapper around Plaid Ruby SDK"
+            
+            - path: "app/services/plaid_holdings_sync_service.rb"
+              summary: "Sync holdings from Plaid investments endpoint"
+              dependencies: ["PlaidService", "Holding", "OptionContract", "FixedIncome"]
+              key_methods: ["sync", "sync_for_item"]
+              notes: "Handles investments/holdings/get endpoint"
+            
+            - path: "app/services/plaid_transaction_sync_service.rb"
+              summary: "Sync transactions from Plaid"
+              dependencies: ["PlaidService", "Transaction"]
+              key_methods: ["sync", "sync_for_item"]
+              notes: "Handles transactions/sync endpoint with cursor"
+        
+        - name: "agent_hub_services"
+          summary: "Agent Hub orchestration and command services"
+          files:
+            - path: "app/services/agent_hub/backlog_service.rb"
+              summary: "Backlog management for Agent Hub"
+              dependencies: ["Artifact", "BacklogItem"]
+              key_methods: ["fetch_backlog", "update_item"]
+              notes: "Manages artifact backlog visibility"
+            
+            - path: "app/services/agent_hub/command_parser.rb"
+              summary: "Parse agent commands from messages"
+              dependencies: []
+              key_methods: ["parse", "extract_intent"]
+              notes: "Extracts [ACTION: INTENT: ID] tags"
+            
+            - path: "app/services/agent_hub/command_executor.rb"
+              summary: "Execute parsed agent commands"
+              dependencies: ["Artifact", "SapRun"]
+              key_methods: ["execute", "handle_transition"]
+              notes: "Executes artifact transitions"
+            
+            - path: "app/services/agent_hub/autonomous_command_service.rb"
+              summary: "Autonomous agent command execution"
+              dependencies: ["CommandParser", "CommandExecutor"]
+              key_methods: ["process_message"]
+              notes: "Enables agents to self-execute commands"
+            
+            - path: "app/services/agent_hub/workflow_bridge.rb"
+              summary: "Bridge between Agent Hub and SDLC workflow"
+              dependencies: ["Artifact"]
+              key_methods: ["transition_artifact", "validate_transition"]
+              notes: "Enforces workflow rules"
+            
+            - path: "app/services/agent_hub/chat_handler.rb"
+              summary: "Handle Agent Hub chat interactions"
+              dependencies: ["SapRun", "SapMessage"]
+              key_methods: ["handle_message", "stream_response"]
+              notes: "Real-time chat interface"
+            
+            - path: "app/services/agent_hub/smart_proxy_client.rb"
+              summary: "Client for SmartProxy research capabilities"
+              dependencies: ["SmartProxy"]
+              key_methods: ["research", "search"]
+              notes: "Optional research phase integration"
+            
+            - path: "app/services/agent_hub/mention_parser.rb"
+              summary: "Parse @mentions in agent messages"
+              dependencies: []
+              key_methods: ["parse_mentions"]
+              notes: "Extracts @agent mentions for routing"
+            
+            - path: "app/services/agent_hub/command_discovery_service.rb"
+              summary: "Discover available agent commands"
+              dependencies: []
+              key_methods: ["available_commands"]
+              notes: "Lists valid agent actions"
+            
+            - path: "app/services/agent_hub/model_discovery_service.rb"
+              summary: "Discover available LLM models"
+              dependencies: ["AiFinancialAdvisor"]
+              key_methods: ["available_models"]
+              notes: "Lists Grok/Ollama models"
+        
+        - name: "ai_workflow_services"
+          summary: "AI workflow orchestration services"
+          files:
+            - path: "app/services/ai_workflow/agent_factory.rb"
+              summary: "Factory for creating AI agents"
+              dependencies: []
+              key_methods: ["create_agent"]
+              notes: "Instantiates SAP/Coordinator/CWA agents"
+            
+            - path: "app/services/ai_workflow/context_manager.rb"
+              summary: "Manage context across workflow steps"
+              dependencies: ["SapAgent::RagProvider"]
+              key_methods: ["build_context", "merge_context"]
+              notes: "Context accumulation for multi-step workflows"
+            
+            - path: "app/services/ai_workflow/artifact_writer.rb"
+              summary: "Write artifacts to knowledge base"
+              dependencies: ["Artifact"]
+              key_methods: ["write", "store_prd"]
+              notes: "Persists generated artifacts to filesystem"
+            
+            - path: "app/services/ai_workflow/guardrail_enforcer.rb"
+              summary: "Enforce guardrails on AI outputs"
+              dependencies: []
+              key_methods: ["validate", "check_constraints"]
+              notes: "Safety checks for AI-generated content"
+        
+        - name: "import_services"
+          summary: "Data import and CSV processing services"
+          files:
+            - path: "app/services/csv_holdings_importer.rb"
+              summary: "Import holdings from CSV"
+              dependencies: ["Holding"]
+              key_methods: ["import"]
+              notes: "Manual holdings import for testing"
+            
+            - path: "app/services/csv_accounts_importer.rb"
+              summary: "Import accounts from CSV"
+              dependencies: ["Account"]
+              key_methods: ["import"]
+              notes: "Manual accounts import for testing"
+    
+    # ============================================================================
+    # JOB LAYER (Background Jobs, Scheduled Tasks)
+    # ============================================================================
+    - name: "job_layer"
+      summary: "Background jobs and scheduled tasks"
+      
+      components:
+        - name: "plaid_sync_jobs"
+          summary: "Plaid data synchronization jobs"
+          files:
+            - path: "app/jobs/sync_holdings_job.rb"
+              summary: "Sync holdings from Plaid"
+              schedule: "triggered"
+              dependencies: ["PlaidHoldingsSyncService"]
+              key_methods: ["perform"]
+              notes: "Triggered by webhook or manual refresh"
+            
+            - path: "app/jobs/sync_transactions_job.rb"
+              summary: "Sync transactions from Plaid"
+              schedule: "triggered"
+              dependencies: ["PlaidTransactionSyncService"]
+              key_methods: ["perform"]
+              notes: "Triggered by webhook or manual refresh"
+            
+            - path: "app/jobs/sync_liabilities_job.rb"
+              summary: "Sync liabilities from Plaid"
+              schedule: "triggered"
+              dependencies: ["PlaidService"]
+              key_methods: ["perform"]
+              notes: "Credit cards, loans, mortgages"
+            
+            - path: "app/jobs/sync_all_items_job.rb"
+              summary: "Sync all data for all Plaid items"
+              schedule: "triggered"
+              dependencies: ["SyncHoldingsJob", "SyncTransactionsJob", "SyncLiabilitiesJob"]
+              key_methods: ["perform"]
+              notes: "Orchestrates full sync"
+            
+            - path: "app/jobs/daily_plaid_sync_job.rb"
+              summary: "Daily scheduled Plaid sync"
+              schedule: "daily"
+              dependencies: ["SyncAllItemsJob"]
+              key_methods: ["perform"]
+              notes: "Cron job for daily refresh"
+            
+            - path: "app/jobs/force_plaid_sync_job.rb"
+              summary: "Force immediate Plaid sync"
+              schedule: "triggered"
+              dependencies: ["PlaidService"]
+              key_methods: ["perform"]
+              notes: "Emergency sync bypass"
+        
+        - name: "agent_jobs"
+          summary: "AI agent background jobs"
+          files:
+            - path: "app/jobs/sap_agent_job.rb"
+              summary: "Async SAP agent execution"
+              schedule: "triggered"
+              dependencies: ["SapAgent"]
+              key_methods: ["perform"]
+              notes: "Queued agent requests"
+            
+            - path: "app/jobs/sap_process_job.rb"
+              summary: "SAP agent processing job"
+              schedule: "triggered"
+              dependencies: ["SapAgent"]
+              key_methods: ["perform"]
+              notes: "Alternative agent job interface"
+            
+            - path: "app/jobs/sap_refresh_job.rb"
+              summary: "Refresh SAP agent context"
+              schedule: "triggered"
+              dependencies: ["SapAgent::RagProvider"]
+              key_methods: ["perform"]
+              notes: "Rebuild RAG context"
+            
+            - path: "app/jobs/agent_queue_job.rb"
+              summary: "Agent request queue processor"
+              schedule: "triggered"
+              dependencies: ["SapRun"]
+              key_methods: ["perform"]
+              notes: "Processes queued agent requests"
+        
+        - name: "snapshot_jobs"
+          summary: "Data snapshot and context jobs"
+          files:
+            - path: "app/jobs/financial_snapshot_job.rb"
+              summary: "Generate daily financial snapshots"
+              schedule: "daily"
+              dependencies: ["Snapshot", "Account", "Holding"]
+              key_methods: ["perform"]
+              notes: "Creates daily JSON snapshots for RAG"
+        
+        - name: "enrichment_jobs"
+          summary: "Data enrichment and processing jobs"
+          files:
+            - path: "app/jobs/transaction_enrich_job.rb"
+              summary: "AI-enrich transaction data"
+              schedule: "triggered"
+              dependencies: ["Transaction", "AiFinancialAdvisor"]
+              key_methods: ["perform"]
+              notes: "Adds AI categorization to transactions"
+        
+        - name: "maintenance_jobs"
+          summary: "System maintenance and cleanup jobs"
+          files:
+            - path: "app/jobs/cleanup_old_runs_job.rb"
+              summary: "Clean up old SAP runs"
+              schedule: "daily"
+              dependencies: ["SapRun"]
+              key_methods: ["perform"]
+              notes: "Removes old agent execution records"
+            
+            - path: "app/jobs/application_job.rb"
+              summary: "Base job class"
+              schedule: null
+              dependencies: []
+              notes: "Inherits from ActiveJob::Base"
+    
+    # ============================================================================
+    # INTERFACE LAYER (Controllers, Views, Routes)
+    # ============================================================================
+    - name: "interface_layer"
+      summary: "Controllers, views, and HTTP routing"
+      
+      components:
+        - name: "core_controllers"
+          summary: "Core application controllers"
+          files:
+            - path: "app/controllers/application_controller.rb"
+              summary: "Base controller with authentication"
+              routes: []
+              key_methods: ["authenticate_user!", "current_user"]
+              notes: "Devise integration"
+            
+            - path: "app/controllers/dashboard_controller.rb"
+              summary: "User dashboard"
+              routes: ["/dashboard", "/"]
+              key_methods: ["index"]
+              notes: "Main authenticated landing page"
+            
+            - path: "app/controllers/welcome_controller.rb"
+              summary: "Public welcome page"
+              routes: ["/"]
+              key_methods: ["index"]
+              notes: "Public landing page"
+        
+        - name: "plaid_controllers"
+          summary: "Plaid integration controllers"
+          files:
+            - path: "app/controllers/plaid_controller.rb"
+              summary: "Plaid Link and exchange endpoints"
+              routes: ["/plaid/link_token", "/plaid/exchange", "/plaid/sync_logs"]
+              key_methods: ["link_token", "exchange", "sync_logs"]
+              notes: "Core Plaid onboarding flow"
+            
+            - path: "app/controllers/plaid_webhook_controller.rb"
+              summary: "Plaid webhook receiver"
+              routes: ["/plaid/webhook"]
+              key_methods: ["create"]
+              notes: "Handles Plaid webhook events"
+            
+            - path: "app/controllers/plaid_refreshes_controller.rb"
+              summary: "Manual Plaid refresh trigger"
+              routes: ["/plaid_items/:id/refresh"]
+              key_methods: ["create"]
+              notes: "User-initiated refresh"
+        
+        - name: "agent_controllers"
+          summary: "Agent Hub and AI workflow controllers"
+          files:
+            - path: "app/controllers/agent_hubs_controller.rb"
+              summary: "Agent Hub main interface"
+              routes: ["/agent_hub", "/agent_hub/messages/:agent_id", "/agent_hub/*"]
+              key_methods: ["show", "messages", "update_model", "inspect_context"]
+              notes: "Real-time agent interface"
+            
+            - path: "app/controllers/agent_hub/uploads_controller.rb"
+              summary: "Agent Hub file uploads"
+              routes: ["/agent_hub/uploads"]
+              key_methods: ["create"]
+              notes: "Upload files for agent context"
+            
+            - path: "app/controllers/agents/monitor_controller.rb"
+              summary: "Agent monitoring interface"
+              routes: ["/agents/monitor"]
+              key_methods: ["index"]
+              notes: "Agent performance metrics"
+        
+        - name: "mission_control_controllers"
+          summary: "Mission Control admin controllers"
+          files:
+            - path: "app/controllers/mission_control_controller.rb"
+              summary: "Mission Control admin panel"
+              routes: ["/mission_control", "/mission_control/*"]
+              key_methods: ["index", "nuke", "sync_holdings_now", "relink"]
+              notes: "Owner-only admin controls"
+        
+        - name: "admin_controllers"
+          summary: "Admin namespace controllers"
+          files:
+            - path: "app/controllers/admin/users_controller.rb"
+              summary: "Admin user CRUD"
+              routes: ["/admin/users"]
+              key_methods: ["index", "show", "edit", "update", "destroy"]
+              notes: "Full CRUD for users"
+            
+            - path: "app/controllers/admin/accounts_controller.rb"
+              summary: "Admin account CRUD"
+              routes: ["/admin/accounts"]
+              key_methods: ["index", "show", "edit", "update", "destroy"]
+              notes: "Full CRUD for accounts"
+            
+            - path: "app/controllers/admin/ai_workflow_controller.rb"
+              summary: "AI workflow viewer"
+              routes: ["/admin/ai_workflow"]
+              key_methods: ["index"]
+              notes: "View AI workflow status"
+            
+            - path: "app/controllers/admin/health_controller.rb"
+              summary: "Health check endpoint"
+              routes: ["/admin/health"]
+              key_methods: ["index"]
+              notes: "System health status"
+            
+            - path: "app/controllers/admin/rag_inspector_controller.rb"
+              summary: "RAG context inspector"
+              routes: ["/admin/rag_inspector"]
+              key_methods: ["index"]
+              notes: "Debug RAG context"
+            
+            - path: "app/controllers/admin/sap_collaborate_controller.rb"
+              summary: "SAP collaboration interface"
+              routes: ["/admin/sap_collaborate", "/admin/sap_collaborate/ask"]
+              key_methods: ["index", "ask"]
+              notes: "Alternative SAP agent interface"
+        
+        - name: "model_controllers"
+          summary: "Model inspection controllers"
+          files:
+            - path: "app/controllers/holdings_controller.rb"
+              summary: "Holdings viewer"
+              routes: ["/holdings"]
+              key_methods: ["index", "show"]
+              notes: "Read-only holdings view"
+            
+            - path: "app/controllers/transactions_controller.rb"
+              summary: "Transactions viewer"
+              routes: ["/transactions"]
+              key_methods: ["index", "show"]
+              notes: "Read-only transactions view"
+            
+            - path: "app/controllers/accounts_controller.rb"
+              summary: "Accounts viewer"
+              routes: ["/accounts"]
+              key_methods: ["index", "show"]
+              notes: "Read-only accounts view"
+        
+        - name: "routing"
+          summary: "Application routing configuration"
+          files:
+            - path: "config/routes.rb"
+              summary: "Rails routes definition"
+              namespaces: ["admin", "agents", "agent_hub"]
+              notes: "Complete routing table"
+    
+    # ============================================================================
+    # CONFIGURATION LAYER (Config, Prompts, Settings)
+    # ============================================================================
+    - name: "configuration_layer"
+      summary: "Configuration files, prompts, and settings"
+      
+      components:
+        - name: "agent_prompts"
+          summary: "LLM system prompts for agents"
+          files:
+            - path: "config/agent_prompts/sap_system.md"
+              summary: "SAP agent system prompt"
+              notes: "Main PRD generation prompt"
+            
+            - path: "config/agent_prompts/coordinator_system.md"
+              summary: "Coordinator agent system prompt"
+              notes: "Workflow orchestration prompt"
+            
+            - path: "config/agent_prompts/cwa_system.md"
+              summary: "CWA (Code Writing Agent) system prompt"
+              notes: "Development agent prompt"
+        
+        - name: "knowledge_base_config"
+          summary: "Knowledge base configuration files"
+          files:
+            - path: "knowledge_base/static_docs/context_map.md"
+              summary: "RAG context selection map"
+              notes: "Maps query types to relevant docs"
+            
+            - path: "knowledge_base/static_docs/MCP.md"
+              summary: "Master Control Plan (product vision)"
+              notes: "High-level product strategy"
+            
+            - path: "knowledge_base/static_docs/0_AI_THINKING_CONTEXT.md"
+              summary: "AI thinking guidelines"
+              notes: "How AI should approach problems"
+        
+        - name: "rails_config"
+          summary: "Rails configuration files"
+          files:
+            - path: "config/database.yml"
+              summary: "Database configuration"
+              notes: "PostgreSQL connection settings"
+            
+            - path: "config/credentials.yml.enc"
+              summary: "Encrypted credentials"
+              notes: "API keys, secrets"
+            
+            - path: "config/environments/*.rb"
+              summary: "Environment-specific configs"
+              notes: "Development, test, production settings"
+
+# Query Examples:
+# - fetch:structural:data_layer:core_models → Returns User, ApplicationRecord models
+# - fetch:structural:service_layer:ai_services → Returns all AI-related services
+# - fetch:structural:data_layer:schema → Returns db/schema.rb
+# - search:structural:plaid → Returns all Plaid-related components across layers
+# - fetch:structural:* → Returns all layers (summary level)

@@ -1,0 +1,28 @@
+<Workflow>
+  <Step number="1" title="Analyze User Request">
+    <Instruction>Deconstruct the request into actionable steps. Define the overarching goal and explicit completion conditions. Think step-by-step.</Instruction>
+  </Step>
+  <Step number="2" title="Gather Initial Context">
+    <Instruction>Use available tools to understand the primary areas relevant to the request.</Instruction>
+  </Step>
+  <Step number="3" title="Identify All Relevant Files">
+    <Substep letter="a">Explicitly reason about all potentially affected/related files: dependencies, importers, imports, related modules, types, configs, tests, and usage examples.</Substep>
+    <Substep letter="b">Use tools (search, grep, dependency analysis) to locate related files.</Substep>
+    <Substep letter="c">List all identified relevant files explicitly before proceeding.</Substep>
+  </Step>
+  <Step number="4" title="Develop Implementation Plan">
+    <Instruction>Using the confirmed file list, create a comprehensive multi-file change plan.</Instruction>
+  </Step>
+  <Step number="5" title="Execute Implementation">
+    <Instruction>Apply planned changes using appropriate tools. Ensure all relevant files are in context before modifications.</Instruction>
+  </Step>
+  <Step number="6" title="Verify Changes">
+    <Instruction>Use available tools like linters or type checkers. Analyze outcomes and iterate to fix errors.</Instruction>
+  </Step>
+  <Step number="7" title="Assess Task Completion">
+    <Instruction>Evaluate whether completion conditions are met; loop back if not.</Instruction>
+  </Step>
+  <Step number="8" title="Final Summary">
+    <Instruction>Summarize actions and confirm the overarching goal is achieved. list next actions if any.</Instruction>
+  </Step>
+</Workflow>

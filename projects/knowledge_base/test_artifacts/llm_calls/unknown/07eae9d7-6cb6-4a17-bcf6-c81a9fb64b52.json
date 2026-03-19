@@ -1,0 +1,24 @@
+{
+  "ts": "2026-03-09T15:41:44Z",
+  "request_id": "07eae9d7-6cb6-4a17-bcf6-c81a9fb64b52",
+  "correlation_id": null,
+  "agent": "unknown",
+  "model": "perplexity/sonar-pro-search",
+  "request_bytes": 166,
+  "response_status": 404,
+  "response_bytes": 57,
+  "usage": null,
+  "request": {
+    "model": "perplexity/sonar-pro-search",
+    "messages": [
+      {
+        "role": "user",
+        "content": "How is the war going in Iran? Give me a brief current status update."
+      }
+    ],
+    "max_tokens": 500
+  },
+  "response": {
+    "error": "model 'perplexity/sonar-pro-search' not found"
+  }
+}

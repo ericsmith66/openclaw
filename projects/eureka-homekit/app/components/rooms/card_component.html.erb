@@ -1,0 +1,49 @@
+<%= link_to room_path(room), 
+    class: "card border border-base-200 shadow-sm hover:shadow-md transition-all group overflow-hidden #{status_color} #{activity_text_color}",
+    data: { 
+      controller: "room-activity",
+      room_activity_room_id_value: room.id,
+      room_activity_last_event_at_value: room.last_event_at&.iso8601
+    } do %>
+  <div class="p-5">
+    <div class="flex justify-between items-start mb-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-base-200 text-base-content/70 p-2 rounded-lg group-hover:bg-primary group-hover:text-primary-content transition-colors">
+          <%= helpers.lucide_icon(room_icon, size: 20) %>
+        </div>
+        <div>
+          <h3 class="font-bold tracking-tight text-base"><%= room.name %></h3>
+          <p class="text-[10px] opacity-50 font-bold uppercase tracking-wider"><%= accessory_count %> Accessories</p>
+        </div>
+      </div>
+      <div class="badge badge-ghost badge-xs opacity-50"><%= sensor_count %> Sensors</div>
+    </div>
+
+    <% unless compact %>
+      <div class="space-y-2 mt-4 pt-4 border-t border-base-200/50">
+        <% if live_sensors.any? %>
+          <% live_sensors.each do |sensor| %>
+            <div class="flex items-center justify-between text-xs">
+              <span class="opacity-60 truncate mr-2"><%= sensor.characteristic_type.gsub('Current ', '') %></span>
+              <span class="font-mono font-bold">
+                <%= sensor.formatted_value %>
+              </span>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-[10px] opacity-30 italic text-center py-2">No live sensors</div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <div class="mt-4 flex items-center justify-between">
+      <div class="flex items-center gap-1.5">
+        <div class="w-1.5 h-1.5 rounded-full bg-success"></div>
+        <span class="text-[10px] font-bold uppercase tracking-tighter opacity-60">Online</span>
+      </div>
+      <div class="opacity-0 group-hover:opacity-100 transition-opacity text-primary">
+        <%= helpers.lucide_icon("arrow-right", size: 14) %>
+      </div>
+    </div>
+  </div>
+<% end %>

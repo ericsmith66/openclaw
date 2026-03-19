@@ -1,0 +1,96 @@
+<div data-controller="fan-control"
+     data-fan-control-accessory-id-value="<%= @accessory.uuid %>"
+     data-fan-control-active-value="<%= active?.to_s %>"
+     data-fan-control-offline-value="<%= offline?.to_s %>">
+
+  <div class="card bg-base-100 shadow-xl <%= 'card-compact' if compact? %>">
+    <div class="card-body">
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="text-4xl" aria-hidden="true"><%= state_icon %></div>
+        <div class="flex-1">
+          <h2 class="card-title"><%= @accessory.name %></h2>
+          <p class="text-sm text-gray-500" aria-live="polite">
+            Status: <%= state_text %>
+          </p>
+        </div>
+      </div>
+
+      <!-- On/Off Toggle -->
+      <div class="flex items-center space-x-3 mb-4">
+        <span class="text-sm font-medium">Power</span>
+        <input type="checkbox" 
+               class="toggle toggle-primary"
+               data-fan-control-target="toggleButton"
+               data-action="change->fan-control#toggle"
+               <%= 'checked' if active? %>
+               <%= 'disabled' if offline? %>
+               aria-label="Toggle <%= @accessory.name %> power">
+      </div>
+
+      <!-- Speed Slider -->
+      <div class="form-control mb-4">
+        <label class="label">
+          <span class="label-text">Speed</span>
+          <span class="label-text-alt" data-fan-control-target="speedDisplay"><%= current_speed %>%</span>
+        </label>
+        <input type="range" 
+               min="0" 
+               max="100" 
+               value="<%= current_speed %>"
+               class="range range-primary range-sm"
+               data-fan-control-target="speedSlider"
+               data-action="input->fan-control#updateSpeedDisplay change->fan-control#updateSpeed"
+               <%= 'disabled' if offline? || !active? %>
+               aria-label="Adjust fan speed">
+        <div class="w-full flex justify-between text-xs px-2 mt-1">
+          <span>0%</span>
+          <span>25%</span>
+          <span>50%</span>
+          <span>75%</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <!-- Optional Controls -->
+      <div class="flex flex-col space-y-3">
+        <% if has_direction? %>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">Direction</span>
+            <div class="btn-group">
+              <button class="btn btn-sm <%= clockwise? ? 'btn-active' : '' %>"
+                      data-action="click->fan-control#setDirectionClockwise"
+                      <%= 'disabled' if offline? || !active? %>
+                      aria-label="Set clockwise direction">
+                ↻ Clockwise
+              </button>
+              <button class="btn btn-sm <%= counterclockwise? ? 'btn-active' : '' %>"
+                      data-action="click->fan-control#setDirectionCounterclockwise"
+                      <%= 'disabled' if offline? || !active? %>
+                      aria-label="Set counterclockwise direction">
+                ↺ Counter
+              </button>
+            </div>
+          </div>
+        <% end %>
+
+        <% if has_oscillation? %>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium">Oscillation</span>
+            <input type="checkbox" 
+                   class="toggle toggle-secondary"
+                   data-action="change->fan-control#toggleOscillation"
+                   <%= 'checked' if oscillating? %>
+                   <%= 'disabled' if offline? || !active? %>
+                   aria-label="Toggle oscillation">
+          </div>
+        <% end %>
+      </div>
+
+      <% if offline? %>
+        <div class="alert alert-warning mt-4">
+          <span>⚠️ Device Offline</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

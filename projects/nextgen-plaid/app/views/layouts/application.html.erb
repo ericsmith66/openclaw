@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NextGen Plaid</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= action_cable_meta_tag %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  
+  <%# Chart.js loaded via script tag before importmap to avoid ESM/UMD import issues %>
+  <%# This sets window.Chart which Chartkick then uses %>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.js"></script>
+  
+  <%= javascript_importmap_tags %>
+</head>
+
+<body data-theme="business">
+<% flash.each do |type, msg| %>
+  <div class="alert <%= type == 'notice' ? 'alert-success' : 'alert-error' %> rounded-none">
+    <%= msg %>
+  </div>
+<% end %>
+
+<%= yield %>
+</body>
+</html>

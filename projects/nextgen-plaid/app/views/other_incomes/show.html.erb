@@ -1,0 +1,39 @@
+<%= render(LayoutComponent.new(title: "Other Income Details", current_user: current_user)) do %>
+  <div class="mb-6">
+    <%= link_to "← Back", other_incomes_path, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+  </div>
+
+  <div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Name</label>
+        <p class="text-gray-900"><%= @other_income.name %></p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Date</label>
+        <p class="text-gray-900"><%= @other_income.date %></p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Projected Amount</label>
+        <p class="text-gray-900"><%= number_to_currency(@other_income.projected_amount) %></p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Accrued Amount</label>
+        <p class="text-gray-900"><%= @other_income.accrued_amount.present? ? number_to_currency(@other_income.accrued_amount) : "N/A" %></p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-500">Suggested Tax Rate</label>
+        <p class="text-gray-900"><%= @other_income.suggested_tax_rate %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 flex gap-3">
+    <%= link_to "Edit", edit_other_income_path(@other_income), class: "bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded" %>
+    <%= button_to "Delete", other_income_path(@other_income), method: :delete, data: { confirm: "Are you sure?" }, class: "bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded" %>
+  </div>
+<% end %>

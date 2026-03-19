@@ -1,0 +1,10 @@
+# Example cron entry (runs daily at 02:15)
+#
+# Install with:
+#   crontab -e
+# and paste the line below.
+#
+# NOTE: Cron has a minimal environment. If your Postgres requires custom
+# environment variables (e.g., PGHOST/PGUSER/PGPASSWORD), set them here.
+
+15 2 * * * cd /Users/ericsmith66/Development/nextgen-plaid && /bin/bash ./script/backup_dev_databases.sh >> ./log/dev_db_backup.log 2>&1

@@ -1,0 +1,12 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900">Ownership Lookups</h1>
+    <%= link_to "New Ownership Lookup", new_admin_ownership_lookup_path, class: "bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded" %>
+  </div>
+
+  <%= render AdminTableComponent.new(items: @ownership_lookups, columns: [:name, :ownership_type, :details], model_name: "OwnershipLookup") %>
+
+  <div class="mt-6 flex justify-center">
+    <%= paginate @ownership_lookups %>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+# Epic: Interactive Floorplan & Activity Heatmap - [ARCHIVED]
+
+**This document has been broken down into a new Epic and PRD structure.**
+
+See:
+- Overview: `knowledge_base/epics/wip/Floorplan/Epic-3/0000-overview-floorplan.md`
+- Status: `knowledge_base/epics/wip/Floorplan/Epic-3/0001-IMPLEMENTATION-STATUS.md`
+- PRD 3-01: `knowledge_base/epics/wip/Floorplan/Epic-3/PRD-3-01-asset-mapping-engine.md`
+- PRD 3-02: `knowledge_base/epics/wip/Floorplan/Epic-3/PRD-3-02-interactive-viewer.md`
+- PRD-3-03: `knowledge_base/epics/wip/Floorplan/Epic-3/PRD-3-03-heatmap-sensor-injection.md`

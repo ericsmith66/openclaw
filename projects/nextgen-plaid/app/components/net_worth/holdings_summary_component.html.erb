@@ -1,0 +1,121 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <div class="flex items-center justify-between gap-3 flex-wrap">
+      <h2 class="card-title">Holdings Summary</h2>
+
+      <div class="flex items-center gap-2">
+        <%= link_to "View all holdings",
+              portfolio_holdings_path,
+              class: "btn btn-ghost btn-md sm:btn-sm",
+              aria: { label: "View portfolio holdings" } %>
+
+        <%= render SavedAccountFilterSelectorComponent.new(
+              saved_account_filters: saved_account_filters,
+              selected_id: saved_account_filter_id,
+              base_params: base_params,
+              turbo_frame_id: "holdings-summary-frame",
+              path_helper: :net_worth_holdings_path
+            ) %>
+
+        <% if expanded? %>
+          <%= link_to "Collapse",
+                net_worth_holdings_path(base_params.merge(expanded: false)),
+                class: "btn btn-ghost btn-md sm:btn-sm",
+                data: { turbo_frame: "holdings-summary-frame" } %>
+        <% else %>
+          <%= link_to "Expand",
+                net_worth_holdings_path(base_params.merge(expanded: true)),
+                class: "btn btn-ghost btn-md sm:btn-sm",
+                data: {
+                  turbo_frame: "holdings-summary-frame",
+                  controller: "turbo-frame-skeleton",
+                  action: "click->turbo-frame-skeleton#showSkeleton",
+                  "turbo-frame-skeleton-frame-id-value": "holdings-summary-frame"
+                } %>
+        <% end %>
+      </div>
+    </div>
+
+    <% if error? %>
+      <div class="alert alert-warning mt-4">
+        <div>
+          <div class="font-medium">Unable to load holdings.</div>
+          <div class="text-sm opacity-80"><%= error.to_s %></div>
+          <div class="mt-3">
+            <%= link_to "Retry",
+                  net_worth_holdings_path(base_params.merge(expanded: true)),
+                  class: "btn btn-md sm:btn-sm",
+                  data: { turbo_frame: "holdings-summary-frame" } %>
+          </div>
+        </div>
+      </div>
+    <% elsif empty? %>
+      <%= render NetWorth::EmptyStateComponent.new(
+            context: :data_missing,
+            message_override: "No holdings available."
+          ) %>
+    <% else %>
+      <div class="mt-4 overflow-x-auto">
+        <table
+          class="table table-sm"
+          aria-label="Holdings summary"
+          data-controller="holdings-table-sort"
+          data-holdings-table-sort-enabled-value="<%= (!server_sort?).to_s %>"
+        >
+          <thead>
+            <tr>
+              <th scope="col" aria-sort="<%= aria_sort_for('ticker') %>">
+                <% if server_sort? %>
+                  <%= link_to "Ticker", net_worth_holdings_path(sort_link("ticker")), class: "link link-hover", data: { turbo_frame: "holdings-summary-frame" } %>
+                <% else %>
+                  <button type="button" class="btn btn-ghost btn-sm sm:btn-xs" data-action="holdings-table-sort#sort" data-holdings-table-sort-column-param="ticker">Ticker</button>
+                <% end %>
+              </th>
+              <th scope="col" aria-sort="<%= aria_sort_for('name') %>">
+                <% if server_sort? %>
+                  <%= link_to "Name", net_worth_holdings_path(sort_link("name")), class: "link link-hover", data: { turbo_frame: "holdings-summary-frame" } %>
+                <% else %>
+                  <button type="button" class="btn btn-ghost btn-sm sm:btn-xs" data-action="holdings-table-sort#sort" data-holdings-table-sort-column-param="name">Name</button>
+                <% end %>
+              </th>
+              <th scope="col" class="text-right" aria-sort="<%= aria_sort_for('pct') %>">
+                <% if server_sort? %>
+                  <%= link_to "%", net_worth_holdings_path(sort_link("pct")), class: "link link-hover", data: { turbo_frame: "holdings-summary-frame" } %>
+                <% else %>
+                  <button type="button" class="btn btn-ghost btn-sm sm:btn-xs" data-action="holdings-table-sort#sort" data-holdings-table-sort-column-param="pct">%</button>
+                <% end %>
+              </th>
+              <th scope="col" class="text-right" aria-sort="<%= aria_sort_for('value') %>">
+                <% if server_sort? %>
+                  <%= link_to "Value", net_worth_holdings_path(sort_link("value")), class: "link link-hover", data: { turbo_frame: "holdings-summary-frame" } %>
+                <% else %>
+                  <button type="button" class="btn btn-ghost btn-sm sm:btn-xs" data-action="holdings-table-sort#sort" data-holdings-table-sort-column-param="value">Value</button>
+                <% end %>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.each do |row| %>
+              <tr
+                data-holdings-table-sort-target="row"
+                data-ticker="<%= row['ticker'].to_s %>"
+                data-name="<%= row['name'].to_s %>"
+                data-pct="<%= row['pct_portfolio'].to_f %>"
+                data-value="<%= row['value'].to_f %>"
+              >
+                <td><span class="font-medium"><%= row["ticker"].to_s %></span></td>
+                <td>
+                  <span class="tooltip" data-tip="<%= row['name'].to_s %>" tabindex="0">
+                    <span class="truncate max-w-[18rem] inline-block align-bottom"><%= row["name"].to_s %></span>
+                  </span>
+                </td>
+                <td class="text-right"><%= format_pct(row["pct_portfolio"]) %></td>
+                <td class="text-right"><%= number_to_currency(row["value"].to_f, precision: 0) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+</div>

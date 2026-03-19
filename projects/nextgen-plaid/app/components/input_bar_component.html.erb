@@ -1,0 +1,41 @@
+<div class="relative w-full" 
+     data-controller="input-bar" 
+     data-input-bar-agent-id-value="<%= @agent_id %>"
+     <% if @run_id.present? %>data-input-bar-run-id-value="<%= @run_id %>"<% end %>>
+  <div data-input-bar-target="autocomplete" class="hidden absolute bottom-full left-0 mb-2 w-64 bg-base-200 border border-base-300 rounded-lg shadow-xl z-50 p-2">
+    <div class="text-xs font-bold text-gray-500 mb-2 px-2 uppercase">Commands</div>
+    <ul class="menu menu-compact">
+      <% @available_commands.each do |command| %>
+        <li><a data-action="click->input-bar#selectCommand"><%= "/#{command}" %></a></li>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="flex items-center gap-2 bg-base-200 p-2 rounded-xl border border-base-300 shadow-sm focus-within:border-blue-500 transition-colors">
+    <label class="btn btn-ghost btn-circle btn-sm cursor-pointer" title="Upload files">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      <input type="file" class="hidden" data-input-bar-target="fileInput" data-action="change->input-bar#handleFileSelect" multiple />
+    </label>
+    
+    <div class="flex-grow flex flex-col">
+      <div data-input-bar-target="filePreviews" class="flex flex-wrap gap-2 mb-1 empty:hidden"></div>
+      <input type="text" 
+             data-input-bar-target="input" 
+             data-action="keydown->input-bar#handleKeydown input->input-bar#handleInput"
+             placeholder="<%= @placeholder %>" 
+             class="bg-transparent border-none focus:ring-0 w-full text-sm py-2 px-1 outline-none" />
+    </div>
+
+    <select class="select select-ghost select-xs max-w-xs focus:ring-0 border-none outline-none" data-input-bar-target="model" aria-label="Select AI Model">
+      <% @available_models.each do |model| %>
+        <option value="<%= model %>"><%= model %></option>
+      <% end %>
+    </select>
+    
+    <button data-action="click->input-bar#submit" class="btn btn-primary btn-sm rounded-lg px-4">
+      Send
+    </button>
+  </div>
+</div>

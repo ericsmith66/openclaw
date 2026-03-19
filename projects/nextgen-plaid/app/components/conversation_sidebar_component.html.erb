@@ -1,0 +1,72 @@
+<div data-controller="sidebar search" class="flex h-full border-r border-base-300">
+  <div data-sidebar-target="sidebar" class="transition-all duration-300 w-64 bg-base-200 overflow-y-auto">
+    <div class="p-4 border-b border-base-300">
+      <h2 class="font-bold text-lg mb-2">Conversations</h2>
+      <div class="relative">
+        <input type="text" 
+               data-search-target="input" 
+               data-action="input->search#filter"
+               placeholder="Search..." 
+               class="input input-sm input-bordered w-full pr-8" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-2 top-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+    </div>
+    <div class="p-2 border-b border-base-300">
+      <%= button_to create_conversation_agent_hubs_path, 
+                    method: :post,
+                    params: { persona_id: @active_persona_id },
+                    class: "btn btn-primary btn-sm w-full" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        New Conversation
+      <% end %>
+    </div>
+    <ul class="menu p-2">
+      <% @conversations.each do |conversation| %>
+        <li class="mb-1 group" data-search-target="item" id="conversation-<%= conversation.id %>">
+          <div class="flex items-center justify-between hover:bg-blue-500 hover:text-white transition-colors duration-200 rounded-lg pr-2 <%= 'bg-blue-500 text-white' if @active_run&.id == conversation.id %>">
+            <%= link_to agent_hub_path(conversation_id: conversation.id, persona_id: @active_persona_id), 
+                        class: "flex-grow p-2 #{'active' if @active_run&.id == conversation.id}",
+                        data: { turbo_frame: "agent_hub_content" } do %>
+              <div class="flex flex-col">
+                <span class="font-medium"><%= conversation.respond_to?(:title) ? (conversation.title || "Conversation ##{conversation.id}") : (conversation.metadata['title'] || "Run ##{conversation.id}") %></span>
+                <span class="text-xs opacity-75"><%= conversation.updated_at.strftime("%b %d, %H:%M") %></span>
+              </div>
+              <% if conversation.status == 'pending' %>
+                <span class="badge badge-sm badge-error text-white border-none ml-1">!</span>
+              <% end %>
+            <% end %>
+            
+            <%= button_to archive_conversation_agent_hubs_path(conversation_id: conversation.id), 
+                        method: :delete,
+                        class: "btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity",
+                        data: { turbo_confirm: "Archive this conversation?", turbo_frame: "_top" } do %>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+      <% if @conversations.empty? %>
+        <li class="p-4 text-center text-sm text-gray-500">
+          No conversations yet. Click "New Conversation" to start.
+        </li>
+      <% end %>
+      <li data-search-target="emptyState" class="hidden p-4 text-center text-sm text-gray-500">
+        No conversations found.
+      </li>
+    </ul>
+  </div>
+  
+  <div class="flex flex-col justify-center">
+    <button data-action="click->sidebar#toggle" class="btn btn-ghost btn-xs rounded-none h-12">
+      <svg data-sidebar-target="toggleIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+  </div>
+</div>

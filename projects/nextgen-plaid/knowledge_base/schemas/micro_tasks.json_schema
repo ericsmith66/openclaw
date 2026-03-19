@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "micro_tasks",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["id", "title", "estimate"],
+    "properties": {
+      "id": { "type": "string", "minLength": 1 },
+      "title": { "type": "string", "minLength": 1 },
+      "estimate": { "type": "string", "minLength": 1 }
+    },
+    "additionalProperties": true
+  }
+}

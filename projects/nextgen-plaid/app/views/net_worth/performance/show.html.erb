@@ -1,0 +1,21 @@
+<% if turbo_frame_request? %>
+  <%= turbo_frame_tag "performance-chart-frame" do %>
+    <%= render NetWorth::PerformanceComponent.new(data: @snapshot_data) %>
+  <% end %>
+<% else %>
+  <div class="p-4 sm:p-6 overflow-x-hidden">
+    <div class="breadcrumbs text-sm mb-3" aria-label="Breadcrumb">
+      <ul>
+        <li><%= link_to "Home", authenticated_root_path, class: "link link-hover" %></li>
+        <li><%= link_to "Net Worth", net_worth_dashboard_path, class: "link link-hover" %></li>
+        <li>Performance</li>
+      </ul>
+    </div>
+
+    <h1 class="text-xl sm:text-2xl font-bold mb-4">Performance</h1>
+
+    <%= turbo_frame_tag "performance-chart-frame" do %>
+      <%= render NetWorth::PerformanceComponent.new(data: @snapshot_data) %>
+    <% end %>
+  </div>
+<% end %>

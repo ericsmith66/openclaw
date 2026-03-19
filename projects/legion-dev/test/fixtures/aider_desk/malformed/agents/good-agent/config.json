@@ -1,0 +1,6 @@
+{
+  "id": "good-id",
+  "name": "Good Agent",
+  "provider": "anthropic",
+  "model": "claude-sonnet"
+}

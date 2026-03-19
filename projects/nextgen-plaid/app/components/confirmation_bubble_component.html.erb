@@ -1,0 +1,35 @@
+<div id="conf-<%= @message_id %>" 
+     class="chat chat-start" 
+     data-controller="confirmation-bubble"
+     data-confirmation-bubble-message-id-value="<%= @message_id %>"
+     data-confirmation-bubble-command-value="<%= @command %>"
+     data-confirmation-bubble-label-value="<%= @label %>"
+     data-confirmation-bubble-artifact-id-value="<%= @artifact_id %>">
+  <div class="chat-bubble flex flex-col gap-3 p-4 bg-base-300 border border-base-content/20">
+    <div class="text-sm font-semibold">Confirmation Required</div>
+    <div class="text-xs text-gray-500 italic">Command: <%= @command %></div>
+    
+    <div data-confirmation-bubble-target="actions" class="flex gap-2">
+      <button class="btn btn-sm <%= @color_class %>" 
+              data-action="click->confirmation-bubble#confirm">
+        <%= @label %>
+      </button>
+      <button class="btn btn-sm btn-ghost" 
+              data-action="click->confirmation-bubble#cancel">
+        Cancel
+      </button>
+    </div>
+
+    <div data-confirmation-bubble-target="status" class="hidden text-xs font-bold flex items-center gap-2">
+      <span class="loading loading-spinner loading-xs"></span>
+      Processing...
+    </div>
+
+    <div data-confirmation-bubble-target="result" class="hidden text-xs font-bold text-success flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      Confirmed
+    </div>
+  </div>
+</div>

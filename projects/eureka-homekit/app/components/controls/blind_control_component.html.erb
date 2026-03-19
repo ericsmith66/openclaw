@@ -1,0 +1,79 @@
+<div class="card bg-base-100 shadow-sm <%= 'card-compact' if compact %>"
+     data-controller="blind-control"
+     data-blind-control-accessory-id-value="<%= accessory.uuid %>"
+     data-blind-control-offline-value="<%= offline? %>">
+  
+  <div class="card-body">
+    <h3 class="card-title text-sm flex items-center justify-between">
+      <span><%= accessory.name %></span>
+      <% if offline? %>
+        <span class="badge badge-ghost badge-sm">Offline</span>
+      <% end %>
+    </h3>
+
+    <% if obstruction_detected? %>
+      <div class="alert alert-warning py-2 px-3 text-xs">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        <span>Obstruction detected</span>
+      </div>
+    <% end %>
+
+    <!-- Quick action buttons -->
+    <div class="flex gap-2 mb-3">
+      <button class="btn btn-sm flex-1 <%= 'btn-disabled' if offline? %>"
+              data-action="click->blind-control#openFully"
+              <%= 'disabled' if offline? %>>
+        <span class="text-lg">⬆️</span>
+        Open
+      </button>
+      <button class="btn btn-sm flex-1 <%= 'btn-disabled' if offline? %>"
+              data-action="click->blind-control#setHalfway"
+              <%= 'disabled' if offline? %>>
+        <span class="text-lg">↕️</span>
+        50%
+      </button>
+      <button class="btn btn-sm flex-1 <%= 'btn-disabled' if offline? %>"
+              data-action="click->blind-control#closeFully"
+              <%= 'disabled' if offline? %>>
+        <span class="text-lg">⬇️</span>
+        Close
+      </button>
+    </div>
+
+    <!-- Position slider -->
+    <div class="form-control">
+      <label class="label py-1">
+        <span class="label-text text-xs">Position</span>
+        <span class="label-text-alt text-xs font-medium"
+              data-blind-control-target="positionDisplay"><%= current_position %>%</span>
+      </label>
+      <input type="range"
+             min="0"
+             max="100"
+             value="<%= current_position %>"
+             class="<%= size_class %> <%= 'range-disabled' if offline? %>"
+             <%= 'disabled' if offline? %>
+             data-blind-control-target="positionSlider"
+             data-action="input->blind-control#updatePositionDisplay change->blind-control#updatePosition">
+    </div>
+
+    <% if has_tilt? %>
+      <!-- Tilt slider -->
+      <div class="form-control mt-2">
+        <label class="label py-1">
+          <span class="label-text text-xs">Tilt Angle</span>
+          <span class="label-text-alt text-xs font-medium"
+                data-blind-control-target="tiltDisplay"><%= current_tilt %>°</span>
+        </label>
+        <input type="range"
+               min="-90"
+               max="90"
+               value="<%= current_tilt %>"
+               class="<%= size_class %> <%= 'range-disabled' if offline? %>"
+               <%= 'disabled' if offline? %>
+               data-blind-control-target="tiltSlider"
+               data-action="input->blind-control#updateTiltDisplay change->blind-control#updateTilt">
+      </div>
+    <% end %>
+  </div>
+</div>

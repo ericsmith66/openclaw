@@ -1,0 +1,55 @@
+<div class="p-4 sm:p-6">
+  <div class="breadcrumbs text-sm mb-3" aria-label="Breadcrumb">
+    <ul>
+      <li><%= link_to "Home", authenticated_root_path, class: "link link-hover" %></li>
+      <li>Portfolio</li>
+      <li><%= link_to "Holdings", portfolio_holdings_path, class: "link link-hover" %></li>
+      <li>Snapshots</li>
+    </ul>
+  </div>
+
+  <div class="flex items-end justify-between gap-3 flex-wrap mb-4">
+    <div>
+      <h1 class="text-xl sm:text-2xl font-bold">Holdings Snapshots</h1>
+      <div class="text-sm opacity-70">Select a snapshot to view the holdings grid as of that time.</div>
+    </div>
+    <div>
+      <%= link_to "Back to live holdings", portfolio_holdings_path(snapshot_id: "live"), class: "btn btn-sm" %>
+    </div>
+  </div>
+
+  <% if @snapshots.empty? %>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <div class="font-medium">No snapshots yet</div>
+        <div class="text-sm opacity-80">Once snapshots are created, they’ll appear here.</div>
+      </div>
+    </div>
+  <% else %>
+    <div class="overflow-x-auto">
+      <table class="table table-zebra table-sm w-full" aria-label="Holdings snapshots">
+        <thead>
+          <tr>
+            <th>Created</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @snapshots.each do |snap| %>
+            <tr>
+              <td>
+                <div class="font-medium"><%= snap.created_at.in_time_zone.strftime('%b %-d, %Y %l:%M%P') %></div>
+                <div class="text-xs opacity-70">Snapshot ID: <%= snap.id %></div>
+              </td>
+              <td class="text-right">
+                <%= link_to "View holdings",
+                      portfolio_holdings_path(snapshot_id: snap.id, page: 1),
+                      class: "btn btn-xs btn-outline" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,285 @@
+{
+  "ts": "2026-03-09T15:49:12Z",
+  "request_id": "7e69ac74-b45d-4a05-9057-dd35ad742cdc",
+  "correlation_id": null,
+  "agent": "unknown",
+  "model": "perplexity/sonar-pro-search",
+  "request_bytes": 177,
+  "response_status": 200,
+  "response_bytes": 6055,
+  "usage": {
+    "prompt_tokens": 17,
+    "completion_tokens": 137,
+    "total_tokens": 154,
+    "cost": 0.01211,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.01211,
+      "upstream_inference_prompt_cost": 0.000051,
+      "upstream_inference_completions_cost": 0.012059
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "request": {
+    "model": "perplexity/sonar-pro-search",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the current situation with the Iran conflict? Brief 2 sentence summary."
+      }
+    ],
+    "max_tokens": 200
+  },
+  "response": {
+    "id": "gen-1773071343-mPHl0ym8PuqDiWotS0dF",
+    "object": "chat.completion",
+    "created": 1773071343,
+    "model": "perplexity/sonar-pro-search",
+    "provider": "Perplexity",
+    "system_fingerprint": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": "**The US and Israel are engaged in an ongoing war with Iran that began on February 28, 2026, with thousands of airstrikes targeting Iranian military, nuclear, missile, and oil infrastructure, killing former Supreme Leader Ali Khamenei and leading to Mojtaba Khamenei being named his successor.[1][2][1]**\n\n**Iran has retaliated with missile and drone attacks on Israel, US bases, and Gulf states like Bahrain, Saudi Arabia, and the UAE, causing US casualties (seven service members dead), civilian injuries, and energy disruptions, while President Trump demands unconditional surrender and vows to continue operations.[2][1]**",
+          "refusal": null,
+          "reasoning": "Retrieving latest updates on the Iran conflict for a brief summary.\n\nFetching detailed reports from key sources on the Iran conflict for an accurate summary.",
+          "reasoning_details": [
+            {
+              "type": "reasoning.text",
+              "text": "Retrieving latest updates on the Iran conflict for a brief summary.\n\nFetching detailed reports from key sources on the Iran conflict for an accurate summary.",
+              "format": "unknown",
+              "index": 0
+            }
+          ],
+          "annotations": [
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://understandingwar.org/research/middle-east/iran-update-evening-special-report-march-8-2026/",
+                "title": "Iran Update Evening Special Report, March 8, 2026",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.cbsnews.com/live-updates/us-iran-war-israel-strikes-regime-targets/",
+                "title": "7th U.S. service member dies in war with Iran; Mojtaba Khamenei named new supreme leader",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://economictimes.com/news/newsblogs/iran-war-live-updates-donald-trump-netanyahu-us-israel-iran-war-middle-east-dubai-beirut-tehran-jerusalem-latest-news-today/liveblog/129244893.cms",
+                "title": "US-Iran War Live Updates: CBSE postpones Class 12 exams in West Asia till March 16 amid ongoing war",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://maristpoll.marist.edu/polls/war-with-iran-march-2026/",
+                "title": "Polls, Analysis, Learning, and More",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://acleddata.com/update/middle-east-special-issue-march-2026",
+                "title": "Middle East Special Issue: March 2026 - ACLED",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.youtube.com/watch?v=1MkD7zKRauw",
+                "title": "ILTV News Flash – March 8, 2026 | Iran Missile Attack on Israel",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.criticalthreats.org/analysis/iran-update-morning-special-report-march-3-2026",
+                "title": "Iran Update Morning Special Report: March 3, 2026 | Critical Threats",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://understandingwar.org/research/middle-east/iran-update-evening-special-report-march-7-2026/",
+                "title": "Iran Update Evening Special Report, March 7, 2026 | ISW",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.cfr.org/global-conflict-tracker/conflict/confrontation-between-united-states-and-iran",
+                "title": "Iran's War With Israel and the United States | Global Conflict Tracker",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.youtube.com/watch?v=1qGiNzviMD0",
+                "title": "War with Iran update: Friday, March 6, 2026",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://understandingwar.org/research/middle-east/iran-update-evening-special-report-march-8-2026/",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.cbsnews.com/live-updates/us-iran-war-israel-strikes-regime-targets/",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://economictimes.com/news/newsblogs/iran-war-live-updates-donald-trump-netanyahu-us-israel-iran-war-middle-east-dubai-beirut-tehran-jerusalem-latest-news-today/liveblog/129244893.cms",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://maristpoll.marist.edu/polls/war-with-iran-march-2026/",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://acleddata.com/update/middle-east-special-issue-march-2026",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.youtube.com/watch?v=1MkD7zKRauw",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.criticalthreats.org/analysis/iran-update-morning-special-report-march-3-2026",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://understandingwar.org/research/middle-east/iran-update-evening-special-report-march-7-2026/",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.cfr.org/global-conflict-tracker/conflict/confrontation-between-united-states-and-iran",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            },
+            {
+              "type": "url_citation",
+              "url_citation": {
+                "url": "https://www.youtube.com/watch?v=1qGiNzviMD0",
+                "title": "",
+                "start_index": 0,
+                "end_index": 0
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 17,
+      "completion_tokens": 137,
+      "total_tokens": 154,
+      "cost": 0.01211,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.01211,
+        "upstream_inference_prompt_cost": 0.000051,
+        "upstream_inference_completions_cost": 0.012059
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    },
+    "smart_proxy": {
+      "tool_loop": {
+        "loop_count": 0,
+        "max_loops": 3
+      },
+      "tools_used": []
+    }
+  }
+}

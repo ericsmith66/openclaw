@@ -1,0 +1,39 @@
+<% if turbo_frame_request? %>
+  <%= turbo_frame_tag "holdings-summary-frame" do %>
+    <%= render NetWorth::HoldingsSummaryComponent.new(
+          top_holdings: @top_holdings,
+          holdings: @holdings,
+          expanded: @expanded,
+          sort: @sort,
+          dir: @dir,
+          saved_account_filters: @saved_account_filters,
+          saved_account_filter_id: @saved_account_filter_id,
+          error: @error
+        ) %>
+  <% end %>
+<% else %>
+  <div class="p-4 sm:p-6 overflow-x-hidden">
+    <div class="breadcrumbs text-sm mb-3" aria-label="Breadcrumb">
+      <ul>
+        <li><%= link_to "Home", authenticated_root_path, class: "link link-hover" %></li>
+        <li><%= link_to "Net Worth", net_worth_dashboard_path, class: "link link-hover" %></li>
+        <li>Holdings</li>
+      </ul>
+    </div>
+
+    <h1 class="text-xl sm:text-2xl font-bold mb-4">Holdings</h1>
+
+    <%= turbo_frame_tag "holdings-summary-frame" do %>
+      <%= render NetWorth::HoldingsSummaryComponent.new(
+            top_holdings: @top_holdings,
+            holdings: @holdings,
+            expanded: @expanded,
+            sort: @sort,
+            dir: @dir,
+            saved_account_filters: @saved_account_filters,
+            saved_account_filter_id: @saved_account_filter_id,
+            error: @error
+          ) %>
+    <% end %>
+  </div>
+<% end %>

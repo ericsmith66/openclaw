@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent-Forge — Workspace Layout Mock</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Resize handle hover */
+    .resize-handle { width: 4px; cursor: col-resize; transition: background 0.15s; }
+    .resize-handle:hover, .resize-handle:active { background: oklch(var(--p) / 0.4); }
+
+    /* Smooth panel transitions */
+    .panel-transition { transition: width 0.2s ease; }
+
+    /* Drawer animation */
+    .drawer-panel { transition: transform 0.25s ease; }
+
+    /* Typing indicator */
+    @keyframes blink { 0%,100%{opacity:0.2} 50%{opacity:1} }
+    .typing-dot { animation: blink 1.4s infinite both; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: oklch(var(--bc) / 0.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: oklch(var(--bc) / 0.35); }
+  </style>
+</head>
+<body class="h-screen overflow-hidden bg-base-100 text-base-content antialiased">
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- TAB SWITCHER: Pick which layout variant to preview                 -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="flex flex-col h-screen">
+
+  <!-- Mock selector bar -->
+  <div class="bg-base-300 border-b border-base-content/10 px-4 py-2 flex items-center gap-4 shrink-0">
+    <span class="font-bold text-sm opacity-50 uppercase tracking-wider">Mock Preview:</span>
+    <div class="tabs tabs-boxed tabs-sm">
+      <a class="tab tab-active" onclick="showVariant('full')" id="tab-full">Full Dashboard</a>
+      <a class="tab" onclick="showVariant('chat')" id="tab-chat">Chat Only</a>
+      <a class="tab" onclick="showVariant('workflow')" id="tab-workflow">Workflow Monitor</a>
+    </div>
+    <div class="flex-1"></div>
+    <select class="select select-bordered select-xs" onchange="document.documentElement.dataset.theme=this.value">
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+      <option value="dracula">Dracula</option>
+      <option value="cyberpunk">Cyberpunk</option>
+      <option value="forest">Forest</option>
+    </select>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- VARIANT 1: FULL DASHBOARD (left panel + chat + right panel)    -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="variant-full" class="flex-1 flex flex-col min-h-0">
+
+    <!-- Navbar -->
+    <header class="h-14 bg-base-200 border-b border-base-300 flex items-center px-4 shrink-0 z-10">
+      <nav class="w-full flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <a class="font-black tracking-tighter text-lg text-primary">🔨 AGENT-FORGE</a>
+          <div class="dropdown">
+            <label tabindex="0" class="btn btn-ghost btn-sm gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+              <span>rails-test</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </label>
+          </div>
+        </div>
+        <div class="hidden md:flex flex-1 max-w-[400px] mx-auto">
+          <label class="input input-bordered input-sm flex items-center gap-2 w-full bg-base-100/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" class="grow" placeholder="Search (Cmd+K)" />
+          </label>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="badge badge-success badge-sm gap-1.5 font-bold px-2 py-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-success-content animate-pulse"></span>Active
+          </div>
+          <div class="avatar placeholder cursor-pointer">
+            <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center">
+              <span class="text-xs">E</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- 3-Pane Layout -->
+    <div class="flex-1 flex overflow-hidden min-h-0">
+
+      <!-- LEFT PANEL: Artifacts -->
+      <aside id="full-left-panel" class="bg-base-200 border-r border-base-300 flex flex-col shrink-0 overflow-hidden panel-transition" style="width: 260px">
+        <div class="flex items-center justify-between px-3 py-2 border-b border-base-300 shrink-0">
+          <span class="text-xs font-bold uppercase tracking-wider opacity-60" id="full-left-title">Artifacts</span>
+          <button class="btn btn-ghost btn-xs btn-square" onclick="togglePanel('full-left')" title="Collapse panel">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2" id="full-left-body">
+          <ul class="menu menu-sm w-full">
+            <li class="menu-title"><span>📂 epics/</span></li>
+            <li><a class="pl-6">📂 wip/</a></li>
+            <li><a class="pl-10 active">Epic-4b-aider-desk-workflow</a></li>
+            <li><a class="pl-6">📂 done/</a></li>
+            <li class="menu-title"><span>📂 prds/</span></li>
+            <li><a class="pl-6">PRD-4A-01-agent-manager.md</a></li>
+            <li><a class="pl-6">PRD-4A-02-coordinator.md</a></li>
+            <li><a class="pl-6">PRD-4A-03-event-relay.md</a></li>
+            <li><a class="pl-6">PRD-4B-01-workflow-engine.md</a></li>
+            <li><a class="pl-6">PRD-4B-02-task-router.md</a></li>
+            <li><a class="pl-6">PRD-4B-03-state-machine.md</a></li>
+            <li class="menu-title"><span>📂 feedback/</span></li>
+            <li><a class="pl-6">epic-4a-feedback-V1.md</a></li>
+            <li class="menu-title"><span>📂 plans/</span></li>
+            <li><a class="pl-6">implementation-plan.md</a></li>
+          </ul>
+          <div class="divider my-2"></div>
+          <div class="px-2 text-xs font-bold uppercase tracking-wider opacity-40 mb-2">Quick Access</div>
+          <ul class="menu menu-sm w-full">
+            <li><a>📝 Active Workflow</a></li>
+            <li><a>📋 PRD-4B-03</a></li>
+            <li><a>📄 Last Plan</a></li>
+            <li><a>📊 QA Report</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- Left resize handle -->
+      <div class="resize-handle bg-transparent shrink-0" onmousedown="startResize(event, 'full-left')"></div>
+
+      <!-- CENTER: Chat Pane -->
+      <main class="flex-1 flex flex-col min-w-[320px]">
+        <!-- Chat Header -->
+        <div class="p-3 border-b border-base-300 flex justify-between items-center bg-base-200/50 shrink-0">
+          <div class="flex items-center gap-2">
+            <div class="badge badge-success badge-xs"></div>
+            <h2 class="text-sm font-bold truncate">Task: Implement PRD-4B-03</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs opacity-50 italic">Agent: ror-architect</span>
+            <span class="text-xs opacity-40">|</span>
+            <span class="text-xs opacity-50">claude-sonnet-4-6</span>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="full-messages">
+
+          <!-- User message -->
+          <div class="chat chat-end">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center">
+                <span class="text-xs">E</span>
+              </div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">You <time class="opacity-50">14:22</time></div>
+            <div class="chat-bubble chat-bubble-primary shadow-md mt-1">/implement PRD-4B-03</div>
+          </div>
+
+          <!-- System message -->
+          <div class="flex justify-center my-2">
+            <div class="badge badge-ghost badge-sm gap-2 py-3 px-4 italic opacity-70">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Starting implement_prd workflow for PRD-4B-03
+            </div>
+          </div>
+
+          <!-- Assistant message 1 -->
+          <div class="chat chat-start">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center">
+                <span class="text-xs">A</span>
+              </div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">ror-architect <time class="opacity-50">14:22</time></div>
+            <div class="chat-bubble bg-base-200 text-base-content border border-base-300 shadow-md mt-1">
+              <div class="font-bold text-sm mb-2">═══ Φ8: PLAN ═══</div>
+              <p class="text-sm">Analyzing PRD-4B-03 (Workflow State Machine)...</p>
+              <div class="mt-3 p-3 bg-base-300/50 rounded-lg text-xs">
+                <div class="font-bold mb-1">Implementation Plan:</div>
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>Create <code class="kbd kbd-xs">WorkflowStateMachine</code> service class</li>
+                  <li>Add state transition validators</li>
+                  <li>Implement phase lifecycle hooks (before/after)</li>
+                  <li>Wire into existing <code class="kbd kbd-xs">WorkflowEngine</code></li>
+                  <li>Add RSpec tests for all 14 phase transitions</li>
+                </ol>
+              </div>
+              <div class="mt-2 text-xs opacity-50">Files to modify: 4 new, 2 changed</div>
+            </div>
+          </div>
+
+          <!-- System: phase transition -->
+          <div class="flex justify-center my-2">
+            <div class="badge badge-ghost badge-sm gap-2 py-3 px-4 italic opacity-70">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              Φ8 Plan ✅ complete (42s) → advancing to Φ9 Architect Review
+            </div>
+          </div>
+
+          <!-- Assistant message 2: Architect Review (streaming) -->
+          <div class="chat chat-start">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center">
+                <span class="text-xs">A</span>
+              </div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">ror-architect <time class="opacity-50">14:23</time></div>
+            <div class="chat-bubble bg-base-200 text-base-content border border-base-300 shadow-md mt-1">
+              <div class="font-bold text-sm mb-2">═══ Φ9: ARCHITECT REVIEW ═══</div>
+              <p class="text-sm mb-3">Reviewing implementation plan for PRD-4B-03...</p>
+
+              <div class="space-y-2 text-sm">
+                <div class="font-bold">Completeness (25%)</div>
+                <div class="flex items-center gap-2">
+                  <progress class="progress progress-success w-full" value="22" max="25"></progress>
+                  <span class="text-xs font-mono">22/25</span>
+                </div>
+
+                <div class="font-bold">Architecture Alignment (25%)</div>
+                <div class="flex items-center gap-2">
+                  <progress class="progress progress-success w-full" value="25" max="25"></progress>
+                  <span class="text-xs font-mono">25/25</span>
+                </div>
+
+                <div class="font-bold">Risk Awareness (20%)</div>
+                <div class="flex items-center gap-2">
+                  <progress class="progress progress-warning w-full" value="12" max="20"></progress>
+                  <span class="text-xs font-mono">12/20</span>
+                </div>
+
+                <div class="font-bold">Test Strategy (15%)</div>
+                <div class="flex items-center gap-2">
+                  <progress class="progress progress-success w-full" value="15" max="15"></progress>
+                  <span class="text-xs font-mono">15/15</span>
+                </div>
+
+                <div class="font-bold">Dependencies (15%)</div>
+                <div class="flex items-center gap-2">
+                  <progress class="progress progress-error w-full" value="8" max="15"></progress>
+                  <span class="text-xs font-mono">8/15</span>
+                </div>
+              </div>
+
+              <div class="mt-3 p-2 bg-warning/10 border border-warning/30 rounded text-xs">
+                <span class="font-bold text-warning">Score: 82/100</span> — PLAN-APPROVED (threshold: 75)
+              </div>
+
+              <!-- Typing indicator -->
+              <div class="mt-2 flex items-center gap-1">
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="p-4 bg-base-200 border-t border-base-300 shrink-0">
+          <div class="relative max-w-4xl mx-auto">
+            <div class="flex items-end gap-2">
+              <div class="flex-1 relative">
+                <textarea rows="1" placeholder="Type a message or /command..." class="textarea textarea-bordered w-full pr-12 focus:textarea-primary min-h-[3rem] max-h-48 resize-none py-3 px-6 rounded-3xl bg-base-100 shadow-sm transition-all focus:shadow-md"></textarea>
+                <div class="absolute right-3 bottom-3 flex gap-2">
+                  <button class="btn btn-primary btn-sm btn-square">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right resize handle -->
+      <div class="resize-handle bg-transparent shrink-0" onmousedown="startResize(event, 'full-right')"></div>
+
+      <!-- RIGHT PANEL: Task Detail / Workflow -->
+      <aside id="full-right-panel" class="bg-base-100 border-l border-base-300 flex flex-col shrink-0 overflow-hidden panel-transition" style="width: 340px">
+        <div class="flex items-center justify-between px-3 py-2 border-b border-base-300 shrink-0">
+          <span class="text-xs font-bold uppercase tracking-wider opacity-60" id="full-right-title">Workflow</span>
+          <button class="btn btn-ghost btn-xs btn-square" onclick="togglePanel('full-right')" title="Collapse panel">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto" id="full-right-body">
+          <!-- Tabs -->
+          <div class="tabs tabs-bordered px-3 pt-2">
+            <a class="tab tab-sm tab-active">📋 Task</a>
+            <a class="tab tab-sm">📄 Artifact</a>
+            <a class="tab tab-sm">📊 Output</a>
+          </div>
+
+          <!-- Workflow phases -->
+          <div class="p-3">
+            <div class="text-xs font-bold uppercase tracking-wider opacity-40 mb-3">Workflow: implement_prd</div>
+            <ul class="steps steps-vertical text-xs w-full">
+              <li class="step step-success" data-content="✓">
+                <div class="text-left">
+                  <span class="font-bold">Φ8 Plan</span>
+                  <span class="opacity-50 ml-1">(42s)</span>
+                </div>
+              </li>
+              <li class="step step-warning" data-content="⟳">
+                <div class="text-left">
+                  <span class="font-bold text-warning">Φ9 Architect Review</span>
+                  <span class="opacity-50 ml-1">running...</span>
+                </div>
+              </li>
+              <li class="step" data-content="○"><div class="text-left opacity-50">Φ10 Code</div></li>
+              <li class="step" data-content="○"><div class="text-left opacity-50">Φ11 QA Score</div></li>
+              <li class="step" data-content="○"><div class="text-left opacity-50">Φ12 Log</div></li>
+            </ul>
+          </div>
+
+          <div class="divider my-0 mx-3"></div>
+
+          <!-- Current task detail -->
+          <div class="p-3 space-y-2">
+            <div class="text-xs font-bold uppercase tracking-wider opacity-40 mb-2">Current Task</div>
+            <div class="flex justify-between text-xs">
+              <span class="opacity-60">Agent</span><span class="font-mono">ror-architect</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="opacity-60">Model</span><span class="font-mono">claude-sonnet-4-6</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="opacity-60">Phase</span><span class="font-mono">Φ9 Architect Review</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="opacity-60">Attempt</span><span class="font-mono">1 of 3</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="opacity-60">Duration</span><span class="font-mono" id="timer">0:18</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="opacity-60">Tier</span><span class="badge badge-sm badge-info">2 — Strong Reasoning</span>
+            </div>
+          </div>
+
+          <div class="p-3 space-y-2">
+            <button class="btn btn-outline btn-error btn-sm btn-block gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              Cancel Workflow
+            </button>
+            <button class="btn btn-outline btn-sm btn-block gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+              Upgrade Model
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Bottom Toolbar -->
+    <div class="h-8 bg-base-200 border-t border-base-300 flex items-center px-4 text-xs shrink-0 gap-4 overflow-x-auto">
+      <span class="badge badge-success badge-xs"></span>
+      <span>AiderDesk Connected</span>
+      <span class="opacity-30">│</span>
+      <span>SmartProxy ✅</span>
+      <span class="opacity-30">│</span>
+      <span>Ollama ✅ <span class="opacity-50">(GPU: 78%)</span></span>
+      <span class="opacity-30">│</span>
+      <span class="opacity-50">Cost: $0.34 this workflow</span>
+      <div class="flex-1"></div>
+      <span class="opacity-50">Φ9 running — 44.4K of 200.0K tokens</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- VARIANT 2: CHAT ONLY (no panels, no toolbar)                   -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="variant-chat" class="flex-1 flex flex-col min-h-0 hidden">
+    <div class="flex-1 flex flex-col">
+      <main class="flex-1 flex flex-col">
+        <!-- Chat Header -->
+        <div class="p-3 border-b border-base-300 flex justify-between items-center bg-base-200/50 shrink-0">
+          <div class="flex items-center gap-2">
+            <div class="badge badge-success badge-xs"></div>
+            <h2 class="text-sm font-bold truncate">Quick Chat</h2>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          <div class="chat chat-end">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center"><span class="text-xs">E</span></div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">You <time class="opacity-50">15:01</time></div>
+            <div class="chat-bubble chat-bubble-primary shadow-md mt-1">Can you review my latest migration?</div>
+          </div>
+          <div class="chat chat-start">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center"><span class="text-xs">A</span></div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">Agent <time class="opacity-50">15:01</time></div>
+            <div class="chat-bubble bg-base-200 text-base-content border border-base-300 shadow-md mt-1">
+              Sure! I'll look at the latest migration file. The <code class="kbd kbd-xs">CreateWorkflowStates</code> migration looks good overall. A few suggestions:
+              <ul class="list-disc list-inside mt-2 space-y-1 text-sm">
+                <li>Add an index on <code class="kbd kbd-xs">workflow_id, phase</code> for faster lookups</li>
+                <li>Consider using <code class="kbd kbd-xs">jsonb</code> instead of <code class="kbd kbd-xs">json</code> for the metadata column</li>
+                <li>The <code class="kbd kbd-xs">status</code> column should use an enum constraint</li>
+              </ul>
+            </div>
+          </div>
+          <div class="chat chat-end">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center"><span class="text-xs">E</span></div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">You <time class="opacity-50">15:02</time></div>
+            <div class="chat-bubble chat-bubble-primary shadow-md mt-1">Good points. Can you also check the model validations?</div>
+          </div>
+          <div class="chat chat-start">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center"><span class="text-xs">A</span></div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">Agent <time class="opacity-50">15:02</time></div>
+            <div class="chat-bubble bg-base-200 text-base-content border border-base-300 shadow-md mt-1">
+              <div class="flex items-center gap-1">
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input (no slash commands) -->
+        <div class="p-4 bg-base-200 border-t border-base-300 shrink-0">
+          <div class="relative max-w-4xl mx-auto">
+            <div class="flex items-end gap-2">
+              <div class="flex-1 relative">
+                <textarea rows="1" placeholder="Ask me anything..." class="textarea textarea-bordered w-full pr-12 focus:textarea-primary min-h-[3rem] max-h-48 resize-none py-3 px-6 rounded-3xl bg-base-100 shadow-sm transition-all focus:shadow-md"></textarea>
+                <div class="absolute right-3 bottom-3 flex gap-2">
+                  <button class="btn btn-primary btn-sm btn-square">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <!-- VARIANT 3: WORKFLOW MONITOR (panels + drawers + toolbar)       -->
+  <!-- ════════════════════════════════════════════════════════════════ -->
+  <div id="variant-workflow" class="flex-1 flex flex-col min-h-0 hidden">
+
+    <!-- Navbar with more controls -->
+    <header class="h-14 bg-base-200 border-b border-base-300 flex items-center px-4 shrink-0 z-10">
+      <nav class="w-full flex items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <a class="font-black tracking-tighter text-lg text-primary">🔨 AGENT-FORGE</a>
+          <div class="flex items-center gap-1">
+            <button class="btn btn-ghost btn-sm gap-1" onclick="openDrawer('wf-left')">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+              Workflows
+            </button>
+            <button class="btn btn-ghost btn-sm gap-1" onclick="openDrawer('wf-right')">
+              Config
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="badge badge-warning badge-sm gap-1 px-2">Φ9 Running</div>
+          <div class="avatar placeholder cursor-pointer">
+            <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center"><span class="text-xs">E</span></div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Left Drawer Overlay -->
+    <div id="wf-left-drawer" class="fixed inset-0 z-40 hidden">
+      <div class="absolute inset-0 bg-black/30 cursor-pointer" onclick="closeDrawer('wf-left')"></div>
+      <aside class="absolute left-0 top-0 bottom-0 w-80 bg-base-200 shadow-xl overflow-y-auto transform -translate-x-full drawer-panel" id="wf-left-panel">
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm">All Workflows</h3>
+            <button class="btn btn-ghost btn-xs btn-square" onclick="closeDrawer('wf-left')">✕</button>
+          </div>
+          <ul class="menu menu-sm w-full">
+            <li class="menu-title">Running</li>
+            <li><a class="active"><span class="badge badge-warning badge-xs mr-2"></span>PRD-4B-03 — implement_prd</a></li>
+            <li class="menu-title">Completed Today</li>
+            <li><a><span class="badge badge-success badge-xs mr-2"></span>PRD-4A-05 — implement_prd</a></li>
+            <li><a><span class="badge badge-success badge-xs mr-2"></span>PRD-4A-04 — implement_prd</a></li>
+            <li class="menu-title">Failed</li>
+            <li><a><span class="badge badge-error badge-xs mr-2"></span>PRD-4B-01 — qa_review (retry exceeded)</a></li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Right Drawer Overlay -->
+    <div id="wf-right-drawer" class="fixed inset-0 z-40 hidden">
+      <div class="absolute inset-0 bg-black/30 cursor-pointer" onclick="closeDrawer('wf-right')"></div>
+      <aside class="absolute right-0 top-0 bottom-0 w-80 bg-base-200 shadow-xl overflow-y-auto transform translate-x-full drawer-panel" id="wf-right-panel">
+        <div class="p-4">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm">Agent Config</h3>
+            <button class="btn btn-ghost btn-xs btn-square" onclick="closeDrawer('wf-right')">✕</button>
+          </div>
+          <div class="space-y-4">
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Active Agent</span></label>
+              <select class="select select-bordered select-sm">
+                <option selected>ror-architect</option>
+                <option>ror-greenfield</option>
+                <option>ror-debug</option>
+                <option>ror-refactor</option>
+              </select>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Model Override</span></label>
+              <select class="select select-bordered select-sm">
+                <option>Auto (tier-based)</option>
+                <option selected>claude-sonnet-4-6</option>
+                <option>claude-opus-4-6</option>
+                <option>gemini-2.5-pro</option>
+              </select>
+            </div>
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text text-xs">Auto-approve plans</span>
+                <input type="checkbox" class="toggle toggle-sm toggle-primary" />
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="label cursor-pointer">
+                <span class="label-text text-xs">Retry on failure</span>
+                <input type="checkbox" class="toggle toggle-sm toggle-primary" checked />
+              </label>
+            </div>
+            <div class="form-control">
+              <label class="label"><span class="label-text text-xs">Max retries</span></label>
+              <input type="number" value="3" class="input input-bordered input-sm" />
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 3-Pane -->
+    <div class="flex-1 flex overflow-hidden min-h-0">
+
+      <!-- Left: Phase list -->
+      <aside id="wf-left-sidebar" class="bg-base-200 border-r border-base-300 flex flex-col shrink-0 overflow-hidden panel-transition" style="width: 220px">
+        <div class="flex items-center justify-between px-3 py-2 border-b border-base-300 shrink-0">
+          <span class="text-xs font-bold uppercase tracking-wider opacity-60" id="wf-left-sidebar-title">Phases</span>
+          <button class="btn btn-ghost btn-xs btn-square" onclick="togglePanel('wf-left-sidebar')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-2" id="wf-left-sidebar-body">
+          <ul class="menu menu-sm w-full">
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ1 Intake</a></li>
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ2 Parse</a></li>
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ3 Validate</a></li>
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ4 Classify</a></li>
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ5 Route</a></li>
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ6 Prepare</a></li>
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ7 Context</a></li>
+            <li><a class="opacity-50"><span class="mr-2">✅</span>Φ8 Plan</a></li>
+            <li><a class="active font-bold"><span class="mr-2">⟳</span>Φ9 Architect</a></li>
+            <li><a class="opacity-30"><span class="mr-2">○</span>Φ10 Code</a></li>
+            <li><a class="opacity-30"><span class="mr-2">○</span>Φ11 QA</a></li>
+            <li><a class="opacity-30"><span class="mr-2">○</span>Φ12 Score</a></li>
+            <li><a class="opacity-30"><span class="mr-2">○</span>Φ13 Log</a></li>
+            <li><a class="opacity-30"><span class="mr-2">○</span>Φ14 Done</a></li>
+          </ul>
+        </div>
+      </aside>
+
+      <div class="resize-handle bg-transparent shrink-0" onmousedown="startResize(event, 'wf-left-sidebar')"></div>
+
+      <!-- Center: Chat -->
+      <main class="flex-1 flex flex-col min-w-[320px]">
+        <div class="p-3 border-b border-base-300 flex justify-between items-center bg-base-200/50 shrink-0">
+          <div class="flex items-center gap-2">
+            <div class="badge badge-warning badge-xs"></div>
+            <span class="text-sm font-bold">Φ9: Architect Review</span>
+            <span class="text-xs opacity-50">PRD-4B-03</span>
+          </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-4">
+          <!-- Escalation alert example -->
+          <div class="alert alert-warning shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div>
+              <h3 class="font-bold text-sm">Plan Revision Needed</h3>
+              <div class="text-xs">Score 72/100 (threshold: 75). Auto-retry attempt 2 of 3.</div>
+            </div>
+            <button class="btn btn-sm btn-ghost">Override</button>
+          </div>
+
+          <div class="chat chat-start">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center"><span class="text-xs">A</span></div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">ror-architect <time class="opacity-50">14:25</time></div>
+            <div class="chat-bubble bg-base-200 text-base-content border border-base-300 shadow-md mt-1">
+              <p class="text-sm mb-2"><strong>Issues to address:</strong></p>
+              <ol class="list-decimal list-inside space-y-1 text-sm">
+                <li>Missing error scenarios for SSE disconnect during streaming</li>
+                <li>No rollback strategy if migration fails mid-deploy</li>
+                <li>Dependency on 4B.2 not reflected in file change order</li>
+              </ol>
+              <div class="mt-3 text-xs opacity-50 italic">Sending back to Φ8 with feedback...</div>
+            </div>
+          </div>
+
+          <div class="flex justify-center my-2">
+            <div class="badge badge-ghost badge-sm gap-2 py-3 px-4 italic opacity-70">
+              ⟲ Auto-retry: Φ9 → Φ8 (attempt 2/3) with architect feedback
+            </div>
+          </div>
+
+          <div class="chat chat-start">
+            <div class="chat-image avatar placeholder">
+              <div class="bg-primary text-primary-content rounded-full w-8 flex items-center justify-center"><span class="text-xs">A</span></div>
+            </div>
+            <div class="chat-header opacity-50 text-xs mb-1 mx-2">ror-architect <time class="opacity-50">14:26</time></div>
+            <div class="chat-bubble bg-base-200 text-base-content border border-base-300 shadow-md mt-1">
+              <div class="font-bold text-sm mb-2">═══ Φ8: PLAN (Revision 2) ═══</div>
+              <p class="text-sm">Incorporating architect feedback. Addressing 3 issues...</p>
+              <div class="mt-2 flex items-center gap-1">
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+                <span class="typing-dot w-1.5 h-1.5 rounded-full bg-base-content/40 inline-block"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 bg-base-200 border-t border-base-300 shrink-0">
+          <div class="relative max-w-4xl mx-auto">
+            <div class="flex items-end gap-2">
+              <div class="flex-1 relative">
+                <textarea rows="1" placeholder="/implement PRD-4B-03..." class="textarea textarea-bordered w-full pr-12 focus:textarea-primary min-h-[3rem] max-h-48 resize-none py-3 px-6 rounded-3xl bg-base-100 shadow-sm transition-all focus:shadow-md"></textarea>
+                <div class="absolute right-3 bottom-3 flex gap-2">
+                  <button class="btn btn-primary btn-sm btn-square">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <div class="resize-handle bg-transparent shrink-0" onmousedown="startResize(event, 'wf-right-sidebar')"></div>
+
+      <!-- Right: Detail -->
+      <aside id="wf-right-sidebar" class="bg-base-100 border-l border-base-300 flex flex-col shrink-0 overflow-hidden panel-transition" style="width: 300px">
+        <div class="flex items-center justify-between px-3 py-2 border-b border-base-300 shrink-0">
+          <span class="text-xs font-bold uppercase tracking-wider opacity-60" id="wf-right-sidebar-title">Gate Detail</span>
+          <button class="btn btn-ghost btn-xs btn-square" onclick="togglePanel('wf-right-sidebar')">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-3 space-y-3" id="wf-right-sidebar-body">
+          <div class="text-xs font-bold uppercase tracking-wider opacity-40">Gate: Φ9 Architect</div>
+
+          <div class="stats stats-vertical shadow w-full bg-base-200">
+            <div class="stat py-2 px-3">
+              <div class="stat-title text-xs">Score</div>
+              <div class="stat-value text-lg text-warning">72/100</div>
+              <div class="stat-desc text-xs">Threshold: 75 (PLAN-APPROVED)</div>
+            </div>
+            <div class="stat py-2 px-3">
+              <div class="stat-title text-xs">Result</div>
+              <div class="stat-value text-sm text-error">PLAN-REVISE</div>
+            </div>
+            <div class="stat py-2 px-3">
+              <div class="stat-title text-xs">Attempts</div>
+              <div class="stat-value text-lg">2 <span class="text-sm opacity-50">/ 3</span></div>
+            </div>
+          </div>
+
+          <div class="divider my-1"></div>
+
+          <div class="text-xs font-bold uppercase tracking-wider opacity-40">Score Breakdown</div>
+          <div class="space-y-2 text-xs">
+            <div>
+              <div class="flex justify-between mb-1"><span>Completeness</span><span class="font-mono">18/25</span></div>
+              <progress class="progress progress-warning w-full" value="18" max="25"></progress>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1"><span>Architecture</span><span class="font-mono">25/25</span></div>
+              <progress class="progress progress-success w-full" value="25" max="25"></progress>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1"><span>Risk Awareness</span><span class="font-mono">8/20</span></div>
+              <progress class="progress progress-error w-full" value="8" max="20"></progress>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1"><span>Test Strategy</span><span class="font-mono">15/15</span></div>
+              <progress class="progress progress-success w-full" value="15" max="15"></progress>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1"><span>Dependencies</span><span class="font-mono">6/15</span></div>
+              <progress class="progress progress-error w-full" value="6" max="15"></progress>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="h-8 bg-base-200 border-t border-base-300 flex items-center px-4 text-xs shrink-0 gap-4">
+      <span class="badge badge-success badge-xs"></span><span>AiderDesk</span>
+      <span class="opacity-30">│</span>
+      <span>SmartProxy ✅</span>
+      <span class="opacity-30">│</span>
+      <span>Ollama ✅</span>
+      <span class="opacity-30">│</span>
+      <span class="opacity-50">Cost: $0.52</span>
+      <div class="flex-1"></div>
+      <span class="opacity-50">Workflow: Φ9 auto-retry → Φ8</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT: Panel collapse, resize, drawer, variant switching     -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<script>
+  // ─── Variant Switching ─────────────────────────────────────────────
+  function showVariant(id) {
+    document.querySelectorAll('[id^="variant-"]').forEach(el => el.classList.add('hidden'));
+    document.getElementById('variant-' + id).classList.remove('hidden');
+    document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('tab-active'));
+    document.getElementById('tab-' + id).classList.add('tab-active');
+  }
+
+  // ─── Panel Collapse/Expand ─────────────────────────────────────────
+  const panelState = {};
+
+  function togglePanel(id) {
+    const panel = document.getElementById(id);
+    if (!panel) return;
+    const body = document.getElementById(id + '-body');
+    const title = document.getElementById(id + '-title');
+
+    if (panelState[id]?.collapsed) {
+      // Expand
+      panel.style.width = panelState[id].previousWidth || '280px';
+      if (body) body.classList.remove('hidden');
+      if (title) title.classList.remove('hidden');
+      panelState[id].collapsed = false;
+    } else {
+      // Collapse
+      panelState[id] = { collapsed: true, previousWidth: panel.style.width };
+      panel.style.width = '48px';
+      if (body) body.classList.add('hidden');
+      if (title) title.classList.add('hidden');
+    }
+  }
+
+  // ─── Panel Resize (Drag) ──────────────────────────────────────────
+  let resizing = null;
+
+  function startResize(event, panelId) {
+    event.preventDefault();
+    const panel = document.getElementById(panelId);
+    if (!panel) return;
+
+    const isRight = panelId.includes('right');
+    resizing = {
+      panel,
+      startX: event.clientX,
+      startWidth: panel.offsetWidth,
+      isRight
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onResize);
+    document.addEventListener('mouseup', stopResize);
+  }
+
+  function onResize(event) {
+    if (!resizing) return;
+    const delta = event.clientX - resizing.startX;
+    const newWidth = resizing.isRight
+      ? Math.max(180, Math.min(window.innerWidth * 0.5, resizing.startWidth - delta))
+      : Math.max(180, Math.min(window.innerWidth * 0.5, resizing.startWidth + delta));
+    resizing.panel.style.width = newWidth + 'px';
+  }
+
+  function stopResize() {
+    resizing = null;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+    document.removeEventListener('mousemove', onResize);
+    document.removeEventListener('mouseup', stopResize);
+  }
+
+  // ─── Drawer Open/Close ────────────────────────────────────────────
+  function openDrawer(id) {
+    const container = document.getElementById(id + '-drawer');
+    const panel = document.getElementById(id + '-panel');
+    if (!container || !panel) return;
+
+    container.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      panel.classList.remove('-translate-x-full', 'translate-x-full');
+      panel.classList.add('translate-x-0');
+    });
+  }
+
+  function closeDrawer(id) {
+    const container = document.getElementById(id + '-drawer');
+    const panel = document.getElementById(id + '-panel');
+    if (!container || !panel) return;
+
+    const isRight = id.includes('right');
+    panel.classList.remove('translate-x-0');
+    panel.classList.add(isRight ? 'translate-x-full' : '-translate-x-full');
+    setTimeout(() => container.classList.add('hidden'), 250);
+  }
+
+  // ─── Timer mock ───────────────────────────────────────────────────
+  let seconds = 18;
+  setInterval(() => {
+    seconds++;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    const el = document.getElementById('timer');
+    if (el) el.textContent = m + ':' + String(s).padStart(2, '0');
+  }, 1000);
+</script>
+
+</body>
+</html>

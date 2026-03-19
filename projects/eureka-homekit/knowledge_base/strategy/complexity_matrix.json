@@ -1,0 +1,22 @@
+{
+  "tiers": {
+    "1": {
+      "name": "Low Complexity",
+      "definition": "UI/UX updates, text changes, simple read-only components.",
+      "strategy": "Final Audit Only",
+      "audit_points": ["End of task"]
+    },
+    "2": {
+      "name": "Medium Complexity",
+      "definition": "Internal logic, state management, boolean coercion, standard DB writes.",
+      "strategy": "Service Audit + Final Audit",
+      "audit_points": ["Service Layer Complete", "End of task"]
+    },
+    "3": {
+      "name": "High Complexity",
+      "definition": "External APIs, security-sensitive logic, hardware synchronization, complex concurrency.",
+      "strategy": "Blueprint + Service Audit + Final Audit",
+      "audit_points": ["Initial Plan", "Service Layer Complete", "End of task"]
+    }
+  }
+}

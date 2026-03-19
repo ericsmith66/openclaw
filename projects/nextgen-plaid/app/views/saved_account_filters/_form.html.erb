@@ -1,0 +1,49 @@
+<%= form_with model: saved_account_filter, class: "space-y-4" do |f| %>
+  <% if saved_account_filter.errors.any? %>
+    <div class="alert alert-error">
+      <div>
+        <div class="font-semibold">Please fix the following:</div>
+        <ul class="list-disc pl-5">
+          <% saved_account_filter.errors.full_messages.each do |msg| %>
+            <li><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="form-control">
+    <%= f.label :name, class: "label" do %>
+      <span class="label-text">Name</span>
+    <% end %>
+    <%= f.text_field :name, class: "input input-bordered", required: true, autocomplete: "off" %>
+  </div>
+
+  <div class="form-control">
+    <%= f.label :context, class: "label" do %>
+      <span class="label-text">Context (optional)</span>
+    <% end %>
+    <%= f.text_field :context, class: "input input-bordered", autocomplete: "off", placeholder: "e.g., net_worth_holdings" %>
+  </div>
+
+  <div class="form-control">
+    <label class="label" for="saved_account_filter_criteria_json">
+      <span class="label-text">Criteria (JSON)</span>
+    </label>
+    <textarea
+      id="saved_account_filter_criteria_json"
+      name="saved_account_filter[criteria_json]"
+      class="textarea textarea-bordered font-mono text-sm"
+      rows="10"
+      aria-label="Saved filter criteria JSON"
+    ><%= (saved_account_filter.criteria || {}).to_json %></textarea>
+    <div class="text-xs text-base-content/60 mt-1">
+      Supported keys: <code><%= SavedAccountFilter::SUPPORTED_CRITERIA_KEYS.join(", ") %></code>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= f.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", saved_account_filters_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>

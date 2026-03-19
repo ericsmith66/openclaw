@@ -1,0 +1,60 @@
+{
+  "id": "12583384-806a-4aba-a3e0-4cfc81b8d8a1",
+  "name": "Architect",
+  "provider": "anthropic",
+  "model": "claude-opus-4-6",
+  "maxIterations": 250,
+  "minTimeBetweenToolCalls": 0,
+  "toolApprovals": {
+    "aider---get_context_files": "always",
+    "aider---add_context_files": "always",
+    "aider---drop_context_files": "always",
+    "aider---run_prompt": "ask",
+    "power---file_edit": "ask",
+    "power---file_read": "always",
+    "power---file_write": "ask",
+    "power---glob": "always",
+    "power---grep": "always",
+    "power---semantic_search": "always",
+    "power---bash": "ask",
+    "power---fetch": "always",
+    "subagents---run_task": "always",
+    "skills---activate_skill": "always",
+    "tasks---list_tasks": "always",
+    "tasks---get_task": "always",
+    "tasks---get_task_message": "always",
+    "tasks---create_task": "ask",
+    "tasks---delete_task": "ask",
+    "memory---store_memory": "always",
+    "memory---retrieve_memory": "always",
+    "memory---delete_memory": "never",
+    "memory---list_memories": "never",
+    "memory---update_memory": "never"
+  },
+  "toolSettings": {
+    "power---bash": {
+      "allowedPattern": "ls .*;cat .*;git status;git show;git log",
+      "deniedPattern": "rm .*;del .*;chown .*;chgrp .*;chmod .*"
+    }
+  },
+  "includeContextFiles": true,
+  "includeRepoMap": true,
+  "usePowerTools": true,
+  "useAiderTools": true,
+  "useTodoTools": true,
+  "useSubagents": true,
+  "useTaskTools": true,
+  "useMemoryTools": true,
+  "useSkillsTools": true,
+  "customInstructions": "",
+  "enabledServers": [],
+  "subagent": {
+    "enabled": true,
+    "systemPrompt": "You are an elite Ruby + AI tooling architect with deep experience porting complex Python developer tools to Ruby (examples: fastlane, rubocop server modes, solargraph, etc.).\n\nYour mission: Create a realistic, iterative, test-driven development plan to port Aider (the Python AI pair-programming tool) into a clean, idiomatic Ruby version called RubyAider or AiderDesk.\n\nCurrent Aider features to eventually support (priority order):\n1. Core chat + code editing loop with GPT-4-class models\n2. Automatic repo map / whole-project context\n3. Git auto-commit with good messages + /undo\n4. Multi-file edits with reasonable conflict handling\n5. Voice input → transcription → command\n6. Image → vision model understanding\n7. In-file edit comments (like # Aider: explain this)\n8. Linter / auto-test feedback loop\n9. /run, /test, /lint commands\n10. Reasonable performance on medium-large codebases\n\nConstraints & preferences:\n• Modern Ruby 3.2–3.4\n• Use existing high-quality gems when they exist (ruby_openai, ruby_anthropic, rugged, parser, rubocop, minitest/rspec, async, etc.)\n• Strong TDD from day 1 — every meaningful behavior must have characterization or unit tests\n• Prefer composition over inheritance\n• CLI-first (thor or dry-cli), but design for possible future LSP / VS Code extension\n• Keep it MIT licensed and simple to install via gem\n\nYour deliverables in this order:\n1. Overall module / folder structure proposal (lib/ruby_aider/, test/, bin/, etc.)\n2. Prioritized 8–12 phase iterative roadmap with rough LoC estimates per phase\n3. For the first 3 phases: detailed breakdown including\n   - Key classes / modules to create\n   - Most important 5–8 test cases per phase (in test-first style)\n   - Which external gems to use and why\n   - Biggest risks & mitigation strategies\n4. One concrete example user story → acceptance criteria → failing test → minimal implementation pattern for Phase 1 or 2\n\nThink extremely carefully about dependency order, testability, and how to fake/mock the LLM during development.\nBe brutally honest about what will be painful to port and suggest pragmatic compromises.\n\nStart your answer with: \"RubyAider Architecture & Iterative TDD Plan\"",
+    "invocationMode": "on-demand",
+    "color": "#3368a8",
+    "description": "",
+    "contextMemory": "off"
+  },
+  "projectDir": "/Users/ericsmith66/development/agent-forge/projects/aider-desk"
+}

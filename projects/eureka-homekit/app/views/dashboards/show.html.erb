@@ -1,0 +1,88 @@
+<%= render ::Layouts::ApplicationLayout.new(
+  homes: current_homes,
+  grouped_events: HomekitEvent.recent_grouped(limit: 15),
+  last_sync: "2 mins ago"
+) do %>
+  <div class="space-y-8 flex flex-col h-full">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <%= render ::Shared::BreadcrumbComponent.new(items: [
+          { label: "Eureka", path: root_path },
+          { label: "Dashboard", path: nil, current: true }
+        ]) %>
+        <h1 class="text-3xl font-bold tracking-tight mt-2">Home Overview</h1>
+        <p class="text-base-content/60 mt-1">Welcome back. All systems are performing within normal parameters.</p>
+      </div>
+      
+      <div class="flex gap-2">
+        <div class="join border border-base-200 p-0.5 rounded-lg bg-base-100 shadow-sm mr-4">
+          <%= link_to root_path, class: "btn btn-sm join-item #{params[:view] != 'floorplan' ? 'btn-primary' : 'btn-ghost'}" do %>
+            <%= lucide_icon("layout-dashboard", size: 16) %>
+            List
+          <% end %>
+          <%= link_to root_path(view: :floorplan), class: "btn btn-sm join-item #{params[:view] == 'floorplan' ? 'btn-primary' : 'btn-ghost'}" do %>
+            <%= lucide_icon("map", size: 16) %>
+            Floorplan
+          <% end %>
+        </div>
+        <button class="btn btn-outline btn-sm gap-2">
+          <%= lucide_icon("filter", size: 16) %>
+          Filter
+        </button>
+        <%= button_to sync_path(cleanup: true), method: :post, class: "btn btn-primary btn-sm gap-2 shadow-sm" do %>
+          <%= lucide_icon("refresh-cw", size: 16) %>
+          Sync Now
+        <% end %>
+      </div>
+    </div>
+
+    <% if params[:view] == 'floorplan' %>
+      <div class="flex-1 flex flex-col min-h-0">
+        <% if current_homes.first %>
+          <%= render FloorplanViewerComponent.new(home: current_homes.first) %>
+        <% else %>
+          <div class="alert alert-info">No homes found to display floorplan.</div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <%= render ::Shared::StatCardComponent.new(label: "Total Homes", value: current_homes.size, icon: "home", status: :info) %>
+        <%= render ::Shared::StatCardComponent.new(label: "Active Sensors", value: Sensor.count, icon: "signal", status: :success, trend: "+2 today") %>
+        <%= render ::Shared::StatCardComponent.new(label: "Events (24h)", value: HomekitEvent.where("created_at > ?", 24.hours.ago).count, icon: "activity", status: :warning) %>
+        <%= render ::Shared::StatCardComponent.new(label: "System Load", value: "1.2", icon: "cpu", status: :success) %>
+      </div>
+
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div class="bg-base-100 rounded-3xl p-8 border border-base-200 shadow-sm min-h-[400px] flex flex-col">
+           <div class="flex items-center justify-between mb-8">
+             <h2 class="text-xl font-bold tracking-tight">Activity Heatmap</h2>
+             <div class="join border border-base-200 p-0.5 rounded-lg">
+               <button class="btn btn-ghost btn-xs join-item">Day</button>
+               <button class="btn btn-active btn-xs join-item">Week</button>
+               <button class="btn btn-ghost btn-xs join-item">Month</button>
+             </div>
+           </div>
+           <div class="flex-1 flex items-center justify-center border-2 border-dashed border-base-200 rounded-2xl bg-base-200/20">
+              <div class="text-center">
+                <%= lucide_icon("bar-chart-3", size: 48, class: "mx-auto opacity-10 mb-4") %>
+                <p class="text-sm opacity-40 font-medium">Visualization Placeholder</p>
+              </div>
+           </div>
+        </div>
+
+        <div class="bg-base-100 rounded-3xl p-8 border border-base-200 shadow-sm min-h-[400px] flex flex-col">
+           <div class="flex items-center justify-between mb-8">
+             <h2 class="text-xl font-bold tracking-tight">Device Connectivity</h2>
+             <span class="badge badge-success badge-sm font-bold">ALL ONLINE</span>
+           </div>
+           <div class="flex-1 flex items-center justify-center border-2 border-dashed border-base-200 rounded-2xl bg-base-200/20">
+              <div class="text-center">
+                <%= lucide_icon("wifi", size: 48, class: "mx-auto opacity-10 mb-4") %>
+                <p class="text-sm opacity-40 font-medium">Connectivity Map Placeholder</p>
+              </div>
+           </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>

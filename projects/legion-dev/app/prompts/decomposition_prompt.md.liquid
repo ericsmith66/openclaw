@@ -1,0 +1,32 @@
+You are an architect agent. Decompose the following PRD into atomic coding tasks.
+
+Each task must be an atomic coding task that a single developer can implement independently.
+Break down features into small, testable units. Identify dependencies between tasks.
+
+## PRD Content
+
+{{ prd_content }}
+
+## Project Path
+
+{{ project_path }}
+
+## Instructions
+
+Decompose the PRD into atomic coding tasks using the following format:
+
+```
+## Tasks
+
+### Task 1: <title>
+Type: code|test|review
+Agent: <agent-id>
+Depends on: <task numbers, comma-separated, or none>
+Prompt: |
+  <detailed implementation instructions>
+
+### Task 2: <title>
+...
+```
+
+Ensure each task is atomic, testable, and has clear acceptance criteria.

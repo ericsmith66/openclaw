@@ -1,0 +1,51 @@
+<% status = (local_assigns[:status] || :complete).to_sym %>
+<% snapshot = local_assigns[:snapshot] %>
+<% error_reason = local_assigns[:error_reason] %>
+<% retry_after = local_assigns[:retry_after] %>
+
+<% last_synced_at = snapshot&.created_at %>
+
+<div id="sync-status" class="flex flex-col items-end gap-2">
+  <div class="flex items-center gap-2">
+    <%= button_to "Refresh",
+          net_worth_sync_path,
+          method: :post,
+          form: { data: { turbo: true } },
+          class: "btn btn-outline btn-sm",
+          aria: { label: "Refresh snapshot" },
+          disabled: (status == :pending) %>
+
+    <% if status == :pending %>
+      <span class="badge badge-info gap-2" aria-label="Syncing">
+        <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
+        Syncing…
+      </span>
+    <% elsif status == :error %>
+      <span class="badge badge-error" aria-label="Sync error">Error</span>
+    <% elsif status == :rate_limited %>
+      <span class="badge badge-warning" aria-label="Refresh rate limited">Rate limited</span>
+    <% else %>
+      <span class="badge badge-success" aria-label="Up to date">Up to date</span>
+    <% end %>
+  </div>
+
+  <% if status == :pending %>
+    <div class="text-xs opacity-70">Syncing… usually takes 30–90 seconds</div>
+  <% elsif status == :error %>
+    <div class="text-xs text-error">
+      <%= (error_reason.presence || "Snapshot refresh failed").to_s %>
+    </div>
+  <% elsif status == :rate_limited %>
+    <% seconds = retry_after.to_i %>
+    <% seconds = 60 if seconds <= 0 %>
+    <div class="alert alert-warning py-2" data-controller="countdown" data-countdown-seconds-value="<%= seconds %>">
+      <span>
+        Refresh limit reached — try again in <span data-countdown-target="value"><%= seconds %></span>s
+      </span>
+    </div>
+  <% end %>
+
+  <% if last_synced_at %>
+    <div class="text-xs opacity-70">Last sync <%= time_ago_in_words(last_synced_at) %> ago</div>
+  <% end %>
+</div>

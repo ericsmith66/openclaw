@@ -1,0 +1,29 @@
+<div class="dropdown dropdown-end">
+  <label tabindex="0" class="btn btn-sm btn-outline">
+    <%= label %>: <%= selected_label %>
+  </label>
+
+  <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64">
+    <li>
+      <%= link_to "All Accounts",
+            target_path(link_params(nil)),
+            class: "w-full",
+            data: (turbo_frame_id.present? ? { turbo_frame: turbo_frame_id } : {}) %>
+    </li>
+
+    <% saved_account_filters.each do |filter| %>
+      <li>
+        <%= link_to filter.name,
+              target_path(link_params(filter.id)),
+              class: "w-full",
+              data: (turbo_frame_id.present? ? { turbo_frame: turbo_frame_id } : {}) %>
+      </li>
+    <% end %>
+
+    <li class="mt-2 border-t border-base-300 pt-2">
+      <%= link_to "Manage saved filters",
+            saved_account_filters_path,
+            class: "w-full text-xs text-base-content/70" %>
+    </li>
+  </ul>
+</div>

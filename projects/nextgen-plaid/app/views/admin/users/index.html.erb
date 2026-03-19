@@ -1,0 +1,16 @@
+<%= render LayoutComponent.new(title: "Users Management", current_user: current_user) do %>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="card-title">All Users</h2>
+        <%= link_to "New User", new_admin_user_path, class: "btn btn-primary" %>
+      </div>
+
+      <%= render AdminTableComponent.new(items: @users, columns: [:email, :roles, :family_id], model_name: "User") %>
+
+      <div class="mt-6 flex justify-center">
+        <%= paginate @users %>
+      </div>
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,18 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title">Sector Weights</h2>
+
+    <% if weights.blank? %>
+      <div class="text-sm opacity-70">No equity holdings found.</div>
+    <% else %>
+      <div class="space-y-2 mt-2">
+        <% rows.each do |key, pct| %>
+          <div class="flex items-center justify-between text-sm">
+            <div class="font-medium"><%= key.titleize %></div>
+            <div><%= (pct * 100).round %>%</div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

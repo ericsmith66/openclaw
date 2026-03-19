@@ -1,0 +1,304 @@
+# Epic 9: Implementation Status
+
+**Epic**: Eureka Smart Speaker POC — Assembly & Integration
+**Status**: Not Started
+**Last Updated**: 2026-03-01
+
+---
+
+## Overview
+
+Track completion status, blockers, key decisions, and branch merges for Epic 9 PRDs.
+
+Update this document after each PRD completion per `.junie/guidelines.md`.
+
+---
+
+## PRD Status Summary
+
+| PRD | Title | Status | Branch | Merged | Completion Date | Notes |
+|-----|-------|--------|--------|--------|-----------------|-------|
+| 9-01 | Hardware Assembly & Validation | Not Started | `epic-9/prd-01-hardware-assembly` | No | - | Physical build; no code |
+| 9-02 | Raspberry Pi OS & Driver Setup | Not Started | `epic-9/prd-02-os-driver-setup` | No | - | OS + driver config |
+| 9-03 | Wake Word & STT Pipeline | Not Started | `epic-9/prd-03-wake-stt-pipeline` | No | - | Porcupine + Whisper |
+| 9-04 | Person Detection & Presence Sensing | Not Started | `epic-9/prd-04-person-detection` | No | - | mmWave + YOLO |
+| 9-05 | TTS Playback & Custom Eureka Voice | Not Started | `epic-9/prd-05-tts-playback` | No | - | Ollama TTS + Amp4 |
+| 9-06 | Eureka-Homekit API Integration | Not Started | `epic-9/prd-06-api-integration` | No | - | Rails + smart-proxy |
+| 9-07 | Edge Agent Loop & Systemd Service | Not Started | `epic-9/prd-07-agent-loop-service` | No | - | Main orchestrator |
+
+---
+
+## PRD 9-01: Hardware Assembly & Validation
+
+**Status**: Not Started
+**Branch**: `epic-9/prd-01-hardware-assembly`
+**Dependencies**: None (parts must be ordered/received)
+
+### Scope
+
+- Assemble Pi 5 with cooler, HATs (Amp4, AI HAT+), speaker driver, mic, camera, mmWave sensor
+- Wire all connections (GPIO, CSI, USB, speaker terminals, UART)
+- Power-on smoke test
+
+### Acceptance Criteria
+
+- [ ] All components physically mounted and wired
+- [ ] Pi 5 powers on and LED blinks (no shorts)
+- [ ] Stacking order verified: Pi 5 → Amp4 (GPIO/I2S) → AI HAT+ (PCIe)
+
+### Blockers
+
+- None (pending parts delivery)
+
+### Key Decisions
+
+- Stacking order: Amp4 first (needs GPIO I2S), then AI HAT+ (PCIe, can go on top)
+
+### Completion Date
+
+-
+
+### Notes
+
+-
+
+---
+
+## PRD 9-02: Raspberry Pi OS & Driver Setup
+
+**Status**: Not Started
+**Branch**: `epic-9/prd-02-os-driver-setup`
+**Dependencies**: PRD 9-01
+
+### Scope
+
+- Flash Raspberry Pi OS 64-bit Lite, enable SSH
+- Install and configure drivers: HiFiBerry Amp4, Hailo-8 SDK, libcamera, pyserial
+- Validate each component individually
+
+### Acceptance Criteria
+
+- [ ] Pi boots and SSH accessible
+- [ ] `speaker-test` plays audio through Amp4 + speaker driver
+- [ ] `arecord` captures audio from ReSpeaker mic
+- [ ] `libcamera-still` captures image from Arducam
+- [ ] mmWave serial read returns presence data
+- [ ] `hailortcli fw-control identify` recognizes Hailo-8
+
+### Blockers
+
+- None
+
+### Key Decisions
+
+- Use Raspberry Pi OS Lite (no desktop) for minimal footprint
+
+### Completion Date
+
+-
+
+### Notes
+
+-
+
+---
+
+## PRD 9-03: Wake Word & STT Pipeline
+
+**Status**: Not Started
+**Branch**: `epic-9/prd-03-wake-stt-pipeline`
+**Dependencies**: PRD 9-02
+
+### Scope
+
+- Picovoice Porcupine "Hey Eureka" wake word detection on ReSpeaker
+- Post-wake audio capture and Whisper STT (Hailo-8 accelerated)
+- Output: transcribed text string
+
+### Acceptance Criteria
+
+- [ ] Wake word triggers reliably from 3+ meters
+- [ ] Audio captured post-wake (configurable duration / VAD silence detection)
+- [ ] Whisper transcribes with > 85% accuracy on home commands
+- [ ] Pipeline runs in < 2 seconds (wake to text)
+
+### Blockers
+
+- None
+
+### Key Decisions
+
+- TBD: Porcupine vs. OpenWakeWord
+- TBD: Whisper model size (tiny/base/small) based on Hailo-8 performance
+
+### Completion Date
+
+-
+
+### Notes
+
+-
+
+---
+
+## PRD 9-04: Person Detection & Presence Sensing
+
+**Status**: Not Started
+**Branch**: `epic-9/prd-04-person-detection`
+**Dependencies**: PRD 9-02
+
+### Scope
+
+- mmWave radar continuous presence detection via UART
+- Camera-based YOLO person detection (triggered by mmWave or on-demand)
+- Hailo-8 inference acceleration for YOLO
+- Output: `{presence: bool, count: int, positions: [...]}`
+
+### Acceptance Criteria
+
+- [ ] mmWave detects presence/absence within 2 seconds
+- [ ] YOLO counts persons accurately (> 80%)
+- [ ] Hailo-8 inference < 100ms per frame
+- [ ] Context payload serializable as JSON
+
+### Blockers
+
+- None
+
+### Key Decisions
+
+- mmWave triggers camera inference to save power (not continuous camera)
+
+### Completion Date
+
+-
+
+### Notes
+
+-
+
+---
+
+## PRD 9-05: TTS Playback & Custom Eureka Voice
+
+**Status**: Not Started
+**Branch**: `epic-9/prd-05-tts-playback`
+**Dependencies**: PRD 9-02
+
+### Scope
+
+- Ollama TTS voice cloning setup on M3 Ultra for custom Eureka voice
+- Audio streaming from server to Pi (WAV/MP3 over HTTPS or WSS)
+- Playback via ALSA/aplay through HiFiBerry Amp4
+
+### Acceptance Criteria
+
+- [ ] Custom Eureka voice generated by Ollama TTS
+- [ ] Audio streams from server and plays on speaker without gaps
+- [ ] Playback volume controllable via ALSA mixer
+- [ ] Fallback to gTTS if Ollama TTS unavailable
+
+### Blockers
+
+- None
+
+### Key Decisions
+
+- TBD: Streaming format (chunked WAV vs. full file download)
+- Ollama TTS model selection (Coqui / XTTS / Bark via Ollama)
+
+### Completion Date
+
+-
+
+### Notes
+
+-
+
+---
+
+## PRD 9-06: Eureka-Homekit API Integration via Smart-Proxy
+
+**Status**: Not Started
+**Branch**: `epic-9/prd-06-api-integration`
+**Dependencies**: PRD 9-03, PRD 9-04
+
+### Scope
+
+- Rails API endpoints for speaker communication (`/api/v1/speaker/*`)
+- Smart-proxy routing configuration
+- Context-enriched query payload (transcribed text + presence data)
+- Response format (text + audio URL or streamed audio)
+
+### Acceptance Criteria
+
+- [ ] `POST /api/v1/speaker/wake` registers wake event
+- [ ] `POST /api/v1/speaker/query` accepts text + context, returns AI response
+- [ ] Smart-proxy routes speaker API correctly
+- [ ] Minitest coverage for new controller actions
+- [ ] API authentication via bearer token (env-configured)
+
+### Blockers
+
+- None
+
+### Key Decisions
+
+- Reuse Epic 7 Conversation/Message models for speaker interactions
+- Speaker identified by device_id (Pi serial number or configured UUID)
+
+### Completion Date
+
+-
+
+### Notes
+
+-
+
+---
+
+## PRD 9-07: Edge Agent Loop & Systemd Service
+
+**Status**: Not Started
+**Branch**: `epic-9/prd-07-agent-loop-service`
+**Dependencies**: PRD 9-03, PRD 9-04, PRD 9-05, PRD 9-06
+
+### Scope
+
+- Main Python orchestrator: wake → STT → presence context → API → TTS → loop
+- Systemd unit file for auto-start and auto-restart
+- Health check endpoint (`GET /healthz`)
+- Graceful shutdown handling (SIGTERM)
+
+### Acceptance Criteria
+
+- [ ] Agent loop runs continuously without memory leaks
+- [ ] Systemd auto-restarts on crash (< 5 seconds recovery)
+- [ ] Health check reports all subsystem statuses
+- [ ] End-to-end: "Hey Eureka, who's in the room?" → correct voice response
+- [ ] 24-hour soak test passes without manual intervention
+
+### Blockers
+
+- All prior PRDs must be complete
+
+### Key Decisions
+
+- Use asyncio for concurrent mmWave monitoring + wake word listening
+- Health check via simple HTTP server (Flask/FastAPI lightweight)
+
+### Completion Date
+
+-
+
+### Notes
+
+-
+
+---
+
+## Change Log
+
+| Date | Change | Notes |
+|------|--------|-------|
+| 2026-03-01 | Epic 9 created | Initial draft of all PRDs |

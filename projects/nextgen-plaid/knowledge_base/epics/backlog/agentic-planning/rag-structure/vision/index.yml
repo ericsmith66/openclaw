@@ -1,0 +1,486 @@
+# Vision Index: Product Vision, Roadmap, and Strategic Priorities
+# Purpose: Answers "Where is the app going?" for PRD generation research/planning phases
+# Query Pattern: fetch:vision:<category>:<item>
+
+vision_index:
+  summary: "NextGen Plaid product vision, roadmap, and strategic priorities"
+  last_updated: "2026-01-17"
+  
+  # ============================================================================
+  # PRODUCT VISION
+  # ============================================================================
+  vision:
+    - name: "master_control_plan"
+      file: "knowledge_base/static_docs/MCP.md"
+      summary: "Overall product vision: HNW financial planning with AI agents"
+      themes:
+        - "Shirtsleeves to shirtsleeves prevention"
+        - "CFP-like curriculum for wealth preservation"
+        - "AI-assisted SDLC for rapid feature development"
+        - "Plaid integration for consolidated financial view"
+      target_audience: "High net worth individuals and families"
+      core_value_proposition: "Prevent generational wealth loss through education and AI-assisted planning"
+      notes: "Primary vision document, referenced by all PRDs"
+    
+    - name: "ai_thinking_context"
+      file: "knowledge_base/static_docs/0_AI_THINKING_CONTEXT.md"
+      summary: "AI agent guidelines and thinking framework"
+      themes:
+        - "How AI agents should approach problems"
+        - "Ollama setup and model selection"
+        - "Context gathering strategies"
+      notes: "Guides agent behavior and decision-making"
+  
+  # ============================================================================
+  # ROADMAP
+  # ============================================================================
+  roadmap:
+    
+    # --------------------------------------------------------------------------
+    # COMPLETED WORK
+    # --------------------------------------------------------------------------
+    - phase: "completed"
+      summary: "Production features and completed epics"
+      completion_date: "2025-Q4 to 2026-Q1"
+      
+      epics:
+        - name: "plaid_integration"
+          epic_id: "PLAID-001"
+          summary: "Core Plaid integration for financial data sync"
+          prds:
+            - "PRD-PLAID-001: Plaid Link and token exchange"
+            - "PRD-PLAID-002: Holdings and transactions sync"
+          features:
+            - "Plaid Link onboarding flow"
+            - "Holdings sync from investments endpoint"
+            - "Transaction sync with cursor pagination"
+            - "Webhook receiver for Plaid events"
+            - "Manual refresh triggers"
+          completion_date: "2025-Q4"
+          status: "production"
+          notes: "Stable, no active work"
+        
+        - name: "sap_agent_v1"
+          epic_id: "AH-011"
+          summary: "SAP agent PRD generation (reactive mode)"
+          prds:
+            - "PRD-AH-011: Core SAP agent"
+            - "PRD-AH-011B: Backlog visibility"
+            - "PRD-AH-011C: Artifact transitions"
+            - "PRD-AH-011D: RAG inspector"
+            - "PRD-AH-011E: Agent monitoring"
+          features:
+            - "PRD generation from user requests"
+            - "Artifact workflow (backlog → analysis → dev → QA → completed)"
+            - "Agent Hub real-time interface"
+            - "RAG context integration"
+            - "Validation and retry logic"
+          completion_date: "2026-Q1"
+          status: "production"
+          notes: "Reactive mode (zero-shot + validation), ready for agentic refactor"
+        
+        - name: "rag_context_integration"
+          epic_id: "0120"
+          summary: "RAG provider with context map and snapshots"
+          prds:
+            - "PRD-0120-RAG: Context map and snapshot integration"
+          features:
+            - "Context map for document selection"
+            - "Daily financial snapshots"
+            - "Anonymization of sensitive data"
+            - "4K char context limit with truncation"
+          completion_date: "2026-Q1"
+          status: "production"
+          notes: "Phase 1 RAG, needs upgrade to multi-index"
+        
+        - name: "agent_hub_persistence"
+          epic_id: "AH-007"
+          summary: "Agent Hub conversation persistence and lifecycle"
+          prds:
+            - "PRD-AH-007A through PRD-AH-007F"
+          features:
+            - "Conversation persistence"
+            - "Run archiving"
+            - "Message history"
+            - "Context inspection"
+          completion_date: "2025-Q4"
+          status: "production"
+          notes: "Stable persistence layer"
+        
+        - name: "agent_hub_ui"
+          epic_id: "AH-006"
+          summary: "Agent Hub advanced UI interactions"
+          prds:
+            - "PRD-AH-006A through PRD-AH-006E"
+          features:
+            - "Real-time chat interface"
+            - "Model switching"
+            - "File uploads"
+            - "Turbo Streams integration"
+          completion_date: "2025-Q4"
+          status: "production"
+          notes: "Production UI, minor enhancements ongoing"
+    
+    # --------------------------------------------------------------------------
+    # IN PROGRESS
+    # --------------------------------------------------------------------------
+    - phase: "in_progress"
+      summary: "Current development focus"
+      target_date: "2026-Q1"
+      
+      epics:
+        - name: "agentic_refactor"
+          epic_id: "0070"
+          summary: "Move SAP agent from reactive to agentic (5-phase lifecycle)"
+          prds:
+            - "0070-SAP-Agentic-Refactor-Epic.md"
+          features:
+            - "Research phase: Pluggable RAG strategies"
+            - "Plan phase: AI generates mini-plan before execution"
+            - "Verify phase: Proactive constraint checking"
+            - "Execute phase: Generate artifact from verified plan"
+            - "Validate phase: Final structural check"
+          target_date: "2026-Q1"
+          priority: "high"
+          status: "in_development"
+          blockers: []
+          notes: "POC phase, testing with Ollama"
+          related_work:
+            - "Multi-index RAG architecture"
+            - "Phase-specific context loading"
+            - "Planning prompt engineering"
+        
+        - name: "sdlc_validation"
+          epic_id: "AH-012E"
+          summary: "Validation scoring and quality metrics for agent outputs"
+          prds:
+            - "PRD-AH-012E: Validation scoring"
+          features:
+            - "Scoring system for PRD quality"
+            - "Validation metrics dashboard"
+            - "Agent performance monitoring"
+            - "Quality trend analysis"
+          target_date: "2026-Q1"
+          priority: "high"
+          status: "in_development"
+          blockers: []
+          notes: "Aligns with quality-over-speed priority"
+        
+        - name: "multi_index_rag"
+          epic_id: "RAG-002"
+          summary: "Multi-index RAG architecture (functional, structural, vision)"
+          prds: []
+          features:
+            - "Functional index: What the app does"
+            - "Structural index: How the app is built"
+            - "Vision index: Where the app is going"
+            - "Cross-reference map"
+            - "Phase-specific context loading"
+          target_date: "2026-Q1"
+          priority: "high"
+          status: "in_development"
+          blockers: []
+          notes: "Foundation for agentic refactor"
+        
+        - name: "ollama_tool_use"
+          epic_id: "OLLAMA-001"
+          summary: "Ollama tool use and function calling"
+          prds: []
+          features:
+            - "Tool definitions for Ollama"
+            - "Function calling integration"
+            - "Tool result handling"
+          target_date: "2026-Q1"
+          priority: "medium"
+          status: "experimental"
+          blockers: []
+          notes: "Exploring Ollama capabilities"
+    
+    # --------------------------------------------------------------------------
+    # PLANNED
+    # --------------------------------------------------------------------------
+    - phase: "planned"
+      summary: "Backlog and future work"
+      target_date: "2026-Q2+"
+      
+      epics:
+        - name: "financial_planning_curriculum"
+          epic_id: "FIN-001"
+          summary: "CFP-like curriculum with simulations"
+          prds: []
+          features:
+            - "Estate tax simulations"
+            - "Monte Carlo projections"
+            - "Trust planning tools"
+            - "Tax optimization strategies"
+          target_date: "2026-Q2"
+          priority: "medium"
+          status: "planned"
+          dependencies: ["Agent Hub maturity"]
+          notes: "Deferred until SDLC agents are stable"
+        
+        - name: "oauth_completion"
+          epic_id: "AUTH-002"
+          summary: "Complete OAuth flow for Plaid"
+          prds: []
+          features:
+            - "OAuth initiate endpoint"
+            - "OAuth callback handler"
+            - "OAuth state management"
+          target_date: "TBD"
+          priority: "low"
+          status: "planned"
+          blockers: ["🛑 No controller specified for orphan routes"]
+          notes: "Low priority, standard Plaid Link works fine"
+        
+        - name: "coordinator_agent"
+          epic_id: "AH-020"
+          summary: "Coordinator agent for multi-agent orchestration"
+          prds: []
+          features:
+            - "Coordinator system prompt"
+            - "Agent-to-agent handoffs"
+            - "Workflow orchestration"
+            - "Task delegation"
+          target_date: "2026-Q2"
+          priority: "medium"
+          status: "planned"
+          dependencies: ["Agentic refactor completion"]
+          notes: "Requires stable agentic foundation"
+        
+        - name: "cwa_agent"
+          epic_id: "AH-021"
+          summary: "Code Writing Agent (CWA) for implementation"
+          prds: []
+          features:
+            - "CWA system prompt"
+            - "Code generation from PRDs"
+            - "Test generation"
+            - "Implementation validation"
+          target_date: "2026-Q2"
+          priority: "medium"
+          status: "planned"
+          dependencies: ["Coordinator agent"]
+          notes: "Completes SAP → Coordinator → CWA pipeline"
+  
+  # ============================================================================
+  # STRATEGIC PRIORITIES
+  # ============================================================================
+  priorities:
+    - name: "sdlc_focus"
+      summary: "Agent Hub maturity before financial simulations"
+      rationale: "Need stable agent workflows before complex financial features"
+      current_focus:
+        - "Agentic PRD generation (5-phase lifecycle)"
+        - "Multi-index RAG architecture"
+        - "Validation scoring and quality metrics"
+        - "Ollama optimization for local development"
+      success_criteria:
+        - "PRD validation pass rate: 70% → 90%"
+        - "First-time execution success: 40% → 70%"
+        - "Planning phase produces valid JSON 80%+ of time"
+        - "Verification catches issues before generation"
+      timeline: "2026-Q1"
+      notes: "Primary focus until Agent Hub is production-ready"
+    
+    - name: "quality_over_speed"
+      summary: "High-quality PRDs reduce downstream bugs"
+      rationale: "Better upfront planning saves debugging time"
+      metrics:
+        - "PRD validation pass rate: Target 90%"
+        - "First-time execution success: Target 70%"
+        - "Retry attempts: Reduce from 3 to 1"
+        - "Context relevance: Increase via multi-index RAG"
+      initiatives:
+        - "Agentic refactor with planning phase"
+        - "Proactive verification vs reactive validation"
+        - "Phase-specific context loading"
+        - "Validation scoring dashboard"
+      timeline: "Ongoing"
+      notes: "Core principle guiding all development"
+    
+    - name: "local_first_development"
+      summary: "Ollama for local development, Grok for production"
+      rationale: "Reduce API costs, faster iteration, offline capability"
+      current_state:
+        - "Ollama: llama3.1:8b for local dev"
+        - "Grok: grok-beta for production"
+        - "Router: Automatic model selection"
+      challenges:
+        - "Ollama 8B struggles with JSON planning"
+        - "Context window limitations"
+        - "Tool use support varies"
+      initiatives:
+        - "Optimize prompts for smaller models"
+        - "Few-shot examples for JSON generation"
+        - "Structured output formats"
+      timeline: "Ongoing"
+      notes: "Balancing cost vs capability"
+    
+    - name: "observability_first"
+      summary: "Comprehensive logging and monitoring for agent workflows"
+      rationale: "Agent debugging requires detailed execution traces"
+      current_state:
+        - "agent_logs/sap.log: Lifecycle events"
+        - "RAG context logging"
+        - "Request ID tracking"
+      gaps:
+        - "No centralized metrics dashboard"
+        - "Limited phase-level insights"
+        - "No A/B testing framework"
+      initiatives:
+        - "Validation scoring dashboard (PRD-AH-012E)"
+        - "Phase-level metrics collection"
+        - "Agent performance monitoring"
+      timeline: "2026-Q1"
+      notes: "Critical for agentic refactor success"
+  
+  # ============================================================================
+  # TECHNICAL DEBT
+  # ============================================================================
+  technical_debt:
+    - name: "orphan_routes"
+      summary: "Routes without controllers"
+      items:
+        - route: "/plaid_oauth/initiate"
+          issue: "No controller specified"
+          impact: "OAuth flow incomplete"
+          workaround: "Standard Plaid Link works"
+        - route: "/plaid_oauth/callback"
+          issue: "No controller specified"
+          impact: "OAuth flow incomplete"
+          workaround: "Standard Plaid Link works"
+      priority: "low"
+      estimated_effort: "2-4 hours"
+      notes: "Low priority, not blocking any features"
+    
+    - name: "rag_scalability"
+      summary: "Current RAG approach doesn't scale"
+      items:
+        - issue: "4K char truncation too aggressive"
+          impact: "Context quality degrades with project growth"
+          current_state: "Truncates oldest-first, loses important context"
+        - issue: "No vector DB for semantic search"
+          impact: "Can't find relevant context by meaning"
+          current_state: "Simple keyword matching via context_map.md"
+        - issue: "Monolithic context loading"
+          impact: "Loads everything, wastes tokens"
+          current_state: "All-or-nothing approach"
+      priority: "high"
+      estimated_effort: "2-3 weeks"
+      solution: "Multi-index RAG architecture (in progress)"
+      notes: "Actively being addressed by RAG-002 epic"
+    
+    - name: "retry_logic_inefficiency"
+      summary: "Reactive validation wastes tokens and time"
+      items:
+        - issue: "3 retry attempts with full context"
+          impact: "High token usage on failures"
+          current_state: "Retry with same context + error message"
+        - issue: "No learning between retries"
+          impact: "Same mistakes repeated"
+          current_state: "Appends error but doesn't adjust strategy"
+      priority: "high"
+      estimated_effort: "1-2 weeks"
+      solution: "Agentic refactor with proactive verification (in progress)"
+      notes: "Addressed by 0070 epic"
+    
+    - name: "test_coverage_gaps"
+      summary: "Limited test coverage for agent workflows"
+      items:
+        - issue: "No integration tests for agentic phases"
+          impact: "Hard to validate multi-step workflows"
+          current_state: "Unit tests only"
+        - issue: "No RAG context testing"
+          impact: "Context quality regressions undetected"
+          current_state: "Manual inspection only"
+      priority: "medium"
+      estimated_effort: "1 week"
+      solution: "Add integration test suite"
+      notes: "Should be addressed alongside agentic refactor"
+    
+    - name: "prompt_versioning"
+      summary: "No versioning for agent prompts"
+      items:
+        - issue: "Prompts in config/agent_prompts/ not versioned"
+          impact: "Hard to track prompt changes and their effects"
+          current_state: "Direct file edits, no history"
+        - issue: "No A/B testing for prompts"
+          impact: "Can't measure prompt improvements"
+          current_state: "Manual comparison only"
+      priority: "low"
+      estimated_effort: "3-5 days"
+      solution: "Prompt versioning system with metrics"
+      notes: "Nice to have, not blocking"
+  
+  # ============================================================================
+  # SUCCESS METRICS
+  # ============================================================================
+  success_metrics:
+    - category: "PRD Quality"
+      metrics:
+        - name: "Validation Pass Rate"
+          current: "40-50%"
+          target: "90%"
+          measurement: "% of PRDs passing validation on first attempt"
+        - name: "Acceptance Criteria Quality"
+          current: "Variable (3-10 bullets)"
+          target: "Consistent (5-8 bullets)"
+          measurement: "% of PRDs with 5-8 AC bullets"
+        - name: "Required Sections Present"
+          current: "80%"
+          target: "100%"
+          measurement: "% of PRDs with all required sections"
+    
+    - category: "Agent Performance"
+      metrics:
+        - name: "First-Time Success Rate"
+          current: "40%"
+          target: "70%"
+          measurement: "% of requests completed without retries"
+        - name: "Average Retry Count"
+          current: "1.5"
+          target: "0.5"
+          measurement: "Average retries per request"
+        - name: "Context Relevance"
+          current: "Unknown"
+          target: "80%"
+          measurement: "% of context used in final output"
+    
+    - category: "Development Velocity"
+      metrics:
+        - name: "PRD Generation Time"
+          current: "5-10 seconds"
+          target: "10-20 seconds (with planning)"
+          measurement: "Time from request to completed PRD"
+        - name: "Token Efficiency"
+          current: "Unknown"
+          target: "30% reduction"
+          measurement: "Tokens per successful PRD"
+        - name: "Epic Completion Rate"
+          current: "1-2 per week"
+          target: "2-3 per week"
+          measurement: "Completed epics per week"
+    
+    - category: "System Health"
+      metrics:
+        - name: "Agent Uptime"
+          current: "95%"
+          target: "99%"
+          measurement: "% of time agents are responsive"
+        - name: "Error Rate"
+          current: "10%"
+          target: "2%"
+          measurement: "% of requests resulting in errors"
+        - name: "Context Load Time"
+          current: "<200ms"
+          target: "<100ms"
+          measurement: "Time to load RAG context"
+
+# Query Examples:
+# - fetch:vision:vision:master_control_plan → Returns MCP summary
+# - fetch:vision:roadmap:completed → Returns all completed epics
+# - fetch:vision:roadmap:in_progress → Returns current work
+# - fetch:vision:priorities:sdlc_focus → Returns SDLC focus details
+# - fetch:vision:technical_debt → Returns all technical debt items
+# - search:vision:validation → Returns all items mentioning validation

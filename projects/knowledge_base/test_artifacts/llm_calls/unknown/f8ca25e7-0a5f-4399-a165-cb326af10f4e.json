@@ -1,0 +1,64 @@
+{
+  "ts": "2026-03-12T18:25:18Z",
+  "request_id": "f8ca25e7-0a5f-4399-a165-cb326af10f4e",
+  "correlation_id": null,
+  "agent": "unknown",
+  "model": "grok-4",
+  "request_bytes": 80,
+  "response_status": 200,
+  "response_bytes": 480,
+  "usage": {
+    "prompt_tokens": 1,
+    "completion_tokens": 1,
+    "total_tokens": 2
+  },
+  "request": {
+    "model": "grok-4",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello"
+      }
+    ],
+    "stream": false
+  },
+  "response": {
+    "id": "chatcmpl-1",
+    "object": "chat.completion",
+    "created": 1,
+    "model": "grok-4",
+    "choices": [
+      {
+        "index": 0,
+        "finish_reason": "tool_calls",
+        "message": {
+          "role": "assistant",
+          "content": null,
+          "tool_calls": [
+            {
+              "id": "call_1",
+              "type": "function",
+              "function": {
+                "name": "proxy_tools",
+                "arguments": "{\"query\":\"test query\",\"num_results\":2}"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 1,
+      "completion_tokens": 1,
+      "total_tokens": 2
+    },
+    "smart_proxy": {
+      "tool_loop": {
+        "loop_count": 0,
+        "max_loops": 0,
+        "stopped": "max_loops"
+      },
+      "tools_used": []
+    }
+  }
+}

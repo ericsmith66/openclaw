@@ -1,0 +1,188 @@
+<div class="tabs tabs-boxed flex flex-col sm:flex-row">
+  <%= link_to "Artifacts", admin_ai_workflow_path(tab: "artifacts", artifact_id: @active_artifact&.id, correlation_id: @snapshot&.correlation_id), class: "tab #{tab_active?("artifacts") ? "tab-active" : ""}" %>
+  <%= link_to "Ownership", admin_ai_workflow_path(tab: "ownership", artifact_id: @active_artifact&.id, correlation_id: @snapshot&.correlation_id), class: "tab #{tab_active?("ownership") ? "tab-active" : ""}" %>
+  <%= link_to "Context", admin_ai_workflow_path(tab: "context", artifact_id: @active_artifact&.id, correlation_id: @snapshot&.correlation_id), class: "tab #{tab_active?("context") ? "tab-active" : ""}" %>
+  <%= link_to "Logs", admin_ai_workflow_path(tab: "logs", artifact_id: @active_artifact&.id, correlation_id: @snapshot&.correlation_id), class: "tab #{tab_active?("logs") ? "tab-active" : ""}" %>
+</div>
+
+<div class="card bg-base-100 shadow">
+  <div class="card-body">
+    <% if tab_active?("artifacts") %>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="w-full md:w-1/3 border-r pr-4">
+          <h2 class="card-title mb-4">Artifacts</h2>
+          <ul class="menu bg-base-200 rounded-box">
+            <% @artifacts.each do |artifact| %>
+              <li>
+                <%= link_to admin_ai_workflow_path(tab: "artifacts", artifact_id: artifact.id, correlation_id: @snapshot&.correlation_id), class: @active_artifact&.id == artifact.id ? "active" : "" do %>
+                  <div class="flex flex-col">
+                    <span class="font-bold"><%= artifact.name %></span>
+                    <span class="text-xs opacity-70"><%= artifact.phase.humanize %> | <%= artifact.owner_persona %></span>
+                  </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </div>
+        <div class="w-full md:w-2/3">
+          <% if @active_artifact %>
+            <div class="flex justify-between items-start">
+              <h2 class="text-xl font-bold"><%= @active_artifact.name %></h2>
+              <div class="badge badge-info"><%= @active_artifact.phase.humanize %></div>
+            </div>
+            <div class="mt-2 text-sm">
+              <strong>Type:</strong> <%= @active_artifact.artifact_type %> | 
+              <strong>Owner:</strong> <%= @active_artifact.owner_persona %>
+            </div>
+            
+            <div class="mt-4 p-4 bg-base-200 rounded-box font-mono text-sm whitespace-pre-wrap"><%= @active_artifact.payload&.fetch("content", nil) || "No content" %></div>
+
+            <% if @active_artifact.payload&.dig("implementation_notes").present? || @active_artifact.payload&.dig("micro_tasks")&.any? %>
+              <div class="mt-6">
+                <h3 class="font-bold mb-2">Technical Plan</h3>
+                <% if @active_artifact.payload&.dig("micro_tasks")&.any? %>
+                  <ul class="menu bg-base-200 rounded-box mb-4">
+                    <% @active_artifact.payload["micro_tasks"].each do |task| %>
+                      <li>
+                        <div class="flex items-center gap-2">
+                          <input type="checkbox" <%= 'checked' if task['status'] == 'completed' || task['completed'] == true %> disabled class="checkbox checkbox-xs" />
+                          <span><%= task['title'] %> (<%= task['estimate'] %>)</span>
+                        </div>
+                      </li>
+                    <% end %>
+                  </ul>
+                <% end %>
+                <% if @active_artifact.payload&.dig("implementation_notes").present? %>
+                  <div class="p-4 bg-blue-50 text-blue-900 rounded-box text-sm whitespace-pre-wrap"><%= @active_artifact.payload["implementation_notes"] %></div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <div class="mt-6">
+              <h3 class="font-bold mb-2">Phase Transitions</h3>
+              <div class="flex gap-2">
+                <button class="btn btn-success btn-sm">Approve</button>
+                <button class="btn btn-warning btn-sm">Reject</button>
+                <button class="btn btn-secondary btn-sm">Backlog</button>
+              </div>
+              <p class="text-xs mt-2 opacity-60 italic">Note: These buttons are UI mocks for the spike. Use slash commands in Agent Hub for full transition logic.</p>
+            </div>
+
+            <% if @active_artifact.payload&.dig("audit_trail")&.any? %>
+              <div class="mt-6">
+                <h3 class="font-bold mb-2">Audit Trail</h3>
+                <table class="table table-xs table-zebra w-full">
+                  <thead>
+                    <tr>
+                      <th>From</th>
+                      <th>To</th>
+                      <th>Action</th>
+                      <th>Actor</th>
+                      <th>At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% @active_artifact.payload["audit_trail"].reverse.each do |entry| %>
+                      <tr>
+                        <td><%= entry["from_phase"]&.humanize %></td>
+                        <td><%= entry["to_phase"]&.humanize %></td>
+                        <td><%= entry["action"] %></td>
+                        <td><%= entry["actor_persona"] %></td>
+                        <td><%= entry["timestamp"] %></td>
+                      </tr>
+                    <% end %>
+                  </tbody>
+                </table>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="flex items-center justify-center h-full text-opacity-50">
+              Select an artifact to view details.
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% elsif @snapshot.nil? %>
+      <div class="py-12 text-center">
+        <h2 class="text-xl font-bold">No Workflow Data</h2>
+        <p class="opacity-60">This tab requires a workflow run to be active. Autonomous runs generate the logs displayed here.</p>
+      </div>
+    <% elsif tab_active?("ownership") %>
+        <h2 class="card-title">Ownership</h2>
+        <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <dt class="text-sm opacity-70">Ball with</dt>
+            <dd class="font-mono"><%= @snapshot.ball_with.presence || "unknown" %></dd>
+          </div>
+          <div>
+            <dt class="text-sm opacity-70">State</dt>
+            <dd class="font-mono"><%= @snapshot.state.presence || "unknown" %></dd>
+          </div>
+          <div>
+            <dt class="text-sm opacity-70">Started</dt>
+            <dd class="font-mono"><%= @snapshot.started_at.presence || "unknown" %></dd>
+          </div>
+          <div>
+            <dt class="text-sm opacity-70">Finished</dt>
+            <dd class="font-mono"><%= @snapshot.finished_at.presence || "unknown" %></dd>
+          </div>
+        </dl>
+
+        <% if @snapshot.feedback_history.any? %>
+          <div class="mt-4">
+            <div class="font-semibold mb-2">Feedback history</div>
+            <ul class="menu bg-base-200 rounded-box">
+              <% @snapshot.feedback_history.each do |msg| %>
+                <li><span class="font-mono text-xs"><%= msg.to_s %></span></li>
+              <% end %>
+            </ul>
+          </div>
+        <% end %>
+      <% elsif tab_active?("context") %>
+        <h2 class="card-title">Context</h2>
+        <div class="overflow-x-auto">
+          <table class="table table-zebra">
+            <thead>
+              <tr>
+                <th>Key</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @snapshot.context.sort_by { |k, _| k.to_s }.each do |k, v| %>
+                <tr>
+                  <td class="font-mono text-xs"><%= k %></td>
+                  <td class="font-mono text-xs whitespace-pre-wrap"><%= v.is_a?(String) ? v : JSON.pretty_generate(v) rescue v.to_s %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <h2 class="card-title">Logs</h2>
+        <div class="text-sm opacity-70">Showing <%= paged_events.length %> of <%= events.length %> events (latest first in file tail)</div>
+
+        <div id="ai_workflow_events" class="mt-3 space-y-2">
+          <% paged_events.each do |evt| %>
+            <%= render partial: "admin/ai_workflow/event", locals: { event: evt } %>
+          <% end %>
+        </div>
+
+        <div class="join mt-4">
+          <% if has_prev? %>
+            <%= link_to "Prev", admin_ai_workflow_path(tab: "logs", artifact_id: @active_artifact&.id, correlation_id: @snapshot.correlation_id, events_page: @events_page - 1), class: "btn join-item" %>
+          <% else %>
+            <button class="btn join-item" disabled>Prev</button>
+          <% end %>
+
+          <button class="btn join-item" disabled>Page <%= @events_page %></button>
+
+          <% if has_next? %>
+            <%= link_to "Next", admin_ai_workflow_path(tab: "logs", artifact_id: @active_artifact&.id, correlation_id: @snapshot.correlation_id, events_page: @events_page + 1), class: "btn join-item" %>
+          <% else %>
+            <button class="btn join-item" disabled>Next</button>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>

@@ -1,0 +1,94 @@
+<div class="card bg-base-100 shadow-sm <%= 'card-compact' if compact %>"
+     data-controller="garage-door-control"
+     data-garage-door-control-accessory-id-value="<%= accessory.uuid %>"
+     data-garage-door-control-current-state-value="<%= current_state %>"
+     data-garage-door-control-offline-value="<%= offline? %>">
+  
+  <div class="card-body">
+    <h3 class="card-title text-sm flex items-center justify-between">
+      <span><%= accessory.name %></span>
+      <% if offline? %>
+        <span class="badge badge-ghost badge-sm">Offline</span>
+      <% end %>
+    </h3>
+
+    <!-- Current State Display -->
+    <div class="flex items-center justify-center py-4">
+      <div class="text-center">
+        <div class="text-5xl mb-2 <%= state_color_class %>">
+          <%= state_icon %>
+        </div>
+        <div class="text-lg font-semibold <%= state_color_class %>">
+          <%= state_text %>
+        </div>
+      </div>
+    </div>
+
+    <% if obstruction_detected? %>
+      <div class="alert alert-error py-2 px-3 text-xs mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        <span>Obstruction detected</span>
+      </div>
+    <% end %>
+
+    <% if locked? %>
+      <div class="alert alert-info py-2 px-3 text-xs mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-4 w-4" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span>Door is locked</span>
+      </div>
+    <% end %>
+
+    <!-- Control Buttons -->
+    <div class="flex gap-2">
+      <% if can_open? %>
+        <button class="btn btn-warning flex-1 <%= 'btn-disabled' if offline? %>"
+                data-action="click->garage-door-control#showOpenConfirmation"
+                <%= 'disabled' if offline? %>>
+          ⬆️ Open
+        </button>
+      <% end %>
+
+      <% if can_close? %>
+        <button class="btn btn-success flex-1 <%= 'btn-disabled' if offline? %>"
+                data-action="click->garage-door-control#showCloseConfirmation"
+                <%= 'disabled' if offline? %>>
+          ⬇️ Close
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <% if can_open? %>
+    <!-- Open Confirmation Modal -->
+    <dialog class="modal" data-garage-door-control-target="openDialog">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Open Garage Door?</h3>
+        <p class="py-4">Are you sure you want to open <%= accessory.name %>?</p>
+        <div class="modal-action">
+          <button class="btn" data-action="click->garage-door-control#cancelOpen">Cancel</button>
+          <button class="btn btn-warning" data-action="click->garage-door-control#confirmOpen">Open Door</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button data-action="click->garage-door-control#cancelOpen">close</button>
+      </form>
+    </dialog>
+  <% end %>
+
+  <% if can_close? %>
+    <!-- Close Confirmation Modal -->
+    <dialog class="modal" data-garage-door-control-target="closeDialog">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Close Garage Door?</h3>
+        <p class="py-4">Make sure the door path is clear before closing <%= accessory.name %>.</p>
+        <div class="modal-action">
+          <button class="btn" data-action="click->garage-door-control#cancelClose">Cancel</button>
+          <button class="btn btn-success" data-action="click->garage-door-control#confirmClose">Close Door</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button data-action="click->garage-door-control#cancelClose">close</button>
+      </form>
+    </dialog>
+  <% end %>
+</div>

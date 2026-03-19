@@ -1,0 +1,30 @@
+---
+transactions:
+- date: '2026-01-15'
+  name: Amazon.com
+  amount: -129.99
+  merchant_name: Amazon
+  personal_finance_category_label: SHOPPING
+  pending: false
+  payment_channel: online
+  account_name: Chase Sapphire
+  account_type: credit
+  transaction_id: mock_cred_001
+  source: manual
+  subtype: purchase
+  category: shopping
+  type: CreditTransaction
+- date: '2026-01-14'
+  name: Restaurant
+  amount: -45.50
+  merchant_name: Local Bistro
+  personal_finance_category_label: FOOD_AND_DRINK
+  pending: true
+  payment_channel: in store
+  account_name: Amex Platinum
+  account_type: credit
+  transaction_id: mock_cred_002
+  source: manual
+  subtype: purchase
+  category: dining
+  type: CreditTransaction

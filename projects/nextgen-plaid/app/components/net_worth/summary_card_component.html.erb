@@ -1,0 +1,45 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="card-title">Total Net Worth</h2>
+        <div class="net-worth-total text-3xl font-bold mt-2"><%= number_to_currency(total, precision: 0) %></div>
+        <% if presence(last_updated_text) %>
+          <div class="timestamp text-sm opacity-70 mt-2"><%= last_updated_text %></div>
+        <% end %>
+      </div>
+
+      <div class="flex flex-col gap-2 text-sm">
+        <div class="flex items-center justify-end gap-2">
+          <span class="opacity-70">1D</span>
+          <span class="tooltip tooltip-left" data-tip="Day change vs. most recent prior snapshot">
+            <span
+              class="delta-day inline-flex items-center gap-1 font-semibold <%= delta_style(day_delta_usd) %>"
+              tabindex="0"
+              aria-label="Day change <%= signed_currency(day_delta_usd) %> (<%= signed_percentage(day_delta_pct) %>)">
+              <span aria-hidden="true"><%= delta_symbol(day_delta_usd) %></span>
+              <span><%= signed_currency(day_delta_usd) %></span>
+              <span class="opacity-70">/</span>
+              <span><%= signed_percentage(day_delta_pct) %></span>
+            </span>
+          </span>
+        </div>
+
+        <div class="flex items-center justify-end gap-2">
+          <span class="opacity-70">30D</span>
+          <span class="tooltip tooltip-left" data-tip="30-day change from earliest in window">
+            <span
+              class="delta-30d inline-flex items-center gap-1 font-semibold <%= delta_style(thirty_day_delta_usd) %>"
+              tabindex="0"
+              aria-label="Thirty day change <%= signed_currency(thirty_day_delta_usd) %> (<%= signed_percentage(thirty_day_delta_pct) %>)">
+              <span aria-hidden="true"><%= delta_symbol(thirty_day_delta_usd) %></span>
+              <span><%= signed_currency(thirty_day_delta_usd) %></span>
+              <span class="opacity-70">/</span>
+              <span><%= signed_percentage(thirty_day_delta_pct) %></span>
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

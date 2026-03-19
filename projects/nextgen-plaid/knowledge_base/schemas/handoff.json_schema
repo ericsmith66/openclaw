@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "agent_handoff",
+  "type": "object",
+  "required": ["type", "from", "to"],
+  "properties": {
+    "type": { "const": "agent_handoff" },
+    "from": { "type": "string", "minLength": 1 },
+    "to": { "type": "string", "minLength": 1 },
+    "ts": { "type": "string" },
+    "payload": {}
+  },
+  "additionalProperties": true
+}

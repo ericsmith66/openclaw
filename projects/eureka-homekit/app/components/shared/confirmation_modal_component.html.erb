@@ -1,0 +1,13 @@
+<dialog class="modal" data-shared-target="confirmDialog">
+  <div class="modal-box">
+    <h3 class="font-bold text-lg"><%= @title %></h3>
+    <p class="py-4"><%= @description %></p>
+    <div class="modal-action">
+      <button class="<%= cancel_classes %>" data-action="click->shared#cancel"><%= @cancel_text %></button>
+      <button class="<%= confirm_classes %>" data-action="click->shared#confirm"><%= @confirm_text %></button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button data-action="click->shared#cancel">close</button>
+  </form>
+</dialog>

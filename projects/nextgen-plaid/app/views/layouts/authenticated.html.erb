@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>NextGen Plaid</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= action_cable_meta_tag %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <%= javascript_importmap_tags %>
+</head>
+
+<body data-theme="business">
+<% flash.each do |type, msg| %>
+  <div class="alert <%= type == 'notice' || type == 'success' ? 'alert-success' : 'alert-error' %> rounded-none">
+    <%= msg %>
+  </div>
+<% end %>
+
+<div class="drawer lg:drawer-open">
+  <input id="authenticated-drawer" type="checkbox" class="drawer-toggle" />
+  <label for="authenticated-drawer" class="sr-only">Toggle navigation</label>
+
+  <div class="drawer-content flex flex-col min-h-screen">
+    <%= render Navigation::TopBarComponent.new(current_user: current_user, drawer_id: "authenticated-drawer") %>
+
+    <main class="flex-1 bg-base-200">
+      <div class="p-6">
+        <%= yield %>
+      </div>
+    </main>
+  </div>
+
+  <%= render Navigation::SidebarComponent.new(current_user: current_user, drawer_id: "authenticated-drawer") %>
+</div>
+</body>
+</html>

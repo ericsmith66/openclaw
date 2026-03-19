@@ -1,0 +1,8 @@
+<div class="max-w-3xl mx-auto">
+  <div class="flex items-center justify-between gap-4 mb-6">
+    <h1 class="text-xl font-semibold">New Saved Filter</h1>
+    <%= link_to "Back", saved_account_filters_path, class: "btn btn-sm btn-ghost" %>
+  </div>
+
+  <%= render "form", saved_account_filter: @saved_account_filter %>
+</div>

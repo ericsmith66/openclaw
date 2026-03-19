@@ -1,0 +1,41 @@
+<div class="drawer lg:drawer-open">
+  <input id="persona-chat-drawer" type="checkbox" class="drawer-toggle" />
+  <div class="drawer-content flex flex-col">
+    <div class="navbar bg-base-100 border-b border-base-200">
+      <div class="flex-none lg:hidden">
+        <label for="persona-chat-drawer" aria-label="Open conversation list" class="btn btn-square btn-ghost min-h-11 min-w-11">
+          ☰
+        </label>
+      </div>
+      <div class="flex-1">
+        <span class="font-semibold">Chat: <%= @persona_id %></span>
+      </div>
+      <div class="flex-none">
+        <% if @active_conversation.present? %>
+          <div class="flex flex-col items-end gap-2">
+            <%= render PersonaChats::DisclaimerComponent.new %>
+          <%= render PersonaChats::ModelSelectorComponent.new(
+                persona_id: @persona_id,
+                conversation: @active_conversation,
+                available_models: @available_models
+              ) %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%= render PersonaChats::ChatPaneComponent.new(persona_id: @persona_id, conversation: @active_conversation) %>
+  </div>
+
+  <div class="drawer-side">
+    <label for="persona-chat-drawer" aria-label="Close conversation list" class="drawer-overlay"></label>
+    <div class="w-80 bg-base-100 border-r border-base-200 h-full overflow-y-auto">
+      <%= render PersonaChats::SidebarComponent.new(
+            persona_id: @persona_id,
+            conversations: @conversations,
+            active_conversation_id: @active_conversation&.id,
+            next_page: @next_page
+          ) %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<%= turbo_frame_tag "agent_hub_content" do %>
+  <div class="flex flex-col h-full">
+    <%= render(PersonaTabsComponent.new(personas: @personas, active_persona_id: @active_persona_id, selected_model: @selected_model)) %>
+
+    <div class="flex flex-grow mt-4 overflow-hidden border border-base-300 rounded-box min-h-[600px]">
+      <%= render(ConversationSidebarComponent.new(conversations: @conversations, active_run: @active_conversation, active_persona_id: @active_persona_id)) %>
+
+      <div class="flex-grow bg-base-100 p-6 overflow-y-auto flex flex-col">
+        <h1 class="text-2xl font-bold flex justify-between items-center">
+          <span>
+            <% if @active_persona_id == 'workflow_monitor' %>
+              Workflow Monitor (Read-only)
+            <% else %>
+              <%= @active_persona_id.upcase %> Monitoring
+            <% end %>
+          </span>
+          <% if @active_artifact %>
+            <div class="text-sm font-normal bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-300">
+              <span class="font-bold">Artifact:</span> <%= @active_artifact.name %> 
+              <span class="ml-2 badge badge-info"><%= @active_artifact.phase.humanize %></span>
+              <a href="/admin/ai_workflow?artifact_id=<%= @active_artifact.id %>" class="ml-2 text-blue-600 hover:underline" data-turbo-frame="_top">View in Workflow UI</a>
+            </div>
+          <% end %>
+        </h1>
+        <% advisor_persona = (@active_persona_id == 'ai_financial_advisor') %>
+        <% show_advisor_chat = !advisor_persona || (@advisor_chat_state == :active) %>
+
+        <div class="flex-grow py-4 overflow-y-auto">
+          <% if show_advisor_chat %>
+            <%= render(ChatPaneComponent.new(agent_id: "#{@active_persona_id}-agent", conversation: @active_conversation)) %>
+          <% else %>
+            <div class="card bg-base-200 border border-base-300">
+              <div class="card-body">
+                <div class="flex items-start gap-3">
+                  <div class="badge badge-neutral">Financial Advisor Chat</div>
+                </div>
+
+                <% if @advisor_chat_state == :needs_link %>
+                  <p class="mt-2 text-base-content/80">Link an account first to chat with your advisor.</p>
+                  <ul class="mt-3 text-sm text-base-content/70 list-disc pl-5">
+                    <li>Portfolio allocation</li>
+                    <li>Tax optimization strategies</li>
+                    <li>Net worth growth planning</li>
+                  </ul>
+                  <div class="mt-4">
+                    <%= link_to "Connect Your First Account", accounts_link_path, class: "btn btn-primary", data: { turbo_frame: "_top" } %>
+                  </div>
+                <% else %>
+                  <p class="mt-2 text-base-content/80">Your accounts need attention to continue chatting.</p>
+                  <div class="mt-4">
+                    <%= link_to "Fix Accounts", accounts_link_path, class: "btn btn-primary", data: { turbo_frame: "_top" } %>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <% unless @active_persona_id == 'workflow_monitor' || !show_advisor_chat %>
+          <div class="mt-4">
+            <%= render(InputBarComponent.new(agent_id: "#{@active_persona_id}-agent", run_id: @active_conversation&.id)) %>
+          </div>
+        <% end %>
+      </div>
+
+      <div id="artifact-preview-wrapper">
+        <% if @active_artifact %>
+          <%= render(ArtifactPreviewComponent.new(artifact: @active_artifact, user_id: current_user.id)) %>
+        <% else %>
+          <div id="artifact-preview-container" class="w-96 border-l border-base-300 bg-base-50 flex flex-col h-full p-4 italic text-gray-500 text-sm">
+            <%= turbo_stream_from "active_artifacts_user_#{current_user.id}" %>
+            No active artifact. Draft a PRD to begin.
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

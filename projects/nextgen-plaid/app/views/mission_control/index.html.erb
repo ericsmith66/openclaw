@@ -1,0 +1,115 @@
+<%= render(LayoutComponent.new(title: "Mission Control", current_user: current_user)) do %>
+  <%= render(MissionControlComponent.new(
+    plaid_items: @plaid_items,
+    transactions: @transactions,
+    recurring_transactions: @recurring_transactions,
+    accounts: @accounts,
+    holdings: @holdings,
+    sync_logs: @sync_logs,
+    webhook_logs: @webhook_logs
+  )) %>
+<% end %>
+
+<!-- Plaid Link JS for re-linking -->
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+  function csrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta && meta.getAttribute('content');
+  }
+
+  async function relinkItem(id) {
+    try {
+      const res = await fetch('<%= mission_control_relink_path(id: "__ID__") %>'.replace('__ID__', id), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken()
+        },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert('Failed to get link token: ' + (err.error || res.statusText));
+        return;
+      }
+      const data = await res.json();
+      const handler = Plaid.create({
+        token: data.link_token,
+        onSuccess: async function(public_token, metadata) {
+          try {
+            await fetch('<%= mission_control_relink_success_path(id: "__ID__") %>'.replace('__ID__', id), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken()
+              },
+              body: JSON.stringify({ public_token: public_token })
+            });
+          } catch (e) {
+            console.warn('Failed to notify relink success:', e);
+          }
+          window.location.reload();
+        },
+        onExit: function(err, metadata) {
+          if (err) {
+            console.warn('Plaid Link exit:', err);
+          }
+        }
+      });
+      handler.open();
+    } catch (e) {
+      console.error('Failed to relink:', e);
+      alert('Failed to connect to Plaid');
+    }
+  }
+
+  // Request product-specific consent (e.g., liabilities)
+  async function relinkLiabilities(id) {
+    try {
+      const relinkUrl = '<%= mission_control_relink_path(id: "__ID__") %>'.replace('__ID__', id) + '?products=liabilities';
+      const res = await fetch(relinkUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken()
+        },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert('Failed to get liabilities link token: ' + (err.error || res.statusText));
+        return;
+      }
+      const data = await res.json();
+      const handler = Plaid.create({
+        token: data.link_token,
+        onSuccess: async function(public_token, metadata) {
+          try {
+            const successUrl = '<%= mission_control_relink_success_path(id: "__ID__") %>'.replace('__ID__', id);
+            await fetch(successUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': csrfToken()
+              },
+              body: JSON.stringify({ public_token: public_token, products: 'liabilities' })
+            });
+          } catch (e) {
+            console.warn('Failed to notify liabilities relink success:', e);
+          }
+          window.location.reload();
+        },
+        onExit: function(err, metadata) {
+          if (err) {
+            console.warn('Plaid Link exit:', err);
+          }
+        }
+      });
+      handler.open();
+    } catch (e) {
+      console.error('Failed to relink liabilities:', e);
+      alert('Failed to connect to Plaid');
+    }
+  }
+</script>

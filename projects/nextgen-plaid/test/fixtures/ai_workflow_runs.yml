@@ -1,0 +1,9 @@
+one:
+  user: one
+  status: draft
+  metadata: {}
+
+two:
+  user: one
+  status: pending
+  metadata: {}

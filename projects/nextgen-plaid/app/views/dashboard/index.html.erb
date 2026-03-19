@@ -1,0 +1,169 @@
+<%= render(LayoutComponent.new(title: "Dashboard", current_user: current_user)) do %>
+  <%= render(DashboardComponent.new(current_user: current_user)) %>
+<% end %>
+
+<!-- Plaid Link JS -->
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+  function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').content;
+  }
+
+  function showToast(message) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'toast toast-top toast-end z-50';
+    wrapper.innerHTML = `<div class="alert alert-success"><span>${message}</span></div>`;
+    document.body.appendChild(wrapper);
+    setTimeout(() => wrapper.remove(), 5000);
+  }
+
+  async function relinkItem(itemId) {
+    try {
+      const res = await fetch('/mission_control/relink/' + itemId, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': getCsrfToken()
+        },
+        body: JSON.stringify({})
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert('Failed to get link token: ' + (err.error || res.statusText));
+        return;
+      }
+      const data = await res.json();
+      const handler = Plaid.create({
+        token: data.link_token,
+        onSuccess: async function(public_token, metadata) {
+          try {
+            await fetch('/mission_control/relink_success/' + itemId, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': getCsrfToken()
+              },
+              body: JSON.stringify({ public_token: public_token })
+            });
+          } catch (e) {
+            console.warn('Failed to notify relink success:', e);
+          }
+          window.location.reload();
+        },
+        onExit: function(err, metadata) {
+          if (err) {
+            console.warn('Plaid Link exit:', err);
+          }
+        }
+      });
+      handler.open();
+    } catch (e) {
+      console.error('Failed to relink:', e);
+      alert('Failed to connect to Plaid');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('showChatActivatedToast') === '1') {
+      localStorage.removeItem('showChatActivatedToast');
+      showToast('🎉 Great! Your advisor chat is now active. Ask anything!');
+    }
+
+    const button = document.getElementById('plaid-link-button');
+    if (!button) return;
+
+    fetch('/plaid/link_token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': getCsrfToken()
+      },
+      body: JSON.stringify({})
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to get link token');
+      return res.json();
+    })
+    .then(data => {
+      const handler = Plaid.create({
+        token: data.link_token,
+        onSuccess: function(public_token, metadata) {
+          fetch('/plaid/exchange', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': getCsrfToken()
+            },
+            body: JSON.stringify({
+              public_token: public_token,
+              institution_name: metadata.institution?.name || 'Unknown Institution'
+            })
+          })
+          .then(res => res.json())
+          .then(data => {
+            console.log('Link success:', data);
+            if (data && data.first_success) {
+              localStorage.setItem('showChatActivatedToast', '1');
+            }
+            window.location.reload();
+          })
+          .catch(err => {
+            console.error('Exchange failed:', err);
+            alert('Failed to save account');
+          });
+        },
+        onExit: function(err, metadata) {
+          if (err) {
+            console.warn('Plaid Link exit:', err);
+          }
+        }
+      });
+      button.onclick = function() {
+        handler.open();
+      };
+    })
+    .catch(err => {
+      console.error('Link token failed:', err);
+      button.disabled = true;
+      button.textContent = 'Connection unavailable';
+    });
+
+    // OAuth Button Handler
+    const oauthButton = document.getElementById('plaid-oauth-button');
+    if (!oauthButton) return;
+
+    fetch('/plaid_oauth/initiate', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': getCsrfToken()
+      }
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Failed to get OAuth link token');
+      return res.json();
+    })
+    .then(data => {
+      const oauthHandler = Plaid.create({
+        token: data.link_token,
+        onSuccess: function(public_token, metadata) {
+          // Redirect to OAuth callback with public_token and user_id
+          window.location.href = `/plaid_oauth/callback?public_token=${public_token}&client_user_id=<%= current_user.id %>`;
+        },
+        onExit: function(err, metadata) {
+          if (err) {
+            console.warn('Plaid OAuth Link exit:', err);
+          }
+        }
+      });
+      oauthButton.onclick = function() {
+        oauthHandler.open();
+      };
+    })
+    .catch(err => {
+      console.error('OAuth link token failed:', err);
+      oauthButton.disabled = true;
+      oauthButton.textContent = 'OAuth unavailable';
+    });
+  });
+</script>

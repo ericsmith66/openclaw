@@ -1,0 +1,7 @@
+<div class="flex items-center gap-2 <%= color_class %>">
+  <%= helpers.lucide_icon(battery_icon, size: 16) %>
+  <span class="text-sm font-mono font-bold"><%= @level.to_i %>%</span>
+  <% if @charging %>
+    <span class="badge badge-success badge-xs animate-pulse"></span>
+  <% end %>
+</div>

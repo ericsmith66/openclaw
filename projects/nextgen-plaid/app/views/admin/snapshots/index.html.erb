@@ -1,0 +1,50 @@
+<div class="p-6">
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-2xl font-bold">Financial Snapshots</h1>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="table table-zebra w-full bg-base-100 shadow-xl">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th class="text-right">Net Worth</th>
+          <th class="text-right">Quality Score</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @snapshots.each do |snapshot| %>
+          <tr class="hover">
+            <td><%= snapshot.user&.email %></td>
+            <td><%= snapshot.snapshot_at&.to_date %></td>
+            <td>
+              <span class="badge badge-outline"><%= snapshot.status %></span>
+            </td>
+            <td class="text-right"><%= number_to_currency(snapshot.data["total_net_worth"].to_f) %></td>
+            <td class="text-right"><%= snapshot.data_quality_score.to_f.round(2) %></td>
+            <td class="text-center">
+              <%= link_to "View", admin_snapshot_path(snapshot), class: "btn btn-ghost btn-xs" %>
+            </td>
+          </tr>
+        <% end %>
+
+        <% if @snapshots.empty? %>
+          <tr>
+            <td colspan="6" class="text-center py-8">
+              <div class="alert alert-info">
+                <span>No snapshots found</span>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-4">
+    <%= paginate @snapshots %>
+  </div>
+</div>

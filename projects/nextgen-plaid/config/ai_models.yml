@@ -1,0 +1,11 @@
+---
+# Global allowlist of model tags accepted by the CLI and app-side validation.
+#
+# PRD-AH-012A requires offline validation (no live SmartProxy/Ollama tag discovery).
+models:
+  - llama3.1:70b
+  - llama3.1:8b
+  - llama3-groq-tool-use:70b
+  # Tool-call capable hosted models (via SmartProxy)
+  - grok-4
+  - grok-4-latest

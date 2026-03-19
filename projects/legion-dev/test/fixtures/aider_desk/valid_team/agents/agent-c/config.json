@@ -1,0 +1,9 @@
+{
+  "id": "agent-c-id",
+  "name": "Agent C",
+  "provider": "deepseek",
+  "model": "deepseek-reasoner",
+  "maxIterations": 200,
+  "useSubagents": true,
+  "customInstructions": "Be thorough"
+}

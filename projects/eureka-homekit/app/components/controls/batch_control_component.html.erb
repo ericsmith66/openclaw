@@ -1,0 +1,109 @@
+<% if controllable_accessories.size > 1 %>
+  <div data-controller="batch-control" class="mb-6">
+    <!-- Selection toolbar -->
+    <div class="bg-base-100 rounded-2xl border border-base-200 shadow-sm p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h4 class="text-sm font-bold uppercase tracking-wider opacity-60">Batch Controls</h4>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost btn-xs"
+                  data-action="click->batch-control#selectAll"
+                  aria-label="Select all accessories">
+            Select All
+          </button>
+          <button class="btn btn-ghost btn-xs"
+                  data-action="click->batch-control#deselectAll"
+                  aria-label="Deselect all accessories">
+            Deselect All
+          </button>
+        </div>
+      </div>
+
+      <!-- Accessory checkboxes -->
+      <div class="space-y-2 mb-4">
+        <% controllable_accessories.each do |accessory| %>
+          <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200/50 cursor-pointer transition-colors">
+            <input type="checkbox"
+                   class="checkbox checkbox-sm checkbox-primary"
+                   value="<%= accessory.uuid %>"
+                   data-batch-control-target="checkbox"
+                   data-action="change->batch-control#toggleSelection"
+                   aria-label="Select <%= accessory.name %>">
+            <span class="text-sm font-medium flex-1"><%= accessory.name %></span>
+            <span class="badge badge-ghost badge-sm">
+              <%= accessory.sensors.select(&:is_writable).map(&:characteristic_type).uniq.join(', ') %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+
+      <!-- Action toolbar (hidden until selection) -->
+      <div data-batch-control-target="toolbar" class="hidden">
+        <div class="divider my-2"></div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-medium">
+            <span data-batch-control-target="count" class="font-bold text-primary">0</span> selected
+          </span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-3">
+          <button class="btn btn-sm btn-primary"
+                  data-action="click->batch-control#executeBatchAction"
+                  data-batch-control-action-param="turn_on"
+                  aria-label="Turn on selected accessories">
+            Turn On
+          </button>
+          <button class="btn btn-sm btn-outline"
+                  data-action="click->batch-control#executeBatchAction"
+                  data-batch-control-action-param="turn_off"
+                  aria-label="Turn off selected accessories">
+            Turn Off
+          </button>
+          <% if has_brightness_capable? %>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-sm btn-outline"
+                      data-action="click->batch-control#executeBatchAction"
+                      data-batch-control-action-param="set_brightness"
+                      aria-label="Set brightness for selected accessories">
+                Set Brightness
+              </button>
+              <input type="range" min="0" max="100" value="50"
+                     class="range range-xs range-primary w-24"
+                     data-batch-control-target="brightnessSlider"
+                     aria-label="Brightness value">
+              <span class="text-xs font-mono w-8" data-batch-control-target="brightnessDisplay">50%</span>
+            </div>
+          <% end %>
+          <% if has_temperature_capable? %>
+            <div class="flex items-center gap-2">
+              <button class="btn btn-sm btn-outline"
+                      data-action="click->batch-control#executeBatchAction"
+                      data-batch-control-action-param="set_temperature"
+                      aria-label="Set temperature for selected accessories">
+                Set Temp
+              </button>
+              <input type="number" min="50" max="86" value="72" step="1"
+                     class="input input-bordered input-xs w-16"
+                     data-batch-control-target="temperatureInput"
+                     aria-label="Temperature value">
+              <span class="text-xs">°F</span>
+            </div>
+          <% end %>
+        </div>
+
+        <!-- Progress indicator -->
+        <div data-batch-control-target="progressArea" class="hidden">
+          <div class="flex items-center gap-3 mb-2">
+            <span class="loading loading-spinner loading-sm text-primary"></span>
+            <span class="text-sm" data-batch-control-target="progressText">Processing...</span>
+          </div>
+          <progress class="progress progress-primary w-full"
+                    data-batch-control-target="progressBar"
+                    value="0" max="100"></progress>
+        </div>
+
+        <!-- Results summary -->
+        <div data-batch-control-target="resultsArea" class="hidden mt-3"></div>
+      </div>
+    </div>
+  </div>
+<% end %>

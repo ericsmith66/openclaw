@@ -1,0 +1,50 @@
+<div id="chat-pane-<%= @agent_id %>" 
+     class="flex flex-col h-[500px] bg-base-200 rounded-lg p-4 overflow-y-auto"
+     data-controller="chat-pane"
+     data-chat-pane-agent-id-value="<%= @agent_id %>">
+  <div id="messages-<%= @agent_id %>" class="flex-grow space-y-4" data-chat-pane-target="messages">
+    <% @messages.each do |message| %>
+      <% if message.system_role? %>
+        <div class="flex justify-center my-2">
+          <div class="bg-base-300 text-base-content/70 text-[10px] uppercase tracking-wider px-3 py-1 rounded-full border border-base-content/10">
+            <%= message.content %>
+          </div>
+        </div>
+      <% else %>
+        <div id="message-<%= message.id %>" class="chat <%= message.user_role? ? 'chat-end' : 'chat-start' %> group">
+          <div class="chat-header flex items-center gap-2">
+            <%= message.user_role? ? 'You' : 'Assistant' %>
+            <% if !message.user_role? %>
+              <% if message.respond_to?(:model) && message.model.present? %>
+                <span class="badge badge-sm badge-outline"><%= message.model %></span>
+              <% end %>
+              <% if helpers.params[:debug] == '1' %>
+                <button class="btn btn-ghost btn-xs btn-circle opacity-0 group-hover:opacity-100 transition-opacity" 
+                        data-action="click->chat-pane#inspectContext" 
+                        data-rag-request-id="<%= message.respond_to?(:rag_request_id) ? message.rag_request_id : '' %>"
+                        title="Inspect Context">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+              <% end %>
+            <% end %>
+          </div>
+          <div class="chat-bubble <%= message.user_role? ? 'chat-bubble-primary' : 'bg-base-300 border border-base-content/10' %> content flex flex-col gap-2 prose prose-sm max-w-none <%= message.user_role? ? 'prose-invert' : '' %>">
+            <div class="text">
+              <%= markdown(message.content) %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+  
+  <div id="typing-indicator-<%= @agent_id %>" class="hidden">
+    <div class="flex items-center space-x-2 text-gray-500 italic">
+      <span class="loading loading-dots loading-sm"></span>
+      <span>Agent is thinking...</span>
+    </div>
+  </div>
+</div>

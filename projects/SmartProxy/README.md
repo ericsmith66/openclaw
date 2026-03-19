@@ -1,0 +1,103 @@
+# SmartProxy Sinatra Server
+
+Standalone Sinatra proxy for Grok (xAI API) calls.
+
+## Setup
+
+1. Install dependencies:
+   ```bash
+   cd smart_proxy
+   bundle install
+   ```
+
+2. Configure environment variables (in `.env` or system):
+   - `GROK_API_KEY`: Your xAI API key.
+   - `PROXY_AUTH_TOKEN`: Token required for authentication with this proxy.
+   - `SMART_PROXY_PORT`: Port to run the server on (default: 4567).
+
+## Usage
+
+Start the server:
+```bash
+rackup -p 4567
+```
+
+### Endpoints
+
+#### GET /health
+Basic health check.
+Returns: `{ "status": "ok" }`
+
+#### GET /v1/models
+OpenAI-compatible model listing endpoint.
+
+- **Auth**: Requires `Authorization: Bearer <PROXY_AUTH_TOKEN>` (unless `PROXY_AUTH_TOKEN` is unset)
+- **Backed by**: Ollama HTTP API (`GET http://localhost:11434/api/tags`)
+- **Returns**:
+  - `{ "object": "list", "data": [ { "id": "llama3.1:8b", "object": "model", "owned_by": "ollama" } ] }`
+
+**Environment variables**:
+- `OLLAMA_TAGS_URL` (optional, default: `http://localhost:11434/api/tags`)
+- `SMART_PROXY_MODELS_CACHE_TTL` (optional, default: `60` seconds)
+
+#### POST /proxy/generate
+Forwards a request to Grok API after anonymization.
+
+**Headers:**
+- `Authorization: Bearer <PROXY_AUTH_TOKEN>`
+- `Content-Type: application/json`
+
+**Body:**
+Same as Grok Chat Completions API payload.
+
+## Providers
+
+| Provider     | Model Prefix                 | API Key Env Var      | Notes                        |
+|--------------|------------------------------|----------------------|------------------------------|
+| Grok (xAI)   | `grok-`                      | `GROK_API_KEY`       | OpenAI-compatible            |
+| Claude       | `claude-`                    | `CLAUDE_API_KEY`     | Anthropic API, mapped format |
+| DeepSeek     | `deepseek-`                  | `DEEPSEEK_API_KEY`   | OpenAI-compatible            |
+| Fireworks AI | `accounts/fireworks/models/` | `FIREWORKS_API_KEY`  | OpenAI-compatible            |
+| Ollama       | _(any other)_                | —                    | Local inference server       |
+
+### DeepSeek
+
+| Variable           | Required | Default                           |
+|--------------------|----------|-----------------------------------|
+| `DEEPSEEK_API_KEY` | Yes      | —                                 |
+| `DEEPSEEK_MODELS`  | No       | `deepseek-chat,deepseek-reasoner` |
+| `DEEPSEEK_TIMEOUT` | No       | `120`                             |
+
+### Fireworks AI
+
+Fireworks AI provides fast inference for popular open-source models (Llama 4, Qwen 3, DeepSeek). Model IDs use a namespaced path format: `accounts/fireworks/models/<name>`.
+
+| Variable            | Required | Default                                                  |
+|---------------------|----------|----------------------------------------------------------|
+| `FIREWORKS_API_KEY`  | Yes      | —                                                        |
+| `FIREWORKS_MODELS`   | No       | 5 default models (Llama 3.3/4, Qwen 3, DeepSeek V3/R1) |
+| `FIREWORKS_TIMEOUT`  | No       | `120`                                                    |
+
+---
+
+## Features
+
+- **Anonymization**: Strips PII (Email, Phone, SSN, Credit Card) from outgoing requests.
+- **Logging**: Structured JSON logging in `log/smart_proxy.log` with daily rotation.
+  - Logs include a compact summary/preview of large request/response bodies to avoid multi-megabyte log lines.
+  - Full per-call request/response payloads are persisted under `knowledge_base/test_artifacts/llm_calls/...`.
+- **Retries**: Automatically retries on 429 and 5xx errors from Grok API.
+- **Function Calling**: Supports tool definitions and returns tool calls from Grok.
+
+### Logging configuration
+
+- `SMART_PROXY_LOG_BODY_BYTES` (optional)
+  - Default: `2000`
+  - Controls how many bytes of a response body are included in `log/smart_proxy.log` previews.
+
+## Testing
+
+Run tests:
+```bash
+bundle exec rspec
+```

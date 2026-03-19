@@ -1,0 +1,210 @@
+{
+  "cross_references": {
+    "summary": "Links between functional capabilities, structural implementation, and vision roadmap",
+    "last_updated": "2026-01-17",
+    "concepts": [
+      {
+        "id": "prd_generation",
+        "name": "PRD Generation",
+        "summary": "SAP agent generates PRDs from user requests",
+        "functional": {
+          "path": "functional:agent_orchestration:prd_generation",
+          "summary": "User-facing PRD generation capability",
+          "routes": ["/agent_hub", "/admin/sap_collaborate"]
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:ai_services:sap_agent_service.rb",
+            "structural:service_layer:ai_services:sap_agent/command.rb",
+            "structural:service_layer:ai_services:sap_agent/artifact_command.rb",
+            "structural:service_layer:ai_services:sap_agent/prd_strategy.rb",
+            "structural:data_layer:agent_models:artifact.rb",
+            "structural:data_layer:agent_models:sap_run.rb",
+            "structural:interface_layer:agent_controllers:agent_hubs_controller.rb"
+          ],
+          "summary": "Implementation across service, data, and interface layers"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:sap_agent_v1",
+            "vision:roadmap:in_progress:agentic_refactor",
+            "vision:priorities:sdlc_focus",
+            "vision:priorities:quality_over_speed"
+          ],
+          "summary": "V1 completed (reactive mode), V2 in progress (agentic mode)"
+        },
+        "related_concepts": ["rag_context", "agent_hub_interface", "artifact_workflow"]
+      },
+      {
+        "id": "rag_context",
+        "name": "RAG Context Integration",
+        "summary": "Context gathering for LLM calls",
+        "functional": {
+          "path": "functional:agent_orchestration:rag_context_integration",
+          "summary": "RAG provider for context-aware agent responses",
+          "routes": []
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:ai_services:sap_agent/rag_provider.rb",
+            "structural:data_layer:agent_models:snapshot.rb",
+            "structural:configuration_layer:knowledge_base_config:context_map.md",
+            "structural:job_layer:snapshot_jobs:financial_snapshot_job.rb"
+          ],
+          "summary": "RAG provider service + snapshot model + context map"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:rag_context_integration",
+            "vision:roadmap:in_progress:multi_index_rag",
+            "vision:technical_debt:rag_scalability"
+          ],
+          "summary": "V1 completed (context map + snapshots), V2 in progress (multi-index)"
+        },
+        "related_concepts": ["prd_generation", "multi_index_rag"]
+      },
+      {
+        "id": "multi_index_rag",
+        "name": "Multi-Index RAG Architecture",
+        "summary": "Functional, structural, and vision indexes for phase-specific context",
+        "functional": {
+          "path": null,
+          "summary": "No user-facing feature yet (infrastructure)"
+        },
+        "structural": {
+          "paths": [
+            "structural:configuration_layer:knowledge_base_config:rag-structure/"
+          ],
+          "summary": "Index files in knowledge_base/agentic-planning/rag-structure/"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:in_progress:multi_index_rag",
+            "vision:technical_debt:rag_scalability"
+          ],
+          "summary": "In development, addresses RAG scalability debt"
+        },
+        "related_concepts": ["rag_context", "agentic_refactor"]
+      },
+      {
+        "id": "agentic_refactor",
+        "name": "Agentic Refactor",
+        "summary": "Move from reactive to agentic PRD generation (research → plan → verify → execute → validate)",
+        "functional": {
+          "path": "functional:agent_orchestration:prd_generation",
+          "summary": "Enhances existing PRD generation capability"
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:ai_services:sap_agent/agentic_prd_command.rb",
+            "structural:service_layer:ai_services:sap_agent/rag_strategy/"
+          ],
+          "summary": "New agentic command class + pluggable RAG strategies (to be implemented)"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:in_progress:agentic_refactor",
+            "vision:priorities:sdlc_focus",
+            "vision:priorities:quality_over_speed",
+            "vision:technical_debt:retry_logic_inefficiency"
+          ],
+          "summary": "High priority, addresses retry logic inefficiency"
+        },
+        "related_concepts": ["prd_generation", "multi_index_rag", "validation_scoring"]
+      },
+      {
+        "id": "plaid_sync",
+        "name": "Plaid Integration",
+        "summary": "Financial data sync from Plaid",
+        "functional": {
+          "path": "functional:financial_sync",
+          "summary": "All Plaid sync features (Link, holdings, transactions, webhooks)",
+          "routes": ["/plaid/link_token", "/plaid/exchange", "/plaid/webhook"]
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:plaid_services:plaid_service.rb",
+            "structural:service_layer:plaid_services:plaid_holdings_sync_service.rb",
+            "structural:service_layer:plaid_services:plaid_transaction_sync_service.rb",
+            "structural:data_layer:plaid_models:plaid_item.rb",
+            "structural:data_layer:plaid_models:account.rb",
+            "structural:data_layer:plaid_models:holding.rb",
+            "structural:data_layer:plaid_models:transaction.rb",
+            "structural:job_layer:plaid_sync_jobs",
+            "structural:interface_layer:plaid_controllers"
+          ],
+          "summary": "Models, services, jobs, and controllers for Plaid integration"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:plaid_integration"
+          ],
+          "summary": "Production-ready, no active work"
+        },
+        "related_concepts": ["financial_snapshot", "mission_control"]
+      },
+      {
+        "id": "agent_hub_interface",
+        "name": "Agent Hub Interface",
+        "summary": "Real-time agent conversation and monitoring interface",
+        "functional": {
+          "path": "functional:agent_orchestration:agent_hub_interface",
+          "summary": "Owner-only interface for agent interactions",
+          "routes": ["/agent_hub", "/agent_hub/messages/:agent_id", "/agent_hub/uploads"]
+        },
+        "structural": {
+          "paths": [
+            "structural:interface_layer:agent_controllers:agent_hubs_controller.rb",
+            "structural:interface_layer:agent_controllers:agent_hub/uploads_controller.rb",
+            "structural:service_layer:agent_hub_services:chat_handler.rb",
+            "structural:service_layer:agent_hub_services:command_parser.rb",
+            "structural:service_layer:agent_hub_services:command_executor.rb",
+            "structural:data_layer:agent_models:sap_run.rb",
+            "structural:data_layer:agent_models:sap_message.rb"
+          ],
+          "summary": "Controllers, services, and models for Agent Hub"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:agent_hub_ui",
+            "vision:roadmap:completed:agent_hub_persistence"
+          ],
+          "summary": "Production-ready UI and persistence"
+        },
+        "related_concepts": ["prd_generation", "artifact_workflow", "agent_monitoring"]
+      },
+      {
+        "id": "validation_scoring",
+        "name": "Validation Scoring",
+        "summary": "Quality metrics and scoring for agent outputs",
+        "functional": {
+          "path": "functional:agent_orchestration:agent_monitoring",
+          "summary": "Agent performance monitoring and metrics",
+          "routes": ["/agents/monitor"]
+        },
+        "structural": {
+          "paths": [
+            "structural:interface_layer:agent_controllers:agents/monitor_controller.rb",
+            "structural:service_layer:ai_services:sap_agent/prd_strategy.rb"
+          ],
+          "summary": "Monitor controller + validation strategy (to be enhanced)"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:in_progress:sdlc_validation",
+            "vision:priorities:quality_over_speed",
+            "vision:success_metrics:PRD Quality"
+          ],
+          "summary": "In development, high priority"
+        },
+        "related_concepts": ["prd_generation", "agentic_refactor"]
+      }
+    ]
+  },
+  "_query_examples": [
+    "fetch:cross_ref:prd_generation → Returns all related paths across indexes",
+    "fetch:cross_ref:plaid_sync → Returns Plaid integration cross-references",
+    "search:cross_ref:validation → Returns all concepts mentioning validation",
+    "list:cross_ref:in_progress → Returns all concepts with in_progress vision items"
+  ]
+}

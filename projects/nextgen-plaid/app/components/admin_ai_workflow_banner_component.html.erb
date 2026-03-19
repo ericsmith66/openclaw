@@ -1,0 +1,32 @@
+<% if @snapshot.nil? %>
+  <div class="alert alert-info">
+    <div class="w-full">
+      <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="font-semibold">AI Workflow</div>
+          <% if @active_artifact %>
+            <div class="text-sm opacity-80">Viewing Artifact: <span class="font-bold"><%= @active_artifact.name %></span> (No logs found)</div>
+          <% else %>
+            <div class="text-sm opacity-80">No active workflow artifacts found.</div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="alert <%= @snapshot.status == "error" ? "alert-error" : "alert-success" %>">
+    <div class="w-full">
+      <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="font-semibold">AI Workflow</div>
+          <div class="text-sm opacity-80">Correlation: <span class="font-mono"><%= @snapshot.correlation_id %></span></div>
+        </div>
+        <div class="text-sm">
+          <span class="badge badge-outline">Ball with: <%= @snapshot.ball_with.presence || "unknown" %></span>
+          <span class="badge badge-outline">State: <%= @snapshot.state.presence || "unknown" %></span>
+          <span class="badge badge-outline">Status: <%= @snapshot.status.presence || "unknown" %></span>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

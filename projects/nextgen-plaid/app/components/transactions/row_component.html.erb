@@ -1,0 +1,122 @@
+<tr role="row" class="border-t border-base-300 hover:bg-base-200/50 focus-within:ring-2 focus-within:ring-primary">
+  <%# Date %>
+  <td role="cell" class="px-3 py-2 text-sm whitespace-nowrap">
+    <%= formatted_date %>
+  </td>
+
+  <% if investments_view? %>
+    <%# Account column (after Date, prominent/bold for investments) %>
+    <td role="cell" class="px-3 py-2 text-sm font-semibold">
+      <%= transaction.account&.name.presence || '—' %>
+    </td>
+  <% end %>
+
+  <% unless transfers_view? %>
+    <%# Name with badges and icons %>
+    <td role="cell" class="px-3 py-2 text-sm">
+      <div class="flex items-center gap-2">
+        <% if credit_view? && transaction.merchant_name.present? %>
+          <%# Merchant letter avatar icon for credit view %>
+          <div class="avatar placeholder" aria-hidden="true">
+            <div class="bg-neutral text-neutral-content rounded-full w-5 h-5">
+              <span class="text-xs"><%= merchant_initial %></span>
+            </div>
+          </div>
+        <% end %>
+        <span><%= transaction.name %></span>
+        <% if pending? %>
+          <span class="badge badge-warning badge-xs" aria-label="Pending transaction">Pending</span>
+        <% end %>
+        <% if recurring? %>
+          <span class="badge badge-ghost badge-xs" aria-label="Recurring transaction">RR</span>
+        <% end %>
+      </div>
+    </td>
+  <% end %>
+
+  <%# Category label (cash view only, shows first segment from personal_finance_category_label) %>
+  <% if cash_view? && category_label %>
+    <td role="cell" class="px-3 py-2 text-sm">
+      <span class="badge badge-outline badge-sm"><%= category_label %></span>
+    </td>
+  <% end %>
+
+  <%# Type badge %>
+  <td role="cell" class="px-3 py-2 text-sm">
+    <span class="<%= type_badge %>"><%= type_label %></span>
+  </td>
+
+  <%# Subtype badge (investment transactions) %>
+  <% if investment? && subtype_badge %>
+    <td role="cell" class="px-3 py-2 text-sm">
+      <span class="<%= subtype_badge[:class] %>"><%= subtype_badge[:label] %></span>
+    </td>
+  <% end %>
+
+  <% if show_investment_columns %>
+    <%# Security with icon and clickable link %>
+    <td role="cell" class="px-3 py-2 text-sm">
+      <% if security_display.present? && security_display != '—' %>
+        <div class="flex items-center gap-2">
+          <div class="avatar placeholder" aria-hidden="true">
+            <div class="bg-primary text-primary-content rounded-full w-5 h-5">
+              <span class="text-xs"><%= security_initial %></span>
+            </div>
+          </div>
+          <%= link_to security_display, security_link, class: "link link-hover link-primary text-sm", "aria-label": "View #{security_display} details" %>
+        </div>
+      <% else %>
+        —
+      <% end %>
+    </td>
+    <%# Quantity %>
+    <td role="cell" class="px-3 py-2 text-sm text-right">
+      <%= formatted_quantity %>
+    </td>
+    <%# Price %>
+    <td role="cell" class="px-3 py-2 text-sm text-right">
+      <%= formatted_price %>
+    </td>
+  <% end %>
+
+  <% if transfers_view? %>
+    <%# Transfer details: From → To with direction arrow and badge %>
+    <td role="cell" class="px-3 py-2 text-sm">
+      <div class="flex items-center gap-1 flex-wrap">
+        <span class="font-medium"><%= transfer_from.presence || '—' %></span>
+        <% if transfer_outbound? %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Outbound transfer"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+        <% else %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-label="Inbound transfer"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18" /></svg>
+        <% end %>
+        <span class="font-medium"><%= transfer_to.presence || '—' %></span>
+        <span class="<%= transfer_badge[:class] %>"><%= transfer_badge[:label] %></span>
+      </div>
+    </td>
+    <%# Description %>
+    <td role="cell" class="px-3 py-2 text-sm text-base-content/70">
+      <%= transaction.name.presence || '—' %>
+    </td>
+  <% end %>
+
+  <% if show_merchant_column? && !show_investment_columns %>
+    <%# Merchant (hidden on mobile) %>
+    <td role="cell" class="px-3 py-2 text-sm hidden lg:table-cell">
+      <%= transaction.merchant_name.presence || '—' %>
+    </td>
+  <% end %>
+
+  <% unless investments_view? || transfers_view? %>
+    <%# Account (hidden on mobile, not shown for investments/transfers) %>
+    <td role="cell" class="px-3 py-2 text-sm hidden lg:table-cell">
+      <%= transaction.account&.name.presence || '—' %>
+    </td>
+  <% end %>
+
+  <%# Amount %>
+  <td role="cell" class="px-3 py-2 text-sm text-right whitespace-nowrap">
+    <span class="<%= amount_class %> font-medium">
+      <%= formatted_amount %>
+    </span>
+  </td>
+</tr>

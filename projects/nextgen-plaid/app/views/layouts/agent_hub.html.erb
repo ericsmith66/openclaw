@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Agent Hub - NextGen Plaid</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= action_cable_meta_tag %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+</head>
+
+<body data-theme="business" class="min-h-screen flex flex-col">
+  <div class="drawer">
+    <input id="agent-hub-drawer" type="checkbox" class="drawer-toggle" />
+    <div class="drawer-content flex flex-col">
+      <!-- Navbar -->
+      <header class="navbar bg-base-300 w-full">
+        <div class="flex-none lg:hidden">
+          <label for="agent-hub-drawer" class="btn btn-square btn-ghost">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </label>
+        </div>
+        <div class="flex-1 px-2 mx-2 text-xl font-bold">Agent Hub</div>
+        <div class="flex-none hidden lg:block">
+          <ul class="menu menu-horizontal flex items-center gap-4">
+            <li>
+              <div class="form-control">
+                <label class="label cursor-pointer gap-2">
+                  <span class="label-text font-bold">Developer Mode</span> 
+                  <input type="checkbox" 
+                         class="toggle toggle-primary toggle-sm" 
+                         <%= "checked" if params[:debug] == "1" %>
+                         onclick="const url = new URL(window.location.href); url.searchParams.set('debug', this.checked ? '1' : '0'); window.location.href = url.href" />
+                </label>
+              </div>
+            </li>
+            <li><%= link_to "Mission Control", mission_control_path, data: { turbo_frame: "_top" } %></li>
+          </ul>
+        </div>
+      </header>
+
+      <!-- Page content here -->
+      <main class="flex-grow p-4">
+        <% flash.each do |type, msg| %>
+          <div class="alert <%= type == 'notice' ? 'alert-info' : (type == 'success' ? 'alert-success' : 'alert-error') %> mb-4">
+            <%= msg %>
+          </div>
+        <% end %>
+
+        <%= turbo_frame_tag "agent_hub_content" do %>
+          <%= yield %>
+        <% end %>
+      </main>
+
+      <footer class="footer footer-center p-4 bg-base-300 text-base-content">
+        <div>
+          <p>Educational—consult CFP/CPA. Vision 2026 Foundation.</p>
+        </div>
+      </footer>
+    </div> 
+
+    <!-- Global Modal for Context Inspection -->
+    <input type="checkbox" id="context-inspect-modal" class="modal-toggle" />
+    <div class="modal" role="dialog">
+      <div class="modal-box w-11/12 max-w-5xl h-3/4 flex flex-col">
+        <h3 class="text-lg font-bold mb-4">Context Snapshot</h3>
+        <div id="context-inspect-content" class="flex-grow overflow-auto bg-neutral text-neutral-content p-4 rounded-lg font-mono text-xs whitespace-pre-wrap">
+          <span class="loading loading-spinner loading-md"></span>
+        </div>
+        <div class="modal-action">
+          <label for="context-inspect-modal" class="btn">Close</label>
+        </div>
+      </div>
+      <label class="modal-backdrop" for="context-inspect-modal">Close</label>
+    </div>
+
+    <div class="drawer-side">
+      <label for="agent-hub-drawer" class="drawer-overlay"></label> 
+      <ul class="menu p-4 w-80 min-h-full bg-base-200">
+        <!-- Sidebar content here -->
+        <li><%= link_to "Mission Control", mission_control_path, data: { turbo_frame: "_top" } %></li>
+        <li><a class="active">Agent Hub Home</a></li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

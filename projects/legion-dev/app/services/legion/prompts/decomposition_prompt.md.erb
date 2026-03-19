@@ -1,0 +1,68 @@
+## Task: Decompose this PRD into atomic coding tasks
+
+### PRD Content
+<prd>
+<%= prd_content %>
+</prd>
+
+### Instructions
+
+Break this PRD into atomic coding tasks following these rules:
+
+1. **Test-first ordering:** For each feature, produce the test task BEFORE the implementation task. The implementation task depends on its test task. The coding agent will:
+   - Run the tests (red — they should fail)
+   - Write code to make them pass (green)
+   - Iterate via test feedback until green
+
+2. **Atomic task scale:** Score each task on three dimensions (1-4):
+   - **Files Touched:** 1=1-2 files, 2=3-4, 3=5-7, 4=8+
+   - **Concept Count:** 1=1 concept, 2=2, 3=3-4, 4=5+
+   - **Cross-Model Dependencies:** 1=0 deps, 2=1, 3=2-3, 4=4+
+   - Total > 6 means the task COULD be split, but prefer fewer larger tasks over many tiny ones.
+
+3. **Task count guidance:** Aim for **4-8 tasks total**. Each task should produce meaningful, testable output. Do NOT create separate tasks for individual methods or test cases — group related work together. One test file = one test task. One implementation file = one code task.
+
+4. **One file per task:** Each task should primarily write or modify ONE file. Never create multiple tasks that append to the same file — instead combine them into a single task that writes the complete file. **Never combine test-writing for multiple source files into one task** — if two source files need tests, create two separate test tasks.
+
+5. **Keep prompts concise:** Each task prompt should be 2-5 sentences describing WHAT to build and WHERE, not HOW. Do NOT embed code snippets, full method signatures, or implementation details in prompts — the executing agent will read the codebase and figure out the implementation. Keep total JSON response under 4000 tokens.
+
+6. **Dependencies:** List which task numbers each task depends on. Tasks with no dependencies are independent and parallel-eligible.
+
+7. **Agent assignment:** Recommend which agent should execute each task. Use exact agent IDs from the team:
+   - `ror-rails` — Implementation code (models, controllers, services, migrations)
+   - `ror-qa` — Test files (specs, test suites)
+   - `ror-architect` — Architecture decisions, complex refactors
+   - `ror-debug` — Debugging and fixing failures
+
+8. **Parallel awareness:** Two tasks that edit different files with no shared model dependencies CAN run in parallel.
+
+### Required Output Format
+
+Respond with ONLY a JSON array, no other text:
+
+```json
+[
+  {
+    "position": 1,
+    "type": "test",
+    "prompt": "Write tests and factory for Project model: name (required), path (required, unique), project_rules (jsonb). Test validations, associations, factory validity.",
+    "agent": "rails-lead",
+    "files_score": 2,
+    "concepts_score": 1,
+    "dependencies_score": 1,
+    "depends_on": [],
+    "notes": "Independent test task — parallel eligible"
+  },
+  {
+    "position": 2,
+    "type": "code",
+    "prompt": "Create Project model and migration to make tests from Task 1 pass. Fields: name (string, required), path (string, required, unique), project_rules (jsonb, default {}).",
+    "agent": "rails-lead",
+    "files_score": 2,
+    "concepts_score": 1,
+    "dependencies_score": 1,
+    "depends_on": [1],
+    "notes": "Implementation — depends on test task 1"
+  }
+]
+```

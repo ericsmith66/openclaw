@@ -1,0 +1,64 @@
+<div class="bg-base-100 rounded-2xl border border-base-200 shadow-sm p-6 mb-8">
+  <%= form_with url: events_path, method: :get, class: "space-y-6" do |f| %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="form-control w-full">
+        <label class="label pt-0">
+          <span class="label-text text-[10px] font-bold uppercase tracking-widest opacity-40">Search</span>
+        </label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-base-content/30">
+            <%= helpers.lucide_icon("search", size: 14) %>
+          </div>
+          <%= f.text_field :search, value: params[:search], placeholder: "Accessory or char...", class: "input input-bordered w-full pl-9 h-10 bg-base-200/50 focus:bg-base-100 transition-all text-sm" %>
+        </div>
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label pt-0">
+          <span class="label-text text-[10px] font-bold uppercase tracking-widest opacity-40">Time Range</span>
+        </label>
+        <%= f.select :time_range, options_for_select(time_ranges, params[:time_range]), {}, class: "select select-bordered w-full h-10 min-h-0 bg-base-200/50 focus:bg-base-100 transition-all text-sm" %>
+      </div>
+
+      <div class="form-control w-full">
+        <label class="label pt-0">
+          <span class="label-text text-[10px] font-bold uppercase tracking-widest opacity-40">Room</span>
+        </label>
+        <%= f.select :room_id, options_from_collection_for_select(@rooms.sort_by { |r| r.name.downcase }, :id, :name, params[:room_id]), { include_blank: "All Rooms" }, class: "select select-bordered w-full h-10 min-h-0 bg-base-200/50 focus:bg-base-100 transition-all text-sm" %>
+      </div>
+
+      <div class="flex items-end gap-2">
+        <%= f.submit "Apply Filters", class: "btn btn-primary btn-sm flex-1 h-10" %>
+        <% if params[:search].present? || params[:time_range].present? || params[:room_id].present? || params[:types].present? %>
+          <%= link_to events_path, class: "btn btn-ghost btn-sm btn-square h-10 w-10" do %>
+            <%= helpers.lucide_icon("rotate-ccw", size: 16) %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-6 pt-4 border-t border-base-200/50">
+      <div class="flex items-center gap-4">
+        <span class="text-[10px] font-bold uppercase tracking-widest opacity-40">Event Types:</span>
+        <div class="flex gap-4">
+          <% event_types.each do |label, value| %>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <%= check_box_tag "types[]", value, params[:types]&.include?(value), class: "checkbox checkbox-primary checkbox-xs" %>
+              <span class="text-xs font-medium opacity-70"><%= label %></span>
+            </label>
+          <% end %>
+        </div>
+      </div>
+      
+      <div class="flex-1"></div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-success/10 text-success rounded-full border border-success/20">
+          <div class="w-2 h-2 rounded-full bg-success animate-pulse"></div>
+          <span class="text-[10px] font-bold uppercase tracking-widest">Live Mode</span>
+          <input type="checkbox" class="toggle toggle-success toggle-xs" checked data-events-target="liveToggle" data-action="change->events#toggleLive" />
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

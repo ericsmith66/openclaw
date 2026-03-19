@@ -1,0 +1,7 @@
+<%= render(LayoutComponent.new(title: "New Other Income Source", current_user: current_user)) do %>
+  <div class="mb-6">
+    <%= link_to "← Back", other_incomes_path, class: "btn btn-outline btn-sm" %>
+  </div>
+
+  <%= render "form", other_income: @other_income %>
+<% end %>

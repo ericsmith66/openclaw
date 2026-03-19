@@ -1,0 +1,13 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <div class="alert alert-info">
+      <span class="empty-state"><%= message %></span>
+    </div>
+
+    <% if presence(cta_path) %>
+      <div class="mt-4">
+        <%= link_to "Sync now", cta_path, class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </div>
+</div>

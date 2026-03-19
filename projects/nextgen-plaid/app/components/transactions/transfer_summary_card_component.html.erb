@@ -1,0 +1,22 @@
+<div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-6">
+  <div class="stat">
+    <div class="stat-title">Total Transfers</div>
+    <div class="stat-value"><%= total_count %></div>
+    <div class="stat-desc">in this view</div>
+  </div>
+  <div class="stat">
+    <div class="stat-title">Net Inflows</div>
+    <div class="stat-value text-success"><%= number_to_currency(total_inflows) %></div>
+    <div class="stat-desc">Into your accounts</div>
+  </div>
+  <div class="stat">
+    <div class="stat-title">External Outflows</div>
+    <div class="stat-value text-error"><%= number_to_currency(total_outflows_external) %></div>
+    <div class="stat-desc">To external accounts</div>
+  </div>
+  <div class="stat">
+    <div class="stat-title">Internal Moves</div>
+    <div class="stat-value"><%= number_to_currency(total_internal) %></div>
+    <div class="stat-desc">Between your accounts</div>
+  </div>
+</div>

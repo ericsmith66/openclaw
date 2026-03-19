@@ -1,0 +1,9 @@
+{
+  "name": "Test Agent",
+  "description": "A test agent profile for contract tests",
+  "model": "gpt-4-turbo",
+  "provider": "openai",
+  "system_prompt": "You are a helpful assistant.",
+  "temperature": 0.7,
+  "max_iterations": 10
+}

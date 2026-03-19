@@ -1,0 +1,9 @@
+<div id="conversation-items" class="flex flex-col gap-2">
+  <%= render partial: "persona_chats/sidebar_items",
+        locals: { persona_id: persona_id, conversations: conversations, active_conversation_id: active_conversation_id } %>
+</div>
+
+<div id="load-more" class="pt-2">
+  <%= render partial: "persona_chats/load_more",
+        locals: { persona_id: persona_id, next_page: next_page, active_conversation_id: active_conversation_id } %>
+</div>

@@ -1,0 +1,15 @@
+<div class="flex items-center justify-between">
+  <span class="font-medium text-sm"><%= @accessory.name %></span>
+  
+  <label class="label cursor-pointer">
+    <span class="label-text sr-only"><%= @accessory.name %></span>
+    <input type="checkbox"
+           class="<%= size_class %> <%= 'toggle-disabled' if offline? %>"
+           <%= 'checked' if current_state %>
+           <%= 'disabled' if offline? %>
+           data-controller="switch-control"
+           data-switch-control-accessory-id-value="<%= @accessory.uuid %>"
+           data-switch-control-characteristic-value="On"
+           data-action="change->switch-control#toggle">
+  </label>
+</div>

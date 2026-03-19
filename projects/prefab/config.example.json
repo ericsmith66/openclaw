@@ -1,0 +1,22 @@
+{
+  "webhook": {
+    "url": "http://localhost:4567/event",
+    "authToken": "your-secret-token-here",
+    "enabled": true
+  },
+  "polling": {
+    "intervalSeconds": 5.0,
+    "enabled": true,
+    "reportIntervalSeconds": 60.0
+  },
+  "deviceRegistry": {
+    "mode": "all",
+    "devices": []
+  },
+  "logging": {
+    "enabled": false,
+    "logAllCallbacks": false,
+    "logOnlyChanges": true,
+    "maxCallbacksPerSecond": 10
+  }
+}

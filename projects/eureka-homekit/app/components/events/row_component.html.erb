@@ -1,0 +1,39 @@
+<tr class="hover:bg-base-200/50 transition-colors group cursor-pointer" data-action="click->events#openModal" data-event-id="<%= @event.id %>">
+  <td class="py-4 pl-6">
+    <div class="flex flex-col">
+      <span class="font-mono text-xs font-bold"><%= @event.timestamp.strftime("%H:%M:%S") %></span>
+      <span class="text-[10px] opacity-40 font-medium uppercase mt-0.5"><%= @event.timestamp.strftime("%b %d") %></span>
+    </div>
+  </td>
+  
+  <td class="py-4">
+    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase border <%= type_class %>">
+      <%= @event.event_type.gsub('characteristic_', '').gsub('_', ' ') %>
+    </span>
+  </td>
+  
+  <td class="py-4">
+    <div class="flex flex-col min-w-0">
+      <span class="text-sm font-bold truncate"><%= @event.accessory_name || "System" %></span>
+      <div class="flex items-center gap-1.5 mt-0.5 opacity-50">
+        <%= helpers.lucide_icon("map-pin", size: 10) %>
+        <span class="text-[10px] font-medium uppercase tracking-wider">
+          <%= @event.room&.name || @event.accessory&.room&.name || "N/A" %>
+        </span>
+      </div>
+    </div>
+  </td>
+  
+  <td class="py-4">
+    <div class="flex items-center gap-2">
+      <div class="w-1.5 h-1.5 rounded-full bg-primary/40"></div>
+      <span class="text-xs font-semibold opacity-70"><%= @event.characteristic || "Status" %></span>
+    </div>
+  </td>
+  
+  <td class="py-4 pr-6 text-right">
+    <span class="font-mono text-xs font-bold bg-base-200 px-2 py-1 rounded-lg">
+      <%= formatted_value %>
+    </span>
+  </td>
+</tr>

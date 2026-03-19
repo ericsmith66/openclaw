@@ -1,0 +1,19 @@
+<% conversations.each do |conversation| %>
+  <% active = active_conversation_id.to_s == conversation.id.to_s %>
+  <%= link_to persona_chat_conversation_path(persona_id: persona_id, id: conversation.id),
+        data: {
+          turbo_frame: "chat-pane-frame",
+          action: "click->conversation-sidebar#select",
+          conversation_id: conversation.id
+        },
+        class: "conversation-item p-3 min-h-11 rounded-lg border border-base-200 hover:bg-base-200 #{active ? 'bg-base-300 border-l-4 border-primary' : ''}",
+        id: "conversation-#{conversation.id}",
+        aria: {
+          label: "#{conversation.title.presence || 'Untitled'}, last message: #{conversation.last_message_preview}, #{persona_chat_relative_timestamp(conversation.updated_at)}",
+          current: (active ? "true" : nil)
+        } do %>
+    <div class="text-sm font-medium truncate"><%= (conversation.title.presence || "Untitled").truncate(40, omission: "...") %></div>
+    <div class="text-xs text-base-content/70 mt-1"><%= conversation.last_message_preview %></div>
+    <div class="text-xs text-base-content/50 mt-1"><%= persona_chat_relative_timestamp(conversation.updated_at) %></div>
+  <% end %>
+<% end %>

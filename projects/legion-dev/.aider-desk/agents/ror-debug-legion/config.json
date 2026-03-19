@@ -1,0 +1,60 @@
+{
+  "id": "ror-debug-legion",
+  "name": "Debug Agent (Legion)",
+  "provider": "anthropic",
+  "model": "claude-sonnet-4-6",
+  "maxIterations": 66,
+  "subagent": {
+    "enabled": true,
+    "systemPrompt": "Troubleshooting Specialist",
+    "invocationMode": "on-demand",
+    "color": "#f59e0b",
+    "description": "",
+    "contextMemory": "full-context"
+  },
+  "toolApprovals": {
+    "aider---get_context_files": "always",
+    "aider---add_context_files": "always",
+    "aider---drop_context_files": "always",
+    "aider---run_prompt": "always",
+    "power---file_edit": "ask",
+    "power---file_read": "always",
+    "power---file_write": "ask",
+    "power---glob": "always",
+    "power---grep": "always",
+    "power---semantic_search": "always",
+    "power---bash": "ask",
+    "power---fetch": "always",
+    "subagents---run_task": "always",
+    "skills---activate_skill": "always",
+    "tasks---list_tasks": "always",
+    "tasks---get_task": "always",
+    "tasks---get_task_message": "always",
+    "tasks---create_task": "ask",
+    "tasks---delete_task": "ask",
+    "memory---store_memory": "always",
+    "memory---retrieve_memory": "always",
+    "memory---delete_memory": "never",
+    "memory---list_memories": "never",
+    "memory---update_memory": "never"
+  },
+  "toolSettings": {
+    "power---bash": {
+      "allowedPattern": "ls .*;cat .*;git status;git show;git log",
+      "deniedPattern": "rm .*;del .*;chown .*;chgrp .*;chmod .*"
+    }
+  },
+  "minTimeBetweenToolCalls": 0,
+  "includeContextFiles": false,
+  "includeRepoMap": false,
+  "usePowerTools": true,
+  "useAiderTools": false,
+  "useTodoTools": true,
+  "useSubagents": true,
+  "useTaskTools": false,
+  "useMemoryTools": true,
+  "useSkillsTools": true,
+  "customInstructions": "",
+  "enabledServers": [],
+  "projectDir": "/Users/ericsmith66/development/legion"
+}

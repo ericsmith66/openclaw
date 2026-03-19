@@ -1,0 +1,436 @@
+  [1m[35m (0.2ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" varchar NOT NULL PRIMARY KEY) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" varchar NOT NULL PRIMARY KEY, "value" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (0.1ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2026-03-06 16:36:55.349336', '2026-03-06 16:36:55.349337') RETURNING "key" /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+Migrating to CreateUsers (20260306163653)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.5ms)[0m  [1m[35mCREATE TABLE "users" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "email" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163653') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+Migrating to CreatePosts (20260306163654)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE TABLE "posts" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar, "content" text, "user_id" integer NOT NULL, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_5b5ddfd518"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_user_id" ON "posts" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163654') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+Migrating to CreateComments (20260306163655)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mCREATE TABLE "comments" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "body" text, "commentable_type" varchar NOT NULL, "commentable_id" integer NOT NULL, "user_id" integer NOT NULL, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_03de2dc08c"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_commentable" ON "comments" ("commentable_type", "commentable_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_user_id" ON "comments" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163655') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.1ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+Migrating to AddDeletedAtToPosts (20260306163725)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mALTER TABLE "posts" ADD "deleted_at" datetime(6) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_deleted_at" ON "posts" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.2ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163725') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+Migrating to AddDeletedAtAndCascadeDeletedToComments (20260306163732)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.4ms)[0m  [1m[35mALTER TABLE "comments" ADD "deleted_at" datetime(6) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mALTER TABLE "comments" ADD "cascade_deleted" boolean DEFAULT FALSE NOT NULL /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_deleted_at" ON "comments" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_cascade_deleted" ON "comments" ("cascade_deleted") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163732') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Create (0.4ms)[0m  [1m[32mINSERT INTO "users" ("email", "created_at", "updated_at") VALUES ('test@test.com', '2026-03-06 16:39:39.177592', '2026-03-06 16:39:39.177592') RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Create (0.4ms)[0m  [1m[32mINSERT INTO "posts" ("title", "content", "user_id", "created_at", "updated_at", "deleted_at") VALUES ('Test', 'Body', 1, '2026-03-06 16:39:39.185771', '2026-03-06 16:39:39.185771', NULL) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.4ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('C1', 'Post', 1, 1, '2026-03-06 16:39:39.192124', '2026-03-06 16:39:39.192124', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('C2', 'Post', 1, 1, '2026-03-06 16:39:39.193273', '2026-03-06 16:39:39.193273', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('Manual', 'Post', 1, 1, '2026-03-06 16:39:39.194267', '2026-03-06 16:39:39.194267', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Update (0.3ms)[0m  [1m[33mUPDATE "comments" SET "updated_at" = '2026-03-06 16:39:39.195166', "deleted_at" = '2026-03-06 16:39:39.195085' WHERE "comments"."id" = 3 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mPost Update (0.3ms)[0m  [1m[33mUPDATE "posts" SET "updated_at" = '2026-03-06 16:39:39.196164', "deleted_at" = '2026-03-06 16:39:39.196079' WHERE "posts"."id" = 1 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = '2026-03-06 16:39:39.198045', "cascade_deleted" = TRUE WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 1 AND "comments"."commentable_type" = 'Post' /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:11:in `block in soft_delete'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:9:in `soft_delete'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mPost Update (2.5ms)[0m  [1m[33mUPDATE "posts" SET "updated_at" = '2026-03-06 16:39:39.200000', "deleted_at" = NULL WHERE "posts"."id" = 1 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = NULL, "cascade_deleted" = FALSE WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 1 AND "comments"."commentable_type" = 'Post' AND "comments"."cascade_deleted" = TRUE /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:18:in `block in restore'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:16:in `restore'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 3 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Count (0.1ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "users" /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Load (0.1ms)[0m  [1m[34mSELECT "users".* FROM "users" ORDER BY "users"."id" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Load (0.1ms)[0m  [1m[34mSELECT "posts".* FROM "posts" WHERE "posts"."deleted_at" IS NULL ORDER BY "posts"."id" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.1ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."commentable_type" = 'Post' AND "comments"."commentable_id" = 1 ORDER BY "comments"."id" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Load (1.1ms)[0m  [1m[34mSELECT "users".* FROM "users" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Destroy (0.4ms)[0m  [1m[31mDELETE FROM "users" WHERE "users"."id" = 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Delete All (0.5ms)[0m  [1m[31mDELETE FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Delete All (0.0ms)[0m  [1m[31mDELETE FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Delete All (0.1ms)[0m  [1m[31mDELETE FROM "users" /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Delete All (0.0ms)[0m  [1m[31mDELETE FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Delete All (0.0ms)[0m  [1m[31mDELETE FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Delete All (0.1ms)[0m  [1m[31mDELETE FROM "users" /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.2ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" varchar NOT NULL PRIMARY KEY) /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" (version) VALUES (0) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" varchar NOT NULL PRIMARY KEY, "value" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (0.0ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2026-03-06 16:42:40.108751', '2026-03-06 16:42:40.108751') RETURNING "key" /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'schema_sha1' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (0.0ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('schema_sha1', '535538fd578365489e1ea4aefe64b8d17b3e5c65', '2026-03-06 16:42:40.109649', '2026-03-06 16:42:40.109650') RETURNING "key" /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+Migrating to CreateUsers (20260306163653)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE TABLE "users" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "email" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163653') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+Migrating to CreatePosts (20260306163654)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE TABLE "posts" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "title" varchar, "content" text, "user_id" integer NOT NULL, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_5b5ddfd518"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_user_id" ON "posts" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163654') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+Migrating to CreateComments (20260306163655)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mCREATE TABLE "comments" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "body" text, "commentable_type" varchar NOT NULL, "commentable_id" integer NOT NULL, "user_id" integer NOT NULL, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL, CONSTRAINT "fk_rails_03de2dc08c"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_commentable" ON "comments" ("commentable_type", "commentable_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_user_id" ON "comments" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163655') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+Migrating to AddDeletedAtToPosts (20260306163725)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.5ms)[0m  [1m[35mALTER TABLE "posts" ADD "deleted_at" datetime(6) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_deleted_at" ON "posts" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163725') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+Migrating to AddDeletedAtAndCascadeDeletedToComments (20260306163732)
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.3ms)[0m  [1m[35mALTER TABLE "comments" ADD "deleted_at" datetime(6) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mALTER TABLE "comments" ADD "cascade_deleted" boolean DEFAULT FALSE NOT NULL /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_deleted_at" ON "comments" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_cascade_deleted" ON "comments" ("cascade_deleted") /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Create (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ('20260306163732') RETURNING "version" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Create (0.5ms)[0m  [1m[32mINSERT INTO "users" ("email", "created_at", "updated_at") VALUES ('test@test.com', '2026-03-06 16:43:07.190711', '2026-03-06 16:43:07.190711') RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Create (0.4ms)[0m  [1m[32mINSERT INTO "posts" ("title", "content", "user_id", "created_at", "updated_at", "deleted_at") VALUES ('Test', 'Body', 1, '2026-03-06 16:43:07.199164', '2026-03-06 16:43:07.199164', NULL) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('C1', 'Post', 1, 1, '2026-03-06 16:43:07.202613', '2026-03-06 16:43:07.202613', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('C2', 'Post', 1, 1, '2026-03-06 16:43:07.203669', '2026-03-06 16:43:07.203669', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('Manual', 'Post', 1, 1, '2026-03-06 16:43:07.204585', '2026-03-06 16:43:07.204585', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Update (0.3ms)[0m  [1m[33mUPDATE "comments" SET "updated_at" = '2026-03-06 16:43:07.205477', "deleted_at" = '2026-03-06 16:43:07.205398' WHERE "comments"."id" = 3 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mPost Update (2.2ms)[0m  [1m[33mUPDATE "posts" SET "updated_at" = '2026-03-06 16:43:07.207034', "deleted_at" = '2026-03-06 16:43:07.206968' WHERE "posts"."id" = 1 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = '2026-03-06 16:43:07.211563', "cascade_deleted" = TRUE WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 1 AND "comments"."commentable_type" = 'Post' AND "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:11:in `block in soft_delete'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:9:in `soft_delete'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mPost Update (0.3ms)[0m  [1m[33mUPDATE "posts" SET "updated_at" = '2026-03-06 16:43:07.212592', "deleted_at" = NULL WHERE "posts"."id" = 1 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = NULL, "cascade_deleted" = FALSE WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 1 AND "comments"."commentable_type" = 'Post' AND "comments"."cascade_deleted" = TRUE /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:18:in `block in restore'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:16:in `restore'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 3 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 1 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 2 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mCACHE Comment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 3 LIMIT 1[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Create (0.5ms)[0m  [1m[32mINSERT INTO "users" ("email", "created_at", "updated_at") VALUES ('test@test.com', '2026-03-06 16:44:21.940255', '2026-03-06 16:44:21.940255') RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Create (0.4ms)[0m  [1m[32mINSERT INTO "posts" ("title", "content", "user_id", "created_at", "updated_at", "deleted_at") VALUES ('Test', 'Body', 2, '2026-03-06 16:44:21.951148', '2026-03-06 16:44:21.951148', NULL) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('C1', 'Post', 2, 2, '2026-03-06 16:44:21.954720', '2026-03-06 16:44:21.954720', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('C2', 'Post', 2, 2, '2026-03-06 16:44:21.955793', '2026-03-06 16:44:21.955793', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "commentable_type", "commentable_id", "user_id", "created_at", "updated_at", "deleted_at", "cascade_deleted") VALUES ('Manual', 'Post', 2, 2, '2026-03-06 16:44:21.956684', '2026-03-06 16:44:21.956684', NULL, FALSE) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Update (0.3ms)[0m  [1m[33mUPDATE "comments" SET "updated_at" = '2026-03-06 16:44:21.957622', "deleted_at" = '2026-03-06 16:44:21.957542' WHERE "comments"."id" = 6 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mPost Update (0.3ms)[0m  [1m[33mUPDATE "posts" SET "updated_at" = '2026-03-06 16:44:21.959161', "deleted_at" = '2026-03-06 16:44:21.959095' WHERE "posts"."id" = 2 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = '2026-03-06 16:44:21.961527', "cascade_deleted" = TRUE WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 2 AND "comments"."commentable_type" = 'Post' AND "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:11:in `block in soft_delete'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:9:in `soft_delete'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mPost Update (0.3ms)[0m  [1m[33mUPDATE "posts" SET "updated_at" = '2026-03-06 16:44:21.965228', "deleted_at" = NULL WHERE "posts"."id" = 2 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = NULL, "cascade_deleted" = FALSE WHERE "comments"."commentable_id" = 2 AND "comments"."commentable_type" = 'Post' AND "comments"."cascade_deleted" = TRUE /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:18:in `block in restore'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:16:in `restore'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 6 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 4 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.2ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 5 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mCACHE Comment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 6 LIMIT 1[0m
+  [1m[36mPost Count (0.1ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Load (0.0ms)[0m  [1m[34mSELECT "posts".* FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Load (0.0ms)[0m  [1m[34mSELECT "posts".* FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 1 AND "comments"."commentable_type" = 'Post' /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Destroy (0.1ms)[0m  [1m[31mDELETE FROM "posts" WHERE "posts"."id" = 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.4ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 2 AND "comments"."commentable_type" = 'Post' /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Destroy (0.0ms)[0m  [1m[31mDELETE FROM "comments" WHERE "comments"."id" = 4 /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Destroy (0.0ms)[0m  [1m[31mDELETE FROM "comments" WHERE "comments"."id" = 5 /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Destroy (0.0ms)[0m  [1m[31mDELETE FROM "posts" WHERE "posts"."id" = 2 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Load (0.0ms)[0m  [1m[34mSELECT "users".* FROM "users" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Destroy (0.3ms)[0m  [1m[31mDELETE FROM "users" WHERE "users"."id" = 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[31mROLLBACK TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Delete All (0.0ms)[0m  [1m[31mDELETE FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Delete All (0.0ms)[0m  [1m[31mDELETE FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Delete All (0.1ms)[0m  [1m[31mDELETE FROM "users" /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (2.8ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE IF EXISTS "comments" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.2ms)[0m  [1m[35mCREATE TABLE "comments" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "body" text, "cascade_deleted" boolean DEFAULT FALSE NOT NULL, "commentable_id" integer NOT NULL, "commentable_type" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "deleted_at" datetime(6), "updated_at" datetime(6) NOT NULL, "user_id" integer NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mCREATE INDEX "index_comments_on_cascade_deleted" ON "comments" ("cascade_deleted") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_commentable" ON "comments" ("commentable_type", "commentable_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_deleted_at" ON "comments" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_user_id" ON "comments" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE IF EXISTS "posts" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TABLE "posts" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "content" text, "created_at" datetime(6) NOT NULL, "deleted_at" datetime(6), "title" varchar, "updated_at" datetime(6) NOT NULL, "user_id" integer NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_deleted_at" ON "posts" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_user_id" ON "posts" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE IF EXISTS "users" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TABLE "users" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "created_at" datetime(6) NOT NULL, "email" varchar, "updated_at" datetime(6) NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = ON /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = OFF /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TEMPORARY TABLE "acomments" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "body" text, "cascade_deleted" boolean DEFAULT FALSE NOT NULL, "commentable_id" integer NOT NULL, "commentable_type" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "deleted_at" datetime(6), "updated_at" datetime(6) NOT NULL, "user_id" integer NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "tindex_acomments_on_user_id" ON "acomments" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "tindex_acomments_on_deleted_at" ON "acomments" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "tindex_acomments_on_commentable" ON "acomments" ("commentable_type", "commentable_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "tindex_acomments_on_cascade_deleted" ON "acomments" ("cascade_deleted") /*application='LegionTestFresh'*/[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[32mINSERT INTO "acomments" ("id","body","cascade_deleted","commentable_id","commentable_type","created_at","deleted_at","updated_at","user_id")
+                     SELECT "id","body","cascade_deleted","commentable_id","commentable_type","created_at","deleted_at","updated_at","user_id" FROM "comments" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.1ms)[0m  [1m[35mDROP TABLE "comments" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TABLE "comments" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "body" text, "cascade_deleted" boolean DEFAULT FALSE NOT NULL, "commentable_id" integer NOT NULL, "commentable_type" varchar NOT NULL, "created_at" datetime(6) NOT NULL, "deleted_at" datetime(6), "updated_at" datetime(6) NOT NULL, "user_id" integer NOT NULL, CONSTRAINT "fk_rails_03de2dc08c"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_cascade_deleted" ON "comments" ("cascade_deleted") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_commentable" ON "comments" ("commentable_type", "commentable_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_deleted_at" ON "comments" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_comments_on_user_id" ON "comments" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[32mINSERT INTO "comments" ("id","body","cascade_deleted","commentable_id","commentable_type","created_at","deleted_at","updated_at","user_id")
+                     SELECT "id","body","cascade_deleted","commentable_id","commentable_type","created_at","deleted_at","updated_at","user_id" FROM "acomments" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE "acomments" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = 0 /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = 1 /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = ON /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = OFF /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TEMPORARY TABLE "aposts" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "content" text, "created_at" datetime(6) NOT NULL, "deleted_at" datetime(6), "title" varchar, "updated_at" datetime(6) NOT NULL, "user_id" integer NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "tindex_aposts_on_user_id" ON "aposts" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "tindex_aposts_on_deleted_at" ON "aposts" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[32mINSERT INTO "aposts" ("id","content","created_at","deleted_at","title","updated_at","user_id")
+                     SELECT "id","content","created_at","deleted_at","title","updated_at","user_id" FROM "posts" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE "posts" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TABLE "posts" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "content" text, "created_at" datetime(6) NOT NULL, "deleted_at" datetime(6), "title" varchar, "updated_at" datetime(6) NOT NULL, "user_id" integer NOT NULL, CONSTRAINT "fk_rails_5b5ddfd518"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_deleted_at" ON "posts" ("deleted_at") /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE INDEX "index_posts_on_user_id" ON "posts" ("user_id") /*application='LegionTestFresh'*/[0m
+  [1m[35mSQL (0.0ms)[0m  [1m[32mINSERT INTO "posts" ("id","content","created_at","deleted_at","title","updated_at","user_id")
+                     SELECT "id","content","created_at","deleted_at","title","updated_at","user_id" FROM "aposts" /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mDROP TABLE "aposts" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA defer_foreign_keys = 0 /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mPRAGMA foreign_keys = 1 /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" varchar NOT NULL PRIMARY KEY) /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" (version) VALUES (20260306163732) /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[32mINSERT INTO "schema_migrations" (version) VALUES
+(20260306163725),
+(20260306163655),
+(20260306163654),
+(20260306163653); /*application='LegionTestFresh'*/[0m
+  [1m[35m (0.0ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" varchar NOT NULL PRIMARY KEY, "value" varchar, "created_at" datetime(6) NOT NULL, "updated_at" datetime(6) NOT NULL) /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (0.0ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('environment', 'development', '2026-03-06 16:45:51.110819', '2026-03-06 16:45:51.110819') RETURNING "key" /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'schema_sha1' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Create (0.0ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ('schema_sha1', '247c843c7b081aae9e8a960e60b593d85d8b8120', '2026-03-06 16:45:51.112544', '2026-03-06 16:45:51.112545') RETURNING "key" /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.0ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.0ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Create (0.4ms)[0m  [1m[32mINSERT INTO "users" ("created_at", "email", "updated_at") VALUES ('2026-03-06 16:46:10.205604', 'test@test.com', '2026-03-06 16:46:10.205604') RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Create (0.4ms)[0m  [1m[32mINSERT INTO "posts" ("content", "created_at", "deleted_at", "title", "updated_at", "user_id") VALUES ('Body', '2026-03-06 16:46:10.213383', NULL, 'Test', '2026-03-06 16:46:10.213383', 1) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.4ms)[0m  [1m[32mINSERT INTO "comments" ("body", "cascade_deleted", "commentable_id", "commentable_type", "created_at", "deleted_at", "updated_at", "user_id") VALUES ('C1', FALSE, 1, 'Post', '2026-03-06 16:46:10.220207', NULL, '2026-03-06 16:46:10.220207', 1) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "cascade_deleted", "commentable_id", "commentable_type", "created_at", "deleted_at", "updated_at", "user_id") VALUES ('C2', FALSE, 1, 'Post', '2026-03-06 16:46:10.221395', NULL, '2026-03-06 16:46:10.221395', 1) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "cascade_deleted", "commentable_id", "commentable_type", "created_at", "deleted_at", "updated_at", "user_id") VALUES ('Manual', FALSE, 1, 'Post', '2026-03-06 16:46:10.222361', NULL, '2026-03-06 16:46:10.222361', 1) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Update (0.3ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = '2026-03-06 16:46:10.223177', "updated_at" = '2026-03-06 16:46:10.223259' WHERE "comments"."id" = 3 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mPost Update (0.3ms)[0m  [1m[33mUPDATE "posts" SET "deleted_at" = '2026-03-06 16:46:10.224153', "updated_at" = '2026-03-06 16:46:10.224221' WHERE "posts"."id" = 1 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:10:in `block in soft_delete'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = '2026-03-06 16:46:10.226711', "cascade_deleted" = TRUE WHERE "comments"."deleted_at" IS NULL AND "comments"."commentable_id" = 1 AND "comments"."commentable_type" = 'Post' AND "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:11:in `block in soft_delete'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:9:in `soft_delete'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mPost Update (2.7ms)[0m  [1m[33mUPDATE "posts" SET "deleted_at" = NULL, "updated_at" = '2026-03-06 16:46:10.227808' WHERE "posts"."id" = 1 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:17:in `block in restore'
+  [1m[36mComment Update All (0.0ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = NULL, "cascade_deleted" = FALSE WHERE "comments"."commentable_id" = 1 AND "comments"."commentable_type" = 'Post' AND "comments"."cascade_deleted" = TRUE /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:18:in `block in restore'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/post.rb:16:in `restore'
+  [1m[36mPost Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "posts" WHERE "posts"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Load (0.0ms)[0m  [1m[34mSELECT "comments".* FROM "comments" WHERE "comments"."id" = 3 LIMIT 1 /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mUser Create (0.4ms)[0m  [1m[32mINSERT INTO "users" ("created_at", "email", "updated_at") VALUES ('2026-03-06 16:46:38.742548', 'test2@test.com', '2026-03-06 16:46:38.742548') RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mPost Create (0.4ms)[0m  [1m[32mINSERT INTO "posts" ("content", "created_at", "deleted_at", "title", "updated_at", "user_id") VALUES ('Body2', '2026-03-06 16:46:38.753829', NULL, 'Test2', '2026-03-06 16:46:38.753829', 2) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Create (0.3ms)[0m  [1m[32mINSERT INTO "comments" ("body", "cascade_deleted", "commentable_id", "commentable_type", "created_at", "deleted_at", "updated_at", "user_id") VALUES ('Hello', FALSE, 2, 'Post', '2026-03-06 16:46:38.757284', NULL, '2026-03-06 16:46:38.757284', 2) RETURNING "id" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/comment.rb:9:in `soft_delete'
+  [1m[36mComment Update (0.3ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = '2026-03-06 16:46:38.758538', "updated_at" = '2026-03-06 16:46:38.758618' WHERE "comments"."id" = 4 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/comment.rb:9:in `soft_delete'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/comment.rb:9:in `soft_delete'
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" /*application='LegionTestFresh'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/comment.rb:13:in `restore'
+  [1m[36mComment Update (0.3ms)[0m  [1m[33mUPDATE "comments" SET "deleted_at" = NULL, "updated_at" = '2026-03-06 16:46:38.759999' WHERE "comments"."id" = 4 /*application='LegionTestFresh'*/[0m
+  ↳ app/models/comment.rb:13:in `restore'
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='LegionTestFresh'*/[0m
+  ↳ app/models/comment.rb:13:in `restore'
+  [1m[36mComment Count (0.0ms)[0m  [1m[34mSELECT COUNT(*) FROM "comments" WHERE "comments"."deleted_at" IS NULL /*application='LegionTestFresh'*/[0m
+DEPRECATION WARNING: ActiveSupport::Configurable is deprecated without replacement, and will be removed in Rails 8.2.
+
+You can emulate the previous behavior with `class_attribute`.
+ (called from <top (required)> at /Users/ericsmith66/development/legion/projects/legion-test/config/environment.rb:5)
+DEPRECATION WARNING: ActiveSupport::Configurable is deprecated without replacement, and will be removed in Rails 8.2.
+
+You can emulate the previous behavior with `class_attribute`.
+ (called from <top (required)> at /Users/ericsmith66/development/legion/projects/legion-test/config/environment.rb:5)
+DEPRECATION WARNING: ActiveSupport::Configurable is deprecated without replacement, and will be removed in Rails 8.2.
+
+You can emulate the previous behavior with `class_attribute`.
+ (called from <top (required)> at /Users/ericsmith66/development/legion/projects/legion-test/config/environment.rb:5)
+DEPRECATION WARNING: ActiveSupport::Configurable is deprecated without replacement, and will be removed in Rails 8.2.
+
+You can emulate the previous behavior with `class_attribute`.
+ (called from <top (required)> at /Users/ericsmith66/development/legion/projects/legion-test/config/environment.rb:5)
+DEPRECATION WARNING: ActiveSupport::Configurable is deprecated without replacement, and will be removed in Rails 8.2.
+
+You can emulate the previous behavior with `class_attribute`.
+ (called from <top (required)> at /Users/ericsmith66/development/legion/projects/legion-test/config/environment.rb:5)

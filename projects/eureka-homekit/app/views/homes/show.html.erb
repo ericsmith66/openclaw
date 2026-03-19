@@ -1,0 +1,81 @@
+<%= render ::Layouts::ApplicationLayout.new(
+  title: @home.name,
+  homes: current_homes,
+  grouped_events: HomekitEvent.recent_grouped(scope: @home.homekit_events, limit: 15),
+  sidebar_title: "#{@home.name} Activity"
+) do %>
+  <div class="space-y-8">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div>
+        <%= render Shared::BreadcrumbComponent.new(items: [
+          { label: "Eureka", path: root_path },
+          { label: "Homes", path: homes_path },
+          { label: @home.name, path: nil }
+        ]) %>
+        <div class="flex items-center gap-3 mt-2">
+          <h1 class="text-3xl font-bold tracking-tight"><%= @home.name %></h1>
+          <%= render Shared::StatusBadgeComponent.new(status: :success, size: :sm) %>
+        </div>
+        <p class="text-base-content/60 mt-1">Viewing all rooms and activity for this property.</p>
+      </div>
+      
+      <div class="flex gap-2">
+        <%= link_to home_rooms_path(@home), class: "btn btn-primary btn-sm gap-2" do %>
+          <%= lucide_icon("layout-grid", size: 16) %>
+          View Rooms
+        <% end %>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <%= render Shared::StatCardComponent.new(label: "Rooms", value: @home.rooms.count, icon: "door-open") %>
+      <%= render Shared::StatCardComponent.new(label: "Accessories", value: @home.accessories.count, icon: "layers") %>
+      <%= render Shared::StatCardComponent.new(label: "Sensors", value: @home.sensors.count, icon: "activity") %>
+      <%= render Shared::StatCardComponent.new(label: "Events (24h)", value: "1.2k", icon: "history") %>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div class="xl:col-span-2 space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold tracking-tight">Rooms Overview</h2>
+          <%= link_to "View All", home_rooms_path(@home), class: "text-sm text-primary font-bold hover:underline" %>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <% if @home.rooms.any? %>
+            <% @home.rooms.limit(4).each do |room| %>
+              <%= render Rooms::CardComponent.new(room: room) %>
+            <% end %>
+          <% else %>
+            <div class="col-span-full py-12 text-center bg-base-100 rounded-2xl border-2 border-dashed border-base-200">
+               <p class="text-sm opacity-40 italic">No rooms found in this home</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <h2 class="text-xl font-bold tracking-tight">Recent Activity</h2>
+        <div class="space-y-3">
+          <% if @recent_events.any? %>
+            <% @recent_events.limit(8).each do |event| %>
+              <div class="bg-base-100 p-4 rounded-2xl border border-base-200 shadow-sm flex items-start gap-4">
+                <div class="w-1.5 h-1.5 rounded-full bg-info mt-2 shrink-0"></div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex justify-between items-start">
+                    <p class="text-xs font-bold truncate"><%= event.event_type.titleize %></p>
+                    <span class="text-[9px] opacity-40 font-bold uppercase"><%= time_ago_in_words(event.created_at) %></span>
+                  </div>
+                  <p class="text-[10px] opacity-60 line-clamp-1 mt-0.5"><%= event.details["message"] %></p>
+                </div>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="py-12 text-center bg-base-100 rounded-2xl border-2 border-dashed border-base-200">
+               <p class="text-sm opacity-40 italic">No recent events</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

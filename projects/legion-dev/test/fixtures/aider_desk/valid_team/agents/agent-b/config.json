@@ -1,0 +1,9 @@
+{
+  "id": "agent-b-id",
+  "name": "Agent B",
+  "provider": "openai",
+  "model": "gpt-4",
+  "maxIterations": 50,
+  "useMemoryTools": true,
+  "customInstructions": "Be precise"
+}

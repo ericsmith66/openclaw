@@ -1,0 +1,2 @@
+class RegularTransaction < Transaction
+end

@@ -1,0 +1,4 @@
+web: bin/rails server -b 0.0.0.0 -p $PORT
+css: bin/rails tailwindcss:watch
+proxy: cd smart_proxy && SMART_PROXY_PORT=3002 bundle exec rackup -o 0.0.0.0 -p 3002
+worker: bin/rails solid_queue:start

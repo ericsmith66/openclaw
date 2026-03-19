@@ -1,0 +1,208 @@
+# frozen_string_literal: true
+
+module Legion
+  # Service to reset tasks from failed/skipped states back to pending/ready
+  # for re-execution with accumulated error context.
+  #
+  # @see PRD-2-04: Task Re-Run & Error Recovery
+  class TaskResetService
+    class << self
+      # Reset a single task to pending/ready state
+      #
+      # @param task [Task, Integer] Task object or task_id to reset
+      # @return [Result] Result struct containing reset task and metadata
+      # @raise [TaskNotFoundError] if task not found
+      # @raise [TaskNotResettableError] if task is not failed or skipped
+      def call(task: nil, task_id: nil)
+        task_obj = task || find_task(task_id)
+
+        raise TaskNotFoundError, "Task not found" unless task_obj
+
+        unless task_obj.resettable?
+          raise TaskNotResettableError,
+                "Task ##{task_obj.id} is #{task_obj.status}, only failed/skipped tasks can be reset"
+        end
+
+        new(task: task_obj).call
+      end
+
+      # Batch reset all failed tasks in a workflow run plus cascading skipped dependents
+      #
+      # @param workflow_run [WorkflowRun] WorkflowRun object or id
+      # @return [Result] Result struct with reset_count
+      def reset_all_failed(workflow_run:)
+        workflow_run_obj = find_workflow_run(workflow_run)
+        raise WorkflowRunNotFoundError, "WorkflowRun not found" unless workflow_run_obj
+
+        new(workflow_run: workflow_run_obj).reset_all_failed
+      end
+
+      private
+
+      def find_task(task_id)
+        Task.find_by(id: task_id) if task_id
+      end
+
+      def find_workflow_run(workflow_run)
+        if workflow_run.is_a?(WorkflowRun)
+          workflow_run
+        elsif workflow_run.is_a?(Integer)
+          WorkflowRun.find_by(id: workflow_run)
+        end
+      end
+    end
+
+    # Result struct returned by reset operations
+    Result = Struct.new(:task, :reset_at, :retry_count, :status, :reset_count, keyword_init: true)
+
+    # Error raised when attempting to reset a non-failed/skipped task
+    class TaskNotResettableError < StandardError; end
+
+    # Error raised when task cannot be found
+    class TaskNotFoundError < StandardError; end
+
+    # Error raised when workflow_run cannot be found
+    class WorkflowRunNotFoundError < StandardError; end
+
+    def initialize(task: nil, workflow_run: nil)
+      @task = task
+      @workflow_run = workflow_run
+    end
+
+    # Reset a single task
+    def call
+      reset_task_and_dependencies(@task)
+    end
+
+    # Batch reset all failed tasks and cascading skipped dependents
+    def reset_all_failed
+      workflow_run_tasks = @workflow_run.tasks.includes(:dependents, :dependencies).to_a
+
+      # Collect all tasks to reset (failed tasks + their skipped dependents)
+      tasks_to_reset = collect_tasks_to_reset(workflow_run_tasks)
+
+      reset_tasks_in_transaction(tasks_to_reset)
+    end
+
+    private
+
+    # Collect tasks to reset: failed tasks and their transitive skipped dependents
+    def collect_tasks_to_reset(tasks)
+      tasks_to_reset = []
+      queue = tasks.select { |t| t.status == "failed" }
+
+      visited = Set.new
+
+      while queue.any?
+        current = queue.shift
+        next if visited.include?(current.id)
+        visited.add(current.id)
+
+        tasks_to_reset << current
+
+        # Add skipped dependents to queue
+        current.dependents.select { |d| d.status == "skipped" }.each do |dependent|
+          queue << dependent unless visited.include?(dependent.id)
+        end
+      end
+
+      tasks_to_reset
+    end
+
+    # Reset a single task's attributes
+    def reset_task_attributes(task)
+      task.status = :pending
+      task.retry_count += 1
+      task.queued_at = nil
+      task.started_at = nil
+      task.completed_at = nil
+
+      # Re-evaluate dependencies to determine if ready
+      # A task is ready if all dependencies are completed (or has no dependencies)
+      # task.status = :ready if dependencies_met?(task) # Note: status is set to :pending, conductor will evaluate dependencies
+
+      task
+    end
+
+    # Check if all dependencies are completed (returns true if no dependencies)
+    def dependencies_met?(task)
+      task.dependencies.empty? || task.dependencies.all?(&:completed?)
+    end
+
+    # Reset task and update status based on dependency re-evaluation
+    def reset_task_and_dependencies(task)
+      result = nil
+
+      Task.transaction do
+        task = reset_task_attributes(task)
+
+        # Update dependents if task is now ready and has dependents
+        if task.status == :ready
+          task.dependents.select { |d| d.status == "skipped" }.each do |dependent|
+            dependent.status = :pending
+            dependent.queued_at = nil
+            dependent.started_at = nil
+            dependent.completed_at = nil
+            # Re-evaluate each dependent's dependencies
+            dependent.status = :ready if dependencies_met?(dependent)
+            dependent.save!(validate: false)
+          end
+        end
+
+        task.save!(validate: false)
+
+        result = Result.new(
+          task: task.reload,
+          reset_at: Time.now.utc,
+          retry_count: task.retry_count,
+          status: task.status,
+          reset_count: nil
+        )
+      end
+
+      result
+    end
+
+    # Reset multiple tasks in a single transaction
+    def reset_tasks_in_transaction(tasks)
+      results = []
+
+      Task.transaction do
+        tasks.each do |task|
+          task.status = :pending
+          task.retry_count += 1
+          task.queued_at = nil
+          task.started_at = nil
+          task.completed_at = nil
+
+          # Re-evaluate dependencies for each task
+          # task.status = :ready if dependencies_met?(task) # Note: status is set to :pending, conductor will evaluate dependencies
+
+          task.save!(validate: false)
+        end
+
+        # Update dependents of reset tasks if they become ready
+        tasks.each do |task|
+          task.dependents.select { |d| d.status == "skipped" }.each do |dependent|
+            dependent.status = :pending
+            dependent.queued_at = nil
+            dependent.started_at = nil
+            dependent.completed_at = nil
+            dependent.status = :ready if dependencies_met?(dependent)
+            dependent.save!(validate: false)
+          end
+        end
+
+        results = tasks.map { |t| t.reload }
+      end
+
+      Result.new(
+        task: nil,
+        reset_at: Time.now.utc,
+        reset_count: results.length,
+        retry_count: nil,
+        status: nil
+      )
+    end
+  end
+end

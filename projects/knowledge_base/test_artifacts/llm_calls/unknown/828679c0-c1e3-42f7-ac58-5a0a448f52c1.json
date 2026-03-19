@@ -1,0 +1,100 @@
+{
+  "ts": "2026-03-09T16:49:36Z",
+  "request_id": "828679c0-c1e3-42f7-ac58-5a0a448f52c1",
+  "correlation_id": null,
+  "agent": "unknown",
+  "model": "openai/gpt-5.4",
+  "request_bytes": 11931,
+  "response_status": 200,
+  "response_bytes": 5922,
+  "usage": {
+    "prompt_tokens": 3038,
+    "completion_tokens": 1121,
+    "total_tokens": 4159,
+    "cost": 0.02441,
+    "is_byok": false,
+    "prompt_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0,
+      "audio_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost_details": {
+      "upstream_inference_cost": 0.02441,
+      "upstream_inference_prompt_cost": 0.007595,
+      "upstream_inference_completions_cost": 0.016815
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0,
+      "image_tokens": 0,
+      "audio_tokens": 0
+    }
+  },
+  "request": {
+    "model": "openai/gpt-5.4",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a senior software architect. Follow instructions exactly. Output ONLY the requested JSON format."
+      },
+      {
+        "role": "user",
+        "content": "## Task: Decompose this PRD into atomic coding tasks\n\n### PRD Content\n<prd>\n# PRD 5.3 — Provider `list_models` Methods\n\n**Status**: Ready for Implementation  \n**Epic**: 5 — Unified Live Model Discovery  \n**Depends on**: PRD-5.1 (`ModelFilter` — to understand output shape)  \n**Required by**: PRD-5.2 (`ModelAggregator` refactor)  \n\n---\n\n## 1. Summary\n\nAdd a `#list_models` instance method to each existing provider client so that `ModelAggregator` can call a uniform interface. Each method hits the provider's live `/models` endpoint, normalises the response to OpenAI model-hash format, and returns `[]` on any failure.\n\n**Note**: `OllamaClient` already supports this via `#list_models`. Its output shape must be verified against the common format but no structural changes are expected.\n\n---\n\n## 2. Common Output Format\n\nEach `list_models` method must return `Array<Hash>` where every hash has **at minimum**:\n\n```ruby\n{\n  id:         String,          # model ID as used in chat completions\n  object:     'model',\n  owned_by:   String,          # provider name e.g. 'xai', 'anthropic'\n  created:    Integer,         # Unix timestamp (use Time.now.to_i if not provided)\n  smart_proxy: {\n    provider: String           # same as owned_by\n    # optional additional keys per provider\n  }\n}\n```\n\n**Do not** include `modalities` or `supported_parameters` in the base implementation — these are optional fields used by `ModelFilter` steps 1 and 2. They will be naturally present in OpenRouter responses (PRD-5.4) and can be added to other providers in a future pass.\n\n---\n\n## 3. Provider-by-Provider Specification\n\n### 3.1 `GrokClient#list_models`\n\n| Property | Value |\n|----------|-------|\n| Endpoint | `GET https://api.x.ai/v1/models` |\n| Auth | Bearer `GROK_API_KEY_SAP` or `GROK_API_KEY` |\n| Response shape | `{ data: [ { id:, object:, created:, owned_by: } ] }` |\n\n**Implementation**:\n```ruby\ndef list_models\n  response = @conn.get('/v1/models') do |req|\n    req.headers['Authorization'] = \"Bearer #{@api_key}\"\n  end\n  body = response.body.is_a?(String) ? JSON.parse(response.body) : response.body\n  (body['data'] || []).map do |m|\n    {\n      id:          m['id'],\n      object:      'model',\n      owned_by:    m['owned_by'] || 'xai',\n      created:     m['created'] || Time.now.to_i,\n      smart_proxy: { provider: 'xai' }\n    }\n  end\nrescue StandardError => e\n  @logger&.warn({ event: 'grok_list_models_error', error: e.message })\n  []\nend\n```\n\n**ENV fallback**: If `GROK_MODELS` is set **and** the live fetch returns an empty list, fall back to parsing the ENV CSV (backward compat). If live fetch succeeds with data, ENV is ignored.\n\n```ruby\ndef list_models\n  live = fetch_live_models\n  return live unless live.empty?\n  fallback_from_env\nend\n```\n\n---\n\n### 3.2 `ClaudeClient#list_models`\n\n| Property | Value |\n|----------|-------|\n| Endpoint | `GET https://api.anthropic.com/v1/models` |\n| Auth | Header `x-api-key: CLAUDE_API_KEY` + `anthropic-version: 2023-06-01` |\n| Response shape | `{ data: [ { id:, display_name:, created_at: } ] }` |\n\n**Note**: Anthropic's `/v1/models` does exist and returns available models for the account. The `created_at` field is ISO8601; convert with `Time.parse(...).to_i`.\n\n```ruby\ndef list_models\n  response = @conn.get('/v1/models') do |req|\n    req.headers['x-api-key']          = @api_key\n    req.headers['anthropic-version']  = '2023-06-01'\n    req.headers['anthropic-beta']     = 'models-1.0'  # required for model listing\n  end\n  body = response.body.is_a?(String) ? JSON.parse(response.body) : response.body\n  (body['data'] || []).map do |m|\n    {\n      id:          m['id'],\n      object:      'model',\n      owned_by:    'anthropic',\n      created:     (Time.parse(m['created_at']).to_i rescue Time.now.to_i),\n      smart_proxy: { provider: 'anthropic' }\n    }\n  end\nrescue StandardError => e\n  @logger&.warn({ event: 'claude_list_models_error', error: e.message })\n  []\nend\n```\n\n**Synthetic `-with-live-search` variants**: These are now handled by `ModelFilter` (step 5 — synthetic decoration) using `WITH_LIVE_SEARCH_MODELS=^claude-`. Remove the decoration loop from `ClaudeClient` entirely.\n\n**ENV fallback**: Same pattern as Grok — if live returns empty, fall back to `CLAUDE_MODELS` CSV.\n\n---\n\n### 3.3 `DeepSeekClient#list_models`\n\n| Property | Value |\n|----------|-------|\n| Endpoint | `GET https://api.deepseek.com/models` |\n| Auth | Bearer `DEEPSEEK_API_KEY` |\n| Response shape | `{ data: [ { id:, object:, owned_by: } ] }` (OpenAI-compatible) |\n\n```ruby\ndef list_models\n  response = @conn.get('/models') do |req|\n    req.headers['Authorization'] = \"Bearer #{@api_key}\"\n  end\n  body = response.body.is_a?(String) ? JSON.parse(response.body) : response.body\n  (body['data'] || []).map do |m|\n    {\n      id:          m['id'],\n      object:      'model',\n      owned_by:    m['owned_by'] || 'deepseek',\n      created:     m['created'] || Time.now.to_i,\n      smart_proxy: { provider: 'deepseek' }\n    }\n  end\nrescue StandardError => e\n  @logger&.warn({ event: 'deepseek_list_models_error', error: e.message })\n  []\nend\n```\n\n**ENV fallback**: Same pattern — `DEEPSEEK_MODELS` CSV as fallback.\n\n---\n\n### 3.4 `FireworksClient#list_models`\n\n| Property | Value |\n|----------|-------|\n| Endpoint | `GET https://api.fireworks.ai/inference/v1/models` |\n| Auth | Bearer `FIREWORKS_API_KEY` |\n| Response shape | `{ data: [ { id:, object:, owned_by: } ] }` (OpenAI-compatible) |\n\n**Important**: Fireworks returns hundreds of models. The `ModelFilter` blacklist should be used to scope this down. A reasonable default `FIREWORKS_MODELS_BLACKLIST` value is documented in PRD-5.5.\n\n```ruby\ndef list_models\n  response = @conn.get('/v1/models') do |req|\n    req.headers['Authorization'] = \"Bearer #{@api_key}\"\n  end\n  body = response.body.is_a?(String) ? JSON.parse(response.body) : response.body\n  (body['data'] || []).map do |m|\n    {\n      id:          m['id'],\n      object:      'model',\n      owned_by:    m['owned_by'] || 'fireworks',\n      created:     m['created'] || Time.now.to_i,\n      smart_proxy: { provider: 'fireworks' }\n    }\n  end\nrescue StandardError => e\n  @logger&.warn({ event: 'fireworks_list_models_error', error: e.message })\n  []\nend\n```\n\n**ENV fallback**: `FIREWORKS_MODELS` CSV as fallback.\n\n---\n\n### 3.5 `OllamaClient#list_models` (verify/align only)\n\nOllama already fetches live. Verify the return shape matches the common format above. If the existing `fetch_ollama_models` helper in `ModelAggregator` has normalisation logic not present in `OllamaClient#list_models`, move it there.\n\nNo new Ollama-specific ENV fallback needed (local models are always current).\n\n---\n\n## 4. ENV Fallback Helper (shared pattern)\n\nTo avoid duplicating fallback logic, extract a shared private helper into each client (or a shared module):\n\n```ruby\ndef models_from_env(env_key, default, owned_by:)\n  str = ENV.fetch(env_key, default)\n  str.split(',').map(&:strip).reject(&:empty?).map do |m_id|\n    {\n      id:          m_id,\n      object:      'model',\n      owned_by:    owned_by,\n      created:     Time.now.to_i,\n      smart_proxy: { provider: owned_by }\n    }\n  end\nend\n```\n\n---\n\n## 5. Testing Requirements\n\nFor each provider client, add/update tests in `spec/lib/<provider>_client_spec.rb`:\n\n| Test | Description |\n|------|-------------|\n| T1 | `list_models` returns normalised hash array on successful HTTP response (VCR cassette) |\n| T2 | `list_models` returns `[]` on `Faraday::Error` |\n| T3 | `list_models` returns `[]` on non-200 response |\n| T4 | `list_models` falls back to `ENV` CSV when live returns empty array |\n| T5 | Returned hashes contain required keys: `id`, `object`, `owned_by`, `created`, `smart_proxy` |\n\nClaude additionally:\n\n| Test | Description |\n|------|-------------|\n| T6 | `list_models` does NOT return `-with-live-search` variants (those come from `ModelFilter`) |\n\n---\n\n## 6. Acceptance Criteria\n\n- [ ] All five provider clients implement `#list_models` returning `Array<Hash>`\n- [ ] All returned hashes contain `id`, `object`, `owned_by`, `created`, `smart_proxy.provider`\n- [ ] ENV CSV fallback works when live endpoint returns empty\n- [ ] `-with-live-search` decoration is removed from `ClaudeClient` (moved to `ModelFilter`)\n- [ ] All VCR cassettes created/updated\n- [ ] All tests pass\n\n</prd>\n\n### Instructions\n\nBreak this PRD into atomic coding tasks following these rules:\n\n1. **Test-first ordering:** For each feature, produce the test task BEFORE the implementation task. The implementation task depends on its test task. The coding agent will:\n   - Run the tests (red — they should fail)\n   - Write code to make them pass (green)\n   - Iterate via test feedback until green\n\n2. **Atomic task scale:** Score each task on three dimensions (1-4):\n   - **Files Touched:** 1=1-2 files, 2=3-4, 3=5-7, 4=8+\n   - **Concept Count:** 1=1 concept, 2=2, 3=3-4, 4=5+\n   - **Cross-Model Dependencies:** 1=0 deps, 2=1, 3=2-3, 4=4+\n   - Total > 6 means the task COULD be split, but prefer fewer larger tasks over many tiny ones.\n\n3. **Task count guidance:** Aim for **4-8 tasks total**. Each task should produce meaningful, testable output. Do NOT create separate tasks for individual methods or test cases — group related work together. One test file = one test task. One implementation file = one code task.\n\n4. **One file per task:** Each task should primarily write or modify ONE file. Never create multiple tasks that append to the same file — instead combine them into a single task that writes the complete file. **Never combine test-writing for multiple source files into one task** — if two source files need tests, create two separate test tasks.\n\n5. **Keep prompts concise:** Each task prompt should be 2-5 sentences describing WHAT to build and WHERE, not HOW. Do NOT embed code snippets, full method signatures, or implementation details in prompts — the executing agent will read the codebase and figure out the implementation. Keep total JSON response under 4000 tokens.\n\n6. **Dependencies:** List which task numbers each task depends on. Tasks with no dependencies are independent and parallel-eligible.\n\n7. **Agent assignment:** Recommend which agent should execute each task. Use EXACT agent IDs from the team roster below:\n   - Use the agent IDs available in the team\n\n8. **Parallel awareness:** Two tasks that edit different files with no shared model dependencies CAN run in parallel.\n\n### Required Output Format\n\nRespond with ONLY a JSON array, no other text:\n\n```json\n[\n  {\n    \"position\": 1,\n    \"type\": \"test\",\n    \"prompt\": \"Write tests and factory for Project model: name (required), path (required, unique), project_rules (jsonb). Test validations, associations, factory validity.\",\n    \"agent\": \"rails-lead\",\n    \"files_score\": 2,\n    \"concepts_score\": 1,\n    \"dependencies_score\": 1,\n    \"depends_on\": [],\n    \"notes\": \"Independent test task — parallel eligible\"\n  },\n  {\n    \"position\": 2,\n    \"type\": \"code\",\n    \"prompt\": \"Create Project model and migration to make tests from Task 1 pass. Fields: name (string, required), path (string, required, unique), project_rules (jsonb, default {}).\",\n    \"agent\": \"rails-lead\",\n    \"files_score\": 2,\n    \"concepts_score\": 1,\n    \"dependencies_score\": 1,\n    \"depends_on\": [1],\n    \"notes\": \"Implementation — depends on test task 1\"\n  }\n]\n```\n"
+      }
+    ],
+    "max_tokens": 8192,
+    "temperature": 0.2
+  },
+  "response": {
+    "id": "gen-1773074960-sflOEahXRH9oWjYwA2UZ",
+    "object": "chat.completion",
+    "created": 1773074960,
+    "model": "openai/gpt-5.4-20260305",
+    "provider": "OpenAI",
+    "system_fingerprint": null,
+    "choices": [
+      {
+        "index": 0,
+        "logprobs": null,
+        "finish_reason": "stop",
+        "native_finish_reason": "completed",
+        "message": {
+          "role": "assistant",
+          "content": "[\n  {\n    \"position\": 1,\n    \"type\": \"test\",\n    \"prompt\": \"Write or update provider client specs for GrokClient and ClaudeClient in their respective spec files. Cover successful model listing normalization, error and non-200 handling, ENV fallback on empty live results, required keys, and the Claude-specific assertion that no synthetic -with-live-search variants are returned.\",\n    \"agent\": \"rails-lead\",\n    \"files_score\": 2,\n    \"concepts_score\": 3,\n    \"dependencies_score\": 1,\n    \"depends_on\": [],\n    \"notes\": \"Two independent test files for two source files; parallel eligible with other test tasks.\"\n  },\n  {\n    \"position\": 2,\n    \"type\": \"code\",\n    \"prompt\": \"Implement or update list_models behavior in GrokClient and ClaudeClient to satisfy their specs. Add live /models fetching, normalization to the shared model hash shape, empty-list ENV fallback, failure handling returning [], and remove any Claude-side synthetic live-search decoration.\",\n    \"agent\": \"rails-lead\",\n    \"files_score\": 2,\n    \"concepts_score\": 3,\n    \"dependencies_score\": 2,\n    \"depends_on\": [1],\n    \"notes\": \"Touches the two provider client files covered by Task 1.\"\n  },\n  {\n    \"position\": 3,\n    \"type\": \"test\",\n    \"prompt\": \"Write or update provider client specs for DeepSeekClient and FireworksClient in their respective spec files. Cover normalized successful responses, [] on Faraday errors, [] on non-200 responses, ENV CSV fallback when the live endpoint returns no models, and required output keys.\",\n    \"agent\": \"backend-test\",\n    \"files_score\": 2,\n    \"concepts_score\": 2,\n    \"dependencies_score\": 1,\n    \"depends_on\": [],\n    \"notes\": \"Independent test work on two separate spec files; parallel eligible.\"\n  },\n  {\n    \"position\": 4,\n    \"type\": \"code\",\n    \"prompt\": \"Implement or update list_models in DeepSeekClient and FireworksClient to satisfy their specs. Ensure each client fetches live models, normalizes them to the common hash format, falls back to ENV when the live result is empty, and returns [] on failures.\",\n    \"agent\": \"ruby-backend\",\n    \"files_score\": 2,\n    \"concepts_score\": 2,\n    \"dependencies_score\": 2,\n    \"depends_on\": [3],\n    \"notes\": \"Touches the two provider client files covered by Task 3.\"\n  },\n  {\n    \"position\": 5,\n    \"type\": \"test\",\n    \"prompt\": \"Write or update the OllamaClient spec to verify list_models already returns the shared normalized model hash shape and remains live-driven without ENV fallback requirements. Also add or adjust aggregator-focused coverage only if needed to capture any normalization currently living outside OllamaClient.\",\n    \"agent\": \"backend-test\",\n    \"files_score\": 1,\n    \"concepts_score\": 2,\n    \"dependencies_score\": 1,\n    \"depends_on\": [],\n    \"notes\": \"Primarily one test file; keep any added coverage tightly scoped to Ollama normalization behavior.\"\n  },\n  {\n    \"position\": 6,\n    \"type\": \"code\",\n    \"prompt\": \"Align OllamaClient list_models with the shared output contract and move any Ollama-specific normalization out of ModelAggregator into OllamaClient if that logic is still external. Keep behavior live-based and make the updated tests pass without introducing new fallback paths.\",\n    \"agent\": \"ruby-backend\",\n    \"files_score\": 2,\n    \"concepts_score\": 2,\n    \"dependencies_score\": 2,\n    \"depends_on\": [5],\n    \"notes\": \"May touch OllamaClient and one aggregator file if normalization must be relocated.\"\n  },\n  {\n    \"position\": 7,\n    \"type\": \"test\",\n    \"prompt\": \"Write or update the shared provider spec for DeepSeekClient in its spec file, expanding coverage to include any shared fallback helper expectations if the client test suite currently lacks them. Ensure the spec reflects the final common output contract and empty-live fallback behavior used across providers.\",\n    \"agent\": \"backend-test\",\n    \"files_score\": 1,\n    \"concepts_score\": 1,\n    \"dependencies_score\": 1,\n    \"depends_on\": [],\n    \"notes\": \"Use this task only if the existing DeepSeek spec is the best home for validating shared helper behavior without adding a new shared spec file.\"\n  },\n  {\n    \"position\": 8,\n    \"type\": \"code\",\n    \"prompt\": \"Introduce or finalize any shared helper used by provider clients for ENV-based model fallback, placing it in the most appropriate existing source file. Update the affected clients to use it consistently while preserving each provider’s auth, endpoint, normalization, and failure semantics.\",\n    \"agent\": \"rails-lead\",\n    \"files_score\": 3,\n    \"concepts_score\": 3,\n    \"dependencies_score\": 3,\n    \"depends_on\": [2, 4, 7],\n    \"notes\": \"Consolidation pass after provider-specific implementations; if a shared helper already emerges naturally, keep this task minimal and scoped to one helper/module file plus client call sites.\"\n  }\n]",
+          "refusal": null,
+          "reasoning": null
+        }
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 3038,
+      "completion_tokens": 1121,
+      "total_tokens": 4159,
+      "cost": 0.02441,
+      "is_byok": false,
+      "prompt_tokens_details": {
+        "cached_tokens": 0,
+        "cache_write_tokens": 0,
+        "audio_tokens": 0,
+        "video_tokens": 0
+      },
+      "cost_details": {
+        "upstream_inference_cost": 0.02441,
+        "upstream_inference_prompt_cost": 0.007595,
+        "upstream_inference_completions_cost": 0.016815
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0,
+        "image_tokens": 0,
+        "audio_tokens": 0
+      }
+    },
+    "smart_proxy": {
+      "tool_loop": {
+        "loop_count": 0,
+        "max_loops": 3
+      },
+      "tools_used": []
+    }
+  }
+}

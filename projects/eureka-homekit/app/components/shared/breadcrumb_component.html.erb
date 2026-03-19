@@ -1,0 +1,13 @@
+<div class="text-sm breadcrumbs">
+  <ul>
+    <% @items.each do |item| %>
+      <li>
+        <% if item[:current] %>
+          <span class="font-semibold"><%= item[:label] %></span>
+        <% else %>
+          <%= link_to item[:label], item[:path] %>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>

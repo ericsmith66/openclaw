@@ -1,0 +1,11 @@
+<%= render(LayoutComponent.new(title: "Accounts", current_user: current_user)) do %>
+  <div class="flex justify-between items-center mb-6">
+    <%= link_to "New Account", new_account_path, class: "bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded" %>
+  </div>
+
+  <%= render AccountTableComponent.new(accounts: @accounts) %>
+
+  <div class="mt-6 flex justify-center">
+    <%= paginate @accounts %>
+  </div>
+<% end %>

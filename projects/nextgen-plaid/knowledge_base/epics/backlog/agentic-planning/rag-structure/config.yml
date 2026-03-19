@@ -1,0 +1,261 @@
+# Multi-Index RAG Configuration
+# Defines how to load and query the RAG structure for agentic PRD generation
+
+rag_config:
+  version: "1.0"
+  base_path: "knowledge_base/agentic-planning/rag-structure"
+  
+  # ============================================================================
+  # INDEX DEFINITIONS
+  # ============================================================================
+  indexes:
+    functional:
+      path: "functional/index.yml"
+      format: "yaml"
+      description: "What the app does - user-facing capabilities"
+      query_pattern: "fetch:functional:<capability>:<feature>"
+      cache_ttl: 3600  # 1 hour
+      
+    structural:
+      path: "structural/index.yml"
+      format: "yaml"
+      description: "How the app is built - technical architecture"
+      query_pattern: "fetch:structural:<layer>:<component>"
+      cache_ttl: 3600  # 1 hour
+      
+    vision:
+      path: "vision/index.yml"
+      format: "yaml"
+      description: "Where the app is going - roadmap and priorities"
+      query_pattern: "fetch:vision:<category>:<item>"
+      cache_ttl: 1800  # 30 minutes (more dynamic)
+      
+    cross_references:
+      path: "cross-references/map.json"
+      format: "json"
+      description: "Links between functional, structural, and vision"
+      query_pattern: "fetch:cross_ref:<concept_id>"
+      cache_ttl: 3600  # 1 hour
+  
+  # ============================================================================
+  # SEMI-STATIC DATA (Updated Daily)
+  # ============================================================================
+  semi_static:
+    artifact_summary:
+      path: "semi-static/artifact_summary.json"
+      format: "json"
+      update_frequency: "daily"
+      update_job: "UpdateArtifactSummaryJob"
+      query_pattern: "fetch:sdlc:semi_static:artifact_summary"
+      
+    backlog_items:
+      path: "semi-static/backlog_items.json"
+      format: "json"
+      update_frequency: "daily"
+      update_job: "UpdateBacklogSummaryJob"
+      query_pattern: "fetch:sdlc:semi_static:backlog_items"
+  
+  # ============================================================================
+  # ON-DEMAND DATA (Fetched in Real-Time)
+  # ============================================================================
+  on_demand:
+    schema:
+      fetcher: "OnDemandFetcher.fetch_schema"
+      query_pattern: "fetch:structural:data_layer:schema"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 5000  # chars
+      
+    models:
+      fetcher: "OnDemandFetcher.fetch_model"
+      query_pattern: "fetch:structural:data_layer:<component>:<model_name>"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 3000  # chars
+      
+    services:
+      fetcher: "OnDemandFetcher.fetch_service"
+      query_pattern: "fetch:structural:service_layer:<component>:<service_name>"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 3000  # chars
+      
+    routes:
+      fetcher: "OnDemandFetcher.fetch_routes"
+      query_pattern: "fetch:structural:interface_layer:routing"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 2000  # chars
+      
+    prds:
+      fetcher: "OnDemandFetcher.search_prds"
+      query_pattern: "search:sdlc:on_demand:prds <keyword>"
+      cache_ttl: 0  # No cache (search results vary)
+      size_limit: 5000  # chars total
+      
+    commits:
+      fetcher: "OnDemandFetcher.fetch_commit"
+      query_pattern: "fetch:sdlc:on_demand:commits <sha>"
+      cache_ttl: 600  # 10 minutes
+      size_limit: 3000  # chars
+  
+  # ============================================================================
+  # PHASE-SPECIFIC CONTEXT LOADING
+  # ============================================================================
+  phase_context:
+    research:
+      description: "High-level overview - summaries only"
+      token_budget: 1000
+      sources:
+        - type: "index"
+          index: "functional"
+          depth: "summary"  # Capability names and summaries only
+        - type: "index"
+          index: "structural"
+          depth: "summary"  # Layer names and component summaries only
+        - type: "index"
+          index: "vision"
+          depth: "summary"  # Roadmap phases and priority names only
+        - type: "semi_static"
+          source: "artifact_summary"
+          limit: 10  # Recent 10 artifacts
+        - type: "semi_static"
+          source: "backlog_items"
+          limit: 5  # Top 5 priority items
+      
+    plan:
+      description: "Structural context + vision alignment"
+      token_budget: 3000
+      sources:
+        - type: "index"
+          index: "functional"
+          depth: "detailed"  # Include routes, models, services
+        - type: "index"
+          index: "structural"
+          depth: "detailed"  # Include file paths and key methods
+        - type: "index"
+          index: "vision"
+          depth: "detailed"  # Include PRD references and priorities
+        - type: "on_demand"
+          fetcher: "schema"
+          params: null  # Full schema summary
+        - type: "on_demand"
+          fetcher: "prds"
+          params: "<query_keywords>"  # Search for similar PRDs
+      
+    verify:
+      description: "Constraints and validation rules"
+      token_budget: 2000
+      sources:
+        - type: "on_demand"
+          fetcher: "schema"
+          params: "<relevant_tables>"  # Specific tables only
+        - type: "index"
+          index: "structural"
+          depth: "full"
+          filter: "prd_strategy"  # Validation rules
+        - type: "index"
+          index: "vision"
+          depth: "full"
+          filter: "technical_debt"  # Known constraints
+        - type: "on_demand"
+          fetcher: "prds"
+          params: "<query_keywords>"  # Existing patterns
+      
+    execute:
+      description: "Full context for generation"
+      token_budget: 8000
+      sources:
+        - type: "index"
+          index: "functional"
+          depth: "full"
+          filter: "<relevant_capabilities>"
+        - type: "index"
+          index: "structural"
+          depth: "full"
+          filter: "<relevant_components>"
+        - type: "index"
+          index: "vision"
+          depth: "full"
+          filter: "<relevant_roadmap_items>"
+        - type: "cross_references"
+          concept_id: "<primary_concept>"
+        - type: "on_demand"
+          fetcher: "models"
+          params: "<relevant_models>"
+        - type: "on_demand"
+          fetcher: "prds"
+          params: "<query_keywords>"
+          limit: 2  # Full content of 2 similar PRDs
+      
+    validate:
+      description: "Validation rules and patterns"
+      token_budget: 1000
+      sources:
+        - type: "index"
+          index: "structural"
+          depth: "full"
+          filter: "prd_strategy"  # Validation logic
+        - type: "index"
+          index: "vision"
+          depth: "summary"
+          filter: "success_metrics"  # Quality targets
+  
+  # ============================================================================
+  # QUERY ROUTING RULES
+  # ============================================================================
+  query_routing:
+    # Pattern matching for query strings
+    patterns:
+      - pattern: "^fetch:functional:"
+        handler: "FunctionalIndexQuery"
+        index: "functional"
+        
+      - pattern: "^fetch:structural:"
+        handler: "StructuralIndexQuery"
+        index: "structural"
+        
+      - pattern: "^fetch:vision:"
+        handler: "VisionIndexQuery"
+        index: "vision"
+        
+      - pattern: "^fetch:cross_ref:"
+        handler: "CrossReferenceQuery"
+        index: "cross_references"
+        
+      - pattern: "^fetch:sdlc:semi_static:"
+        handler: "SemiStaticQuery"
+        source: "semi_static"
+        
+      - pattern: "^fetch:sdlc:on_demand:"
+        handler: "OnDemandQuery"
+        source: "on_demand"
+        
+      - pattern: "^search:"
+        handler: "SearchQuery"
+        indexes: ["functional", "structural", "vision"]
+  
+  # ============================================================================
+  # PERFORMANCE SETTINGS
+  # ============================================================================
+  performance:
+    max_concurrent_fetches: 5
+    fetch_timeout: 2000  # milliseconds
+    cache_backend: "memory"  # or "redis"
+    max_cache_size: 100  # MB
+    enable_metrics: true
+    metrics_log: "agent_logs/rag_metrics.log"
+  
+  # ============================================================================
+  # FALLBACK BEHAVIOR
+  # ============================================================================
+  fallback:
+    on_index_load_failure: "use_cache"
+    on_fetch_timeout: "return_partial"
+    on_cache_miss: "fetch_fresh"
+    on_parse_error: "log_and_skip"
+    default_context: "minimal"  # Use minimal context if all else fails
+
+# Query Examples:
+# - fetch:functional:agent_orchestration:prd_generation
+# - fetch:structural:data_layer:schema
+# - fetch:vision:roadmap:in_progress
+# - fetch:cross_ref:prd_generation
+# - fetch:sdlc:semi_static:artifact_summary
+# - search:functional:plaid

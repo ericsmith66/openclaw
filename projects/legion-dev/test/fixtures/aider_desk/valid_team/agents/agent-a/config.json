@@ -1,0 +1,1 @@
+{"id": "agent-a-id","name": "Agent A","provider": "anthropic","model": "claude-sonnet","maxIterations": 100,"usePowerTools": true,"customInstructions": "Be helpful"}

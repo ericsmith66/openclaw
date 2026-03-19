@@ -1,0 +1,95 @@
+<% if turbo_frame_request? %>
+  <%= turbo_frame_tag Transactions::GridComponent::TRANSACTIONS_GRID_TURBO_FRAME_ID do %>
+    <div class="flex items-center justify-between mb-4">
+      <div></div>
+      <%= render SavedAccountFilterSelectorComponent.new(
+        saved_account_filters: @saved_account_filters,
+        selected_id: @saved_account_filter_id,
+        base_params: request.query_parameters,
+        turbo_frame_id: Transactions::GridComponent::TRANSACTIONS_GRID_TURBO_FRAME_ID,
+        path_helper: :transactions_credit_path
+      ) %>
+    </div>
+
+    <div class="container mx-auto">
+      <%= render "transactions/tabs" %>
+
+      <%= render "transactions/warning", warning: @warning %>
+
+      <%= render Transactions::SummaryCardComponent.new(transactions: @transactions) %>
+
+      <%= render Transactions::FilterBarComponent.new(
+            search_term: @search_term,
+            type_filter: @type_filter,
+            date_from: @date_from,
+            date_to: @date_to,
+            view_type: "credit"
+          ) %>
+
+      <%= render Transactions::GridComponent.new(
+            transactions: @transactions,
+            total_count: @total_count,
+            page: @page,
+            per_page: @per_page,
+            sort: @sort,
+            dir: @dir,
+            type_filter: @type_filter,
+            search_term: @search_term,
+            date_from: @date_from,
+            date_to: @date_to,
+            view_type: "credit"
+          ) %>
+    </div>
+  <% end %>
+<% else %>
+  <%# Breadcrumb row with account filter right-justified %>
+  <div class="flex items-center justify-between mb-4">
+    <div class="text-sm breadcrumbs">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="<%= transactions_summary_path %>">Transactions</a></li>
+        <li>Credit</li>
+      </ul>
+    </div>
+  </div>
+
+  <%= turbo_frame_tag Transactions::GridComponent::TRANSACTIONS_GRID_TURBO_FRAME_ID do %>
+    <div class="flex items-center justify-end mb-4">
+      <%= render SavedAccountFilterSelectorComponent.new(
+        saved_account_filters: @saved_account_filters,
+        selected_id: @saved_account_filter_id,
+        base_params: request.query_parameters,
+        turbo_frame_id: Transactions::GridComponent::TRANSACTIONS_GRID_TURBO_FRAME_ID,
+        path_helper: :transactions_credit_path
+      ) %>
+    </div>
+
+    <div class="container mx-auto">
+      <%= render "transactions/tabs" %>
+
+      <%= render Transactions::SummaryCardComponent.new(transactions: @transactions) %>
+
+      <%= render Transactions::FilterBarComponent.new(
+            search_term: @search_term,
+            type_filter: @type_filter,
+            date_from: @date_from,
+            date_to: @date_to,
+            view_type: "credit"
+          ) %>
+
+      <%= render Transactions::GridComponent.new(
+            transactions: @transactions,
+            total_count: @total_count,
+            page: @page,
+            per_page: @per_page,
+            sort: @sort,
+            dir: @dir,
+            type_filter: @type_filter,
+            search_term: @search_term,
+            date_from: @date_from,
+            date_to: @date_to,
+            view_type: "credit"
+          ) %>
+    </div>
+  <% end %>
+<% end %>

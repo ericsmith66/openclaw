@@ -1,0 +1,44 @@
+<div class="flex items-start gap-3 flex-wrap">
+  <div>
+    <div class="text-xs opacity-70 mb-1">Snapshot</div>
+    <%= form_with url: holdings_path({}), method: :get, local: true, class: "join" do %>
+      <% form_params_for(nil).except(:snapshot_id, "snapshot_id").each do |k, v| %>
+        <%= hidden_field_tag k, v %>
+      <% end %>
+
+      <%= select_tag :snapshot_id,
+            options_for_select(
+              [["Latest (live)", "live"]] + snapshots.map { |s| [option_label(s), s.id] },
+              selected_snapshot_id.presence || "live"
+            ),
+            class: "select select-bordered select-sm join-item",
+            aria: { label: "Select snapshot" },
+            data: (turbo_frame_id.present? ? { turbo_frame: turbo_frame_id } : {}),
+            onchange: "this.form.requestSubmit()" %>
+    <% end %>
+
+    <div class="mt-1 text-xs opacity-70">
+      <%= selected_label %>
+      <% if snapshots.empty? %>
+        <span class="mx-1">•</span>
+        <span>No snapshots yet</span>
+      <% end %>
+      <span class="mx-1">•</span>
+      <%= link_to "View all snapshots…", portfolio_holdings_snapshots_path, class: "link link-hover" %>
+    </div>
+  </div>
+
+  <% if snapshot_mode? %>
+    <div class="alert alert-info py-2 px-3 shadow-sm">
+      <div>
+        <div class="font-medium" aria-label="Historical view indicator"><%= historical_badge_text %></div>
+        <div class="mt-1">
+          <%= link_to "Switch to live",
+                holdings_path(form_params_for(nil).except(:snapshot_id, "snapshot_id")),
+                class: "btn btn-xs",
+                data: (turbo_frame_id.present? ? { turbo_frame: turbo_frame_id } : {}) %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

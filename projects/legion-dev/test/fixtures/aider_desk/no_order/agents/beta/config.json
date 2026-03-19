@@ -1,0 +1,7 @@
+{
+  "id": "beta-id",
+  "name": "Beta Agent",
+  "provider": "openai",
+  "model": "gpt-3.5",
+  "maxIterations": 75
+}

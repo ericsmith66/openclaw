@@ -1,0 +1,13 @@
+# Production Process Definitions
+# Phase 1: Foreman-based process management
+#
+# Usage: foreman start -f Procfile.prod
+#
+# Processes:
+#   web    - Puma web server (port 3000)
+#   worker - SolidQueue background job processor
+#
+# Future (Phase 2): Will migrate to individual launchd plists
+
+web: env PORT=3000 bin/rails server -e production -b 0.0.0.0
+worker: bin/rails solid_queue:start

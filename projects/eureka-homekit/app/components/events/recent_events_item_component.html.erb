@@ -1,0 +1,35 @@
+<div class="flex gap-4 p-3 rounded-xl bg-base-200/50 border border-base-200/50 hover:border-primary/30 transition-all group cursor-pointer"
+     data-action="click->events#openModal"
+     data-event-id="<%= @event.id %>"
+     aria-label="<%= summary %> in <%= room_name %>">
+  <div class="flex-none pt-1">
+    <div class="w-8 h-8 rounded-lg bg-base-100 flex items-center justify-center shadow-sm">
+      <%= helpers.lucide_icon(icon_name, size: 16, class: event_severity_color(@event)) %>
+    </div>
+  </div>
+  
+  <div class="flex-1 min-w-0">
+    <div class="flex justify-between items-start mb-0.5">
+      <div class="flex items-center gap-1.5 truncate">
+        <p class="text-sm font-bold truncate group-hover:text-primary transition-colors">
+          <%= summary.split(':').first %>: 
+          <span class="text-primary"><%= summary.split(':').last.strip %></span>
+        </p>
+        <% if @count > 1 %>
+          <span class="badge badge-xs badge-ghost opacity-60">×<%= @count %></span>
+        <% end %>
+      </div>
+      <span class="text-[10px] opacity-40 font-medium uppercase whitespace-nowrap ml-2"><%= time_ago %> ago</span>
+    </div>
+    
+    <div class="flex items-center justify-between">
+      <p class="text-[11px] opacity-60 truncate">
+        <span class="font-medium"><%= accessory_name %></span>
+        <% if room_name != "N/A" %>
+          • <%= room_name %>
+        <% end %>
+      </p>
+      <div class="w-1.5 h-1.5 rounded-full <%= severity_class %>"></div>
+    </div>
+  </div>
+</div>

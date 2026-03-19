@@ -1,0 +1,29 @@
+<div class="stats stats-vertical lg:stats-horizontal shadow w-full mb-6">
+  <div class="stat">
+    <div class="stat-title">Total Transactions</div>
+    <div class="stat-value"><%= total_count %></div>
+    <div class="stat-desc">in this view</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-title">Net Amount</div>
+    <div class="stat-value <%= net_amount >= 0 ? 'text-success' : 'text-error' %>">
+      <%= number_to_currency(net_amount) %>
+    </div>
+    <div class="stat-desc">Sum of all transactions</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-title">Average Transaction</div>
+    <div class="stat-value"><%= number_to_currency(average_amount) %></div>
+    <div class="stat-desc">Mean amount</div>
+  </div>
+
+  <div class="stat">
+    <div class="stat-title">Largest Expense</div>
+    <div class="stat-value text-error">
+      <%= number_to_currency(largest_expense) %>
+    </div>
+    <div class="stat-desc">Top spending category: <%= top_category %></div>
+  </div>
+</div>

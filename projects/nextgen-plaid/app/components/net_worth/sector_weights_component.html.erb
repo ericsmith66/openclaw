@@ -1,0 +1,106 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="card-title">Sector Weights</h2>
+    </div>
+
+    <% if corrupt? %>
+      <%= render NetWorth::EmptyStateComponent.new(
+            context: :data_missing,
+            message_override: "Data temporarily unavailable."
+          ) %>
+    <% elsif empty? %>
+      <%= render NetWorth::EmptyStateComponent.new(
+            context: :data_missing,
+            message_override: "No sector data available (equity holdings only)."
+          ) %>
+    <% else %>
+      <% unless chart_error? %>
+        <div class="mt-4">
+          <% begin %>
+            <%= bar_chart(
+                  chart_series,
+                  id: "sector-weights-chart",
+                  height: "260px",
+                  colors: colors,
+                  min: 0,
+                  max: 100,
+                  suffix: "%",
+                  messages: { empty: "No sector data" }
+                ) %>
+          <% rescue StandardError => e %>
+            <% mark_chart_error!(e) %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="mt-4 overflow-x-auto">
+        <table
+          class="table table-sm"
+          aria-label="Sector weights breakdown"
+          data-controller="sector-table-sort"
+          data-sector-table-sort-enabled-value="<%= (!server_sort?).to_s %>"
+        >
+          <thead>
+            <tr>
+              <th scope="col" aria-sort="<%= aria_sort_for('sector') %>">
+                <% if server_sort? %>
+                  <%= link_to "Sector", net_worth_sectors_path(sort_link("sector")), class: "link link-hover" %>
+                <% else %>
+                  <button type="button" class="btn btn-ghost btn-sm sm:btn-xs" data-action="sector-table-sort#sort" data-sector-table-sort-column-param="sector">Sector</button>
+                <% end %>
+              </th>
+              <th scope="col" class="text-right" aria-sort="<%= aria_sort_for('pct') %>">
+                <% if server_sort? %>
+                  <%= link_to "%", net_worth_sectors_path(sort_link("pct")), class: "link link-hover" %>
+                <% else %>
+                  <button type="button" class="btn btn-ghost btn-sm sm:btn-xs" data-action="sector-table-sort#sort" data-sector-table-sort-column-param="pct">%</button>
+                <% end %>
+              </th>
+              <th scope="col" class="text-right" aria-sort="<%= aria_sort_for('value') %>">
+                <% if server_sort? %>
+                  <%= link_to "Value", net_worth_sectors_path(sort_link("value")), class: "link link-hover" %>
+                <% else %>
+                  <button type="button" class="btn btn-ghost btn-sm sm:btn-xs" data-action="sector-table-sort#sort" data-sector-table-sort-column-param="value">Value</button>
+                <% end %>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <% sector_rows.each do |row| %>
+              <tr
+                data-sector-table-sort-target="row"
+                data-sector="<%= row[:sector].to_s %>"
+                data-pct="<%= row[:pct].to_f %>"
+                data-value="<%= row[:value_usd].to_f %>"
+              >
+                <td><span class="font-medium"><%= row[:sector] %></span></td>
+                <td class="text-right"><%= number_to_percentage(row[:pct].to_f * 100.0, precision: 0) %></td>
+                <td class="text-right"><%= number_to_currency(row[:value_usd].to_f, precision: 0) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <table class="sr-only" aria-label="Sector weights breakdown (accessible fallback)">
+        <thead>
+          <tr>
+            <th>Sector</th>
+            <th>Percentage</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% sector_rows.each do |row| %>
+            <tr>
+              <td><%= row[:sector] %></td>
+              <td><%= number_to_percentage(row[:pct].to_f * 100.0, precision: 0) %></td>
+              <td><%= number_to_currency(row[:value_usd].to_f, precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+</div>

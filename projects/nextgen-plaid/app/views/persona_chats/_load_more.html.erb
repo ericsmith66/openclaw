@@ -1,0 +1,7 @@
+<% if next_page.present? %>
+  <%= link_to "Load more",
+        persona_chat_conversations_path(persona_id: persona_id, page: next_page, active_conversation_id: active_conversation_id),
+        data: { turbo_stream: true },
+        class: "btn btn-sm btn-outline w-full min-h-11",
+        aria: { label: "Load more conversations" } %>
+<% end %>

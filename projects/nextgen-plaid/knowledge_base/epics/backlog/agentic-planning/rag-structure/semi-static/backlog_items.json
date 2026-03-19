@@ -1,0 +1,69 @@
+{
+  "_metadata": {
+    "description": "Prioritized backlog items from the database for RAG context",
+    "update_frequency": "daily",
+    "generated_by": "UpdateBacklogSummaryJob (to be implemented)",
+    "last_updated": null,
+    "query": "BacklogItem.where(status: ['todo', 'in_progress']).order(priority: :desc, created_at: :desc).limit(30)",
+    "purpose": "Provides agents with current work items and priorities"
+  },
+  "_schema": {
+    "id": "integer - Backlog item ID",
+    "title": "string - Item title/description",
+    "status": "string - Status (todo, in_progress, done, blocked)",
+    "priority": "integer - Priority (1=highest, 5=lowest)",
+    "assigned_to": "string - Assigned persona or user",
+    "created_at": "datetime - Creation timestamp",
+    "updated_at": "datetime - Last update timestamp",
+    "tags": "array - Tags for categorization",
+    "related_artifact_id": "integer - Related artifact ID (optional)"
+  },
+  "_example_data": [
+    {
+      "id": 45,
+      "title": "Implement agentic planning phase for PRD generation",
+      "status": "in_progress",
+      "priority": 1,
+      "assigned_to": "SAP",
+      "created_at": "2026-01-10T09:00:00Z",
+      "updated_at": "2026-01-17T08:15:00Z",
+      "tags": ["agentic", "prd", "high-priority"],
+      "related_artifact_id": 122
+    },
+    {
+      "id": 44,
+      "title": "Build multi-index RAG architecture",
+      "status": "in_progress",
+      "priority": 1,
+      "assigned_to": "SAP",
+      "created_at": "2026-01-09T14:30:00Z",
+      "updated_at": "2026-01-17T10:00:00Z",
+      "tags": ["rag", "infrastructure", "high-priority"],
+      "related_artifact_id": null
+    },
+    {
+      "id": 43,
+      "title": "Add validation scoring dashboard",
+      "status": "in_progress",
+      "priority": 2,
+      "assigned_to": "SAP",
+      "created_at": "2026-01-08T11:00:00Z",
+      "updated_at": "2026-01-16T15:30:00Z",
+      "tags": ["validation", "metrics", "quality"],
+      "related_artifact_id": 123
+    },
+    {
+      "id": 42,
+      "title": "Complete OAuth flow for Plaid",
+      "status": "todo",
+      "priority": 4,
+      "assigned_to": null,
+      "created_at": "2025-12-15T10:00:00Z",
+      "updated_at": "2025-12-15T10:00:00Z",
+      "tags": ["plaid", "oauth", "low-priority"],
+      "related_artifact_id": null
+    }
+  ],
+  "backlog_items": [],
+  "_note": "This file should be auto-generated daily by a Sidekiq job. Current data is empty - implement UpdateBacklogSummaryJob to populate."
+}

@@ -1,0 +1,210 @@
+# frozen_string_literal: true
+
+require "ostruct"
+
+module Legion
+  # Service for managing PostgreSQL advisory locks for per-project workflow coordination.
+  #
+  # PostgreSQL advisory locks provide a way to implement custom locking semantics
+  # without relying on database-level constraints. This service wraps the advisory
+  # lock functionality to provide project-scoped locking with useful error handling.
+  #
+  # @example Acquire a lock with timeout
+  #   result = AdvisoryLockService.acquire_lock(project_id: 123, timeout_ms: 5000)
+  #   if result.success
+  #     # Lock acquired, do work
+  #   end
+  #
+  # @example Release a lock
+  #   AdvisoryLockService.release_lock(project_id: 123)
+  #
+  # @example Automatic lock release on timeout
+  #   # Lock automatically releases when the session ends or statement times out
+  class AdvisoryLockService
+    # Lock key prefix for advisory locks (shifted left to avoid collisions with user-defined locks)
+    LOCK_KEY_PREFIX = 1_000_000
+
+    # @param project_id [Integer] the project identifier
+    # @return [Integer] the advisory lock key for this project
+    def self.lock_key(project_id)
+      LOCK_KEY_PREFIX + project_id
+    end
+
+    # Acquire an advisory lock for a project.
+    #
+    # @param project_id [Integer] the project identifier
+    # @param timeout_ms [Integer, nil] timeout in milliseconds. nil means wait forever. 0 means no wait.
+    # @return [OpenStruct] result with success (boolean), lock_key (integer), acquired (boolean)
+    def self.acquire_lock(project_id:, timeout_ms: nil)
+      lock_key = lock_key(project_id)
+      
+      # Handle timeout_ms: 0 as immediate non-blocking try (uses fresh connection to avoid re-entrancy issues)
+      if timeout_ms == 0
+        # Use a fresh connection to check if lock is available
+        conn = ActiveRecord::Base.connection_pool.checkout
+        begin
+          # pg_try_advisory_lock returns void on success
+          # If the lock is already held by another process, it returns immediately without acquiring
+          # To detect if it was acquired, we can check the lock state first using pg_try_advisory_lock
+          # The function returns void on success, so we check by attempting to acquire and catching errors
+          conn.exec_query("SELECT pg_try_advisory_lock(#{lock_key})")
+          acquired = true
+          
+          # Release immediately since this is a non-blocking check
+          conn.exec_query("SELECT pg_advisory_unlock(#{lock_key})")
+        rescue => e
+          # Lock is held by another process or error occurred
+          acquired = false
+        ensure
+          # Clean up any remaining lock in the connection
+          begin
+            conn.exec_query("SELECT pg_advisory_unlock(#{lock_key})") if acquired
+          rescue
+            # Ignore errors during cleanup
+          end
+          ActiveRecord::Base.connection_pool.checkin(conn)
+        end
+        
+        OpenStruct.new(
+          success: acquired,
+          lock_key: lock_key,
+          acquired: acquired
+        )
+      elsif timeout_ms && timeout_ms > 0
+        # Use a fresh connection from the pool to acquire the lock with timeout
+        conn = ActiveRecord::Base.connection_pool.checkout
+        begin
+          conn.exec_query("SET statement_timeout = #{timeout_ms}")
+          conn.exec_query("SELECT pg_advisory_lock(#{lock_key})")
+          OpenStruct.new(
+            success: true,
+            lock_key: lock_key,
+            acquired: true
+          )
+        rescue ActiveRecord::StatementTimeout, ActiveRecord::QueryCanceled => e
+          # Timeout expired - lock was held by another process
+          OpenStruct.new(
+            success: false,
+            lock_key: lock_key,
+            acquired: false
+          )
+        ensure
+          conn.exec_query("SET statement_timeout = 0") if conn
+          ActiveRecord::Base.connection_pool.checkin(conn)
+        end
+      else
+        # Wait indefinitely for the lock using pg_advisory_lock
+        # Note: pg_advisory_lock blocks until the lock is acquired
+        ActiveRecord::Base.connection.exec_query("SELECT pg_advisory_lock(#{lock_key})")
+        OpenStruct.new(
+          success: true,
+          lock_key: lock_key,
+          acquired: true
+        )
+      end
+    end
+
+    # Release an advisory lock for a project.
+    #
+    # @param project_id [Integer] the project identifier
+    # @return [Boolean] true if lock was held and released, false if not held
+    def self.release_lock(project_id:)
+      lock_key = lock_key(project_id)
+      
+      # pg_advisory_unlock returns true if lock was held and released,
+      # false if lock was not held
+      result = ActiveRecord::Base.connection.select_all(
+        "SELECT pg_advisory_unlock(#{lock_key}) AS released"
+      )
+      
+      released = result&.first&.dig("released") == "t"
+      released
+    end
+
+    # Check if a lock is currently held by any process.
+    # Checks the pg_locks system catalog to see if the lock is held.
+    # PostgreSQL advisory locks use objid for the lock key.
+    #
+    # @param project_id [Integer] the project identifier
+    # @return [Boolean] true if lock is held, false otherwise
+    def self.lock_held?(project_id:)
+      lock_key = lock_key(project_id)
+      
+      # Query the pg_locks system catalog to see if the lock is held
+      # PostgreSQL advisory locks store the key in objid
+      result = ActiveRecord::Base.connection.select_all(<<~SQL)
+        SELECT COUNT(*) AS count
+        FROM pg_locks l
+        JOIN pg_database d ON l.database = d.oid
+        WHERE l.locktype = 'advisory'
+          AND l.mode = 'ExclusiveLock'
+          AND l.granted = 't'
+          AND d.datname = current_database()
+          AND l.objid::bigint = #{lock_key}
+      SQL
+      
+      count = result&.first&.dig("count").to_i
+      count > 0
+    end
+
+    # Acquire lock with a statement timeout using SQL SET.
+    #
+    # @param timeout_ms [Integer] timeout in milliseconds
+    # @yield block to execute with timeout
+    # @return result of the block
+    def self.execute_with_timeout(timeout_ms)
+      # Use SQL SET to change statement_timeout for this session
+      begin
+        # PostgreSQL uses milliseconds for statement_timeout
+        ActiveRecord::Base.connection.exec_query("SET statement_timeout = #{timeout_ms}")
+        yield
+      ensure
+        # Reset to default (0 = no limit)
+        ActiveRecord::Base.connection.exec_query("SET statement_timeout = 0")
+      end
+    end
+
+    # Simulate lock auto-release by releasing the lock explicitly.
+    # This is useful for testing lock expiration scenarios.
+    #
+    # @param project_id [Integer, nil] the project identifier (optional, if nil releases all locks)
+    def self.simulate_lock_auto_release(project_id = nil)
+      if project_id.nil?
+        # Release all locks held in the current session
+        ActiveRecord::Base.connection.exec_query("SELECT pg_advisory_unlock_all()")
+      else
+        lock_key = lock_key(project_id)
+        ActiveRecord::Base.connection.exec_query("SELECT pg_advisory_unlock(#{lock_key})")
+      end
+    end
+
+    # Acquire a lock with error handling that raises WorkflowLockError.
+    #
+    # @param project_id [Integer] the project identifier
+    # @param timeout_ms [Integer, nil] timeout in milliseconds
+    # @raise [WorkflowLockError] if lock could not be acquired
+    # @return [void]
+    def self.acquire_lock!(project_id:, timeout_ms: nil)
+      result = acquire_lock(project_id: project_id, timeout_ms: timeout_ms)
+      
+      unless result.acquired
+        error = WorkflowLockError.new("Could not acquire lock for project #{project_id} within timeout", result.lock_key)
+        raise error
+      end
+    end
+
+    # Release lock with error handling for releases that weren't held.
+    #
+    # @param project_id [Integer] the project identifier
+    # @return [void]
+    def self.release_lock!(project_id:)
+      released = release_lock(project_id: project_id)
+      
+      unless released
+        Rails.logger.warn(
+          "Attempted to release lock for project #{project_id} but lock was not held"
+        )
+      end
+    end
+  end
+end

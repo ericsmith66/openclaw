@@ -1,0 +1,39 @@
+<div class="overflow-x-auto">
+  <table class="table table-zebra w-full bg-base-100 shadow-xl">
+    <thead>
+      <tr>
+        <% @columns.each do |column| %>
+          <th><%= column.to_s.humanize %></th>
+        <% end %>
+        <th class="text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @items.each do |item| %>
+        <tr class="hover">
+          <% @columns.each do |column| %>
+            <td>
+              <%= item.send(column) %>
+            </td>
+          <% end %>
+          <td class="text-center">
+            <div class="join">
+              <%= link_to "View", [:admin, item], class: "btn btn-ghost btn-xs join-item" %>
+              <%= link_to "Edit", [:edit, :admin, item], class: "btn btn-primary btn-xs join-item" %>
+              <%= button_to "Delete", [:admin, item], method: :delete, data: { confirm: "Are you sure?" }, class: "btn btn-error btn-xs join-item" %>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+      <% if @items.empty? %>
+        <tr>
+          <td colspan="<%= @columns.length + 1 %>" class="text-center py-8">
+            <div class="alert alert-info">
+              <span>No <%= @model_name.pluralize.downcase %> found</span>
+            </div>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,42 @@
+<div class="card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow"
+     data-controller="scene"
+     data-scene-id-value="<%= @scene.id %>">
+  <div class="flex items-start justify-between mb-3">
+    <div class="flex items-center gap-3">
+      <div class="text-4xl"><%= icon_emoji %></div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900"><%= @scene.name %></h3>
+        <% if @show_home %>
+          <p class="text-sm text-gray-500"><%= @scene.home.name %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between">
+    <div class="text-sm text-gray-600">
+      <span class="font-medium"><%= accessories_count %></span> accessories
+      <span class="mx-2">•</span>
+      Last run: <span class="font-medium"><%= last_executed %></span>
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <button
+      type="button"
+      class="btn btn-primary w-full"
+      data-action="click->scene#execute"
+      data-scene-target="executeButton">
+      <span data-scene-target="buttonText">Execute</span>
+      <span data-scene-target="spinner" class="hidden">
+        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </span>
+    </button>
+  </div>
+
+  <!-- Feedback messages -->
+  <div data-scene-target="feedback" class="hidden mt-3"></div>
+</div>

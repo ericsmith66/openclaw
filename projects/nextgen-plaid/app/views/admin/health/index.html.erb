@@ -1,0 +1,283 @@
+<div class="container mt-4">
+  <h1>Admin System Health</h1>
+  <p class="text-muted">Last checked: <span id="health-checked-at">Loading…</span></p>
+
+  <div class="row mt-4">
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Proxy Health</h5>
+          <span id="badge-proxy" class="badge bg-secondary">…</span>
+        </div>
+        <div class="card-body">
+          <p><strong>Message:</strong> <span id="proxy-message">Loading…</span></p>
+          <p class="text-muted small">Checked: <span id="proxy-timestamp">…</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Solid Queue Health</h5>
+          <span id="badge-solid-queue" class="badge bg-secondary">…</span>
+        </div>
+        <div class="card-body">
+          <p><strong>Queue Depth:</strong> <span id="sq-queue-depth">…</span></p>
+          <p><strong>Last Finished:</strong> <code id="sq-last-finished">…</code></p>
+          <p><strong>Last Claimed:</strong> <code id="sq-last-claimed">…</code></p>
+          <p><strong>Last Succeeded:</strong> <code id="sq-last-succeeded">…</code></p>
+          <p><strong>Heartbeat OK:</strong> <span id="sq-heartbeat-ok">…</span> (<span id="sq-active-count">…</span> active)</p>
+          <p><strong>Job Server Reachable:</strong> <span id="sq-reachable">…</span> (<code id="sq-host">…</code>)</p>
+          <p><strong>Alert (no jobs in 1h):</strong> <span id="sq-stale">…</span></p>
+          <p class="text-muted small">Checked: <span id="sq-timestamp">…</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">ActionCable Status</h5>
+          <span id="badge-action-cable" class="badge bg-secondary">…</span>
+        </div>
+        <div class="card-body">
+          <p>WebSocket server is <span id="ac-message">…</span>.</p>
+          <p class="text-muted small">Checked: <span id="ac-timestamp">…</span></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Cloudflare Endpoints</h5>
+          <span id="badge-cloudflare" class="badge bg-secondary">…</span>
+        </div>
+        <div class="card-body">
+          <div id="cf-list"></div>
+          <p class="text-muted small mt-2">Checked: <span id="cf-timestamp">…</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Solid Queue Dashboard</h5>
+          <span id="badge-solid-queue-dashboard" class="badge bg-secondary">…</span>
+        </div>
+        <div class="card-body">
+          <h6>Queue depth by queue</h6>
+          <div class="table-responsive">
+            <table class="table table-sm" id="sq-dashboard-queues">
+              <thead>
+              <tr>
+                <th>Queue</th>
+                <th class="text-end">Unfinished Jobs</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr><td colspan="2" class="text-muted">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h6 class="mt-4">Last finished per job class</h6>
+          <div class="table-responsive">
+            <table class="table table-sm" id="sq-dashboard-classes">
+              <thead>
+              <tr>
+                <th>Job Class</th>
+                <th>Last Finished</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr><td colspan="2" class="text-muted">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h6 class="mt-4">Recurring tasks</h6>
+          <div class="table-responsive">
+            <table class="table table-sm" id="sq-dashboard-recurring">
+              <thead>
+              <tr>
+                <th>Key</th>
+                <th>Schedule</th>
+                <th>Kind</th>
+                <th>Last Run At</th>
+                <th>Last Finished At</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr><td colspan="5" class="text-muted">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    function setBadge(el, status) {
+      el.textContent = status;
+      el.classList.remove('bg-secondary', 'bg-success', 'bg-danger');
+      el.classList.add(status === 'OK' ? 'bg-success' : 'bg-danger');
+    }
+
+    fetch('<%= admin_health_path(format: :json) %>', {
+      headers: { 'Accept': 'application/json' }
+    }).then(function(resp) {
+      if (!resp.ok) throw new Error('Health endpoint failed: ' + resp.status);
+      return resp.json();
+    }).then(function(data) {
+      document.getElementById('health-checked-at').textContent = data.checked_at || 'unknown';
+
+      var proxy = data.components.proxy;
+      setBadge(document.getElementById('badge-proxy'), proxy.status);
+      document.getElementById('proxy-message').textContent = proxy.message || '';
+      document.getElementById('proxy-timestamp').textContent = proxy.timestamp || '';
+
+      var sq = data.components.solid_queue;
+      setBadge(document.getElementById('badge-solid-queue'), sq.status);
+      document.getElementById('sq-queue-depth').textContent = (sq.queue_depth && sq.queue_depth.total != null) ? sq.queue_depth.total : 'n/a';
+      document.getElementById('sq-last-finished').textContent = (sq.last_job && sq.last_job.finished_at) || 'n/a';
+      document.getElementById('sq-last-claimed').textContent = (sq.last_job && sq.last_job.claimed_at) || 'n/a';
+      document.getElementById('sq-last-succeeded').textContent = (sq.last_job && sq.last_job.succeeded_at) || 'n/a';
+      document.getElementById('sq-heartbeat-ok').textContent = (sq.processes && sq.processes.heartbeat_ok) ? 'yes' : 'no';
+      document.getElementById('sq-active-count').textContent = (sq.processes && sq.processes.active_count != null) ? sq.processes.active_count : 'n/a';
+      document.getElementById('sq-reachable').textContent = (sq.os_level && sq.os_level.reachable) ? 'yes' : 'no';
+      document.getElementById('sq-host').textContent = (sq.os_level && sq.os_level.host) ? (sq.os_level.host + ':' + sq.os_level.port) : 'n/a';
+      document.getElementById('sq-stale').textContent = (sq.alerts && sq.alerts.stale_no_jobs_processed) ? 'YES' : 'no';
+      document.getElementById('sq-timestamp').textContent = sq.timestamp || '';
+
+      // Solid Queue Dashboard tables
+      setBadge(document.getElementById('badge-solid-queue-dashboard'), sq.status);
+
+      var byQueue = (sq.queue_depth && sq.queue_depth.by_queue) ? sq.queue_depth.by_queue : {};
+      var queuesBody = document.querySelector('#sq-dashboard-queues tbody');
+      queuesBody.innerHTML = '';
+      var queues = Object.keys(byQueue).sort();
+      if (queues.length === 0) {
+        queuesBody.innerHTML = '<tr><td colspan="2" class="text-muted">No unfinished jobs</td></tr>';
+      } else {
+        queues.forEach(function(queueName) {
+          var tr = document.createElement('tr');
+          var tdQueue = document.createElement('td');
+          tdQueue.textContent = queueName;
+          var tdCount = document.createElement('td');
+          tdCount.className = 'text-end';
+          tdCount.textContent = byQueue[queueName];
+          tr.appendChild(tdQueue);
+          tr.appendChild(tdCount);
+          queuesBody.appendChild(tr);
+        });
+      }
+
+      var lastByClass = (sq.dashboard && sq.dashboard.last_finished_by_class) ? sq.dashboard.last_finished_by_class : {};
+      var classesBody = document.querySelector('#sq-dashboard-classes tbody');
+      classesBody.innerHTML = '';
+      var classNames = Object.keys(lastByClass).sort();
+      if (classNames.length === 0) {
+        classesBody.innerHTML = '<tr><td colspan="2" class="text-muted">No finished jobs yet</td></tr>';
+      } else {
+        classNames.forEach(function(className) {
+          var tr = document.createElement('tr');
+          var tdClass = document.createElement('td');
+          tdClass.textContent = className;
+          var tdTime = document.createElement('td');
+          tdTime.innerHTML = '<code>' + (lastByClass[className] || 'never') + '</code>';
+          tr.appendChild(tdClass);
+          tr.appendChild(tdTime);
+          classesBody.appendChild(tr);
+        });
+      }
+
+      var recurring = (sq.dashboard && sq.dashboard.recurring_tasks) ? sq.dashboard.recurring_tasks : [];
+      var recurringBody = document.querySelector('#sq-dashboard-recurring tbody');
+      recurringBody.innerHTML = '';
+      if (!recurring.length) {
+        recurringBody.innerHTML = '<tr><td colspan="5" class="text-muted">No recurring tasks configured</td></tr>';
+      } else {
+        recurring.forEach(function(task) {
+          var tr = document.createElement('tr');
+          var tdKey = document.createElement('td');
+          tdKey.textContent = task.key || '';
+          var tdSchedule = document.createElement('td');
+          tdSchedule.textContent = task.schedule || '';
+          var tdKind = document.createElement('td');
+          tdKind.textContent = task.kind || '';
+          var tdRunAt = document.createElement('td');
+          tdRunAt.innerHTML = '<code>' + (task.last_run_at || 'never') + '</code>';
+          var tdFinishedAt = document.createElement('td');
+          tdFinishedAt.innerHTML = '<code>' + (task.last_finished_at || 'never') + '</code>';
+          tr.appendChild(tdKey);
+          tr.appendChild(tdSchedule);
+          tr.appendChild(tdKind);
+          tr.appendChild(tdRunAt);
+          tr.appendChild(tdFinishedAt);
+          recurringBody.appendChild(tr);
+        });
+      }
+
+      var ac = data.components.action_cable;
+      setBadge(document.getElementById('badge-action-cable'), ac.status);
+      document.getElementById('ac-message').textContent = ac.status === 'OK' ? 'mounted' : 'not mounted';
+      document.getElementById('ac-timestamp').textContent = ac.timestamp || '';
+
+      var cf = data.components.cloudflare;
+      setBadge(document.getElementById('badge-cloudflare'), cf.status);
+      document.getElementById('cf-timestamp').textContent = cf.timestamp || '';
+
+      var cfList = document.getElementById('cf-list');
+      cfList.innerHTML = '';
+      if (cf.checks && cf.checks.length) {
+        var ul = document.createElement('ul');
+        ul.className = 'list-group list-group-flush';
+
+        cf.checks.forEach(function(check) {
+          var li = document.createElement('li');
+          li.className = 'list-group-item d-flex justify-content-between align-items-center px-0';
+
+          var left = document.createElement('span');
+          left.className = 'text-truncate mr-2';
+          left.style.maxWidth = '70%';
+          left.title = check.url;
+          left.textContent = check.url;
+
+          var right = document.createElement('div');
+          var badge = document.createElement('span');
+          badge.className = 'badge ' + (check.status === 'OK' ? 'bg-success' : 'bg-danger');
+          badge.textContent = check.status;
+
+          var msg = document.createElement('small');
+          msg.className = 'd-block text-muted text-right';
+          msg.textContent = check.message || '';
+
+          right.appendChild(badge);
+          right.appendChild(msg);
+
+          li.appendChild(left);
+          li.appendChild(right);
+          ul.appendChild(li);
+        });
+
+        cfList.appendChild(ul);
+      } else {
+        var p = document.createElement('p');
+        p.className = 'text-muted';
+        p.innerHTML = 'No endpoints configured in <code>CLOUDFLARE_CHECK_ENDPOINTS</code>.';
+        cfList.appendChild(p);
+      }
+    }).catch(function(err) {
+      document.getElementById('health-checked-at').textContent = 'Error';
+      console.error(err);
+    });
+  })();
+</script>

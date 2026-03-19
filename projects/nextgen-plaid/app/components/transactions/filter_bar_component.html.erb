@@ -1,0 +1,37 @@
+<div class="sticky top-0 z-10 bg-base-200 pb-4 pt-2" role="search" aria-label="Transaction filters">
+  <%= form_with url: request.path, method: :get, local: true, class: "grid grid-cols-1 md:grid-cols-3 gap-4 items-end", data: { turbo_frame: Transactions::GridComponent::TRANSACTIONS_GRID_TURBO_FRAME_ID } do |f| %>
+    <%# Hidden fields to preserve existing params %>
+    <%= hidden_field_tag :sort, params[:sort] if params[:sort].present? %>
+    <%= hidden_field_tag :dir, params[:dir] if params[:dir].present? %>
+    <%= hidden_field_tag :page, params[:page] if params[:page].present? %>
+    <%= hidden_field_tag :per_page, params[:per_page] if params[:per_page].present? %>
+    <%= hidden_field_tag :saved_account_filter_id, params[:saved_account_filter_id] if params[:saved_account_filter_id].present? %>
+
+    <div class="form-control">
+      <label class="label" for="search_term">
+        <span class="label-text">Search</span>
+      </label>
+      <%= text_field_tag :search_term, search_term, placeholder: search_placeholder, class: "input input-bordered input-sm w-full", id: "search_term", "aria-label": search_placeholder %>
+    </div>
+
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">Date Range</span>
+      </label>
+      <div class="flex space-x-2">
+        <%= date_field_tag :date_from, date_from, class: "input input-bordered input-sm flex-1", placeholder: "From", "aria-label": "Start date" %>
+        <%= date_field_tag :date_to, date_to, class: "input input-bordered input-sm flex-1", placeholder: "To", "aria-label": "End date" %>
+      </div>
+    </div>
+
+    <div class="form-control">
+      <label class="label">
+        <span class="label-text">&nbsp;</span>
+      </label>
+      <div class="flex space-x-2">
+        <%= f.submit "Apply", class: "btn btn-primary btn-sm flex-1" %>
+        <%= link_to "Clear", request.path, class: "btn btn-outline btn-sm flex-1", data: { turbo_frame: Transactions::GridComponent::TRANSACTIONS_GRID_TURBO_FRAME_ID } %>
+      </div>
+    </div>
+  <% end %>
+</div>

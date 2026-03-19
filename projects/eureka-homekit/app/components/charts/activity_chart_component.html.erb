@@ -1,0 +1,8 @@
+<div class="w-full h-full min-h-[300px] relative">
+  <canvas 
+    data-controller="chart" 
+    data-chart-labels-value="<%= labels.to_json %>" 
+    data-chart-values-value="<%= values.to_json %>"
+    data-chart-label-value="<%= @sensor.characteristic_type %>">
+  </canvas>
+</div>

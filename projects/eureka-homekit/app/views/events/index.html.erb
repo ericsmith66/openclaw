@@ -1,0 +1,75 @@
+<%= render ::Layouts::ApplicationLayout.new(
+  title: "Event Log",
+  homes: current_homes,
+  grouped_events: @recent_grouped_events
+) do %>
+  <div class="space-y-0" data-controller="events">
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+      <div>
+        <%= render Shared::BreadcrumbComponent.new(items: [
+          { label: "Eureka", path: root_path },
+          { label: "Events", path: nil }
+        ]) %>
+        <h1 class="text-3xl font-bold tracking-tight mt-2">HomeKit Activity</h1>
+        <p class="text-base-content/60 mt-1">Real-time log of all state changes and system notifications.</p>
+      </div>
+      
+      <div class="flex gap-2">
+        <button class="btn btn-outline btn-sm gap-2">
+          <%= lucide_icon("download", size: 16) %>
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <%= render Events::StatisticsComponent.new(stats: @stats, time_range: @time_range) %>
+    
+    <%= render Events::FilterComponent.new(rooms: Room.all) %>
+
+    <div class="bg-base-100 rounded-3xl border border-base-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table table-md w-full">
+          <thead>
+            <tr class="bg-base-200/30 border-b border-base-200">
+              <th class="py-4 pl-6 text-[10px] font-bold uppercase tracking-widest opacity-40">Time</th>
+              <th class="py-4 text-[10px] font-bold uppercase tracking-widest opacity-40">Type</th>
+              <th class="py-4 text-[10px] font-bold uppercase tracking-widest opacity-40">Accessory / Room</th>
+              <th class="py-4 text-[10px] font-bold uppercase tracking-widest opacity-40">Characteristic</th>
+              <th class="py-4 pr-6 text-right text-[10px] font-bold uppercase tracking-widest opacity-40">Value</th>
+            </tr>
+          </thead>
+          <tbody data-events-target="table">
+            <% if @events.any? %>
+              <% @events.each do |event| %>
+                <%= render Events::RowComponent.new(event: event) %>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="5" class="py-24 text-center">
+                   <div class="bg-base-200 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-base-content/30">
+                     <%= lucide_icon("clipboard-list", size: 32) %>
+                   </div>
+                   <h3 class="text-lg font-bold">No events found</h3>
+                   <p class="text-sm opacity-40 mt-1">Events will appear here as they are received from your HomeKit bridge.</p>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      
+      <% if @events_count > 50 %>
+        <div class="p-6 border-t border-base-200 bg-base-200/10 text-center">
+          <p class="text-xs opacity-50 font-medium">Showing latest 50 of <%= number_with_delimiter(@events_count) %> events</p>
+          <button class="btn btn-ghost btn-sm mt-4 gap-2">
+            Load More Events
+            <%= lucide_icon("chevron-down", size: 14) %>
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <%= render Events::EventDetailModalComponent.new %>
+<% end %>

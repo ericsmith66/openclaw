@@ -1,0 +1,45 @@
+<% if params[:debug] == '1' %>
+<div class="fixed bottom-4 right-4 z-50 pointer-events-none" data-controller="debug-cable">
+  <div class="bg-slate-900 text-slate-50 p-4 rounded-2xl shadow-2xl border border-slate-700 w-80 pointer-events-auto transition-all duration-300 transform" 
+       data-debug-cable-target="container">
+    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-700">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-slate-500" data-debug-cable-target="statusIndicator"></div>
+        <span class="text-[10px] font-black uppercase tracking-widest">Cable Debug</span>
+      </div>
+      <button class="btn btn-ghost btn-xs text-slate-400 hover:text-white px-1" data-action="click->debug-cable#toggle">
+        <span data-debug-cable-target="toggleLabel">Collapse</span>
+      </button>
+    </div>
+
+    <div data-debug-cable-target="content" class="space-y-3">
+      <div class="grid grid-cols-2 gap-2">
+        <div class="bg-slate-800 p-2 rounded-lg">
+          <span class="block text-[8px] uppercase font-bold text-slate-500 mb-0.5">Status</span>
+          <span class="text-[10px] font-mono font-bold" data-debug-cable-target="statusText">Connecting...</span>
+        </div>
+        <div class="bg-slate-800 p-2 rounded-lg">
+          <span class="block text-[8px] uppercase font-bold text-slate-500 mb-0.5">Last Ping</span>
+          <span class="text-[10px] font-mono font-bold" data-debug-cable-target="lastPing">Never</span>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 p-2 rounded-lg">
+        <span class="block text-[8px] uppercase font-bold text-slate-500 mb-1">Last Data Received</span>
+        <pre class="text-[9px] font-mono text-emerald-400 overflow-x-auto max-h-32 whitespace-pre-wrap" data-debug-cable-target="lastData">{}</pre>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <div class="flex justify-between text-[8px] uppercase font-bold text-slate-500">
+          <span>Events Channel</span>
+          <span data-debug-cable-target="eventsChannelStatus">Idle</span>
+        </div>
+        <div class="flex justify-between text-[8px] uppercase font-bold text-slate-500">
+          <span>RoomActivity Channel</span>
+          <span data-debug-cable-target="roomsChannelStatus">Idle</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<% end %>

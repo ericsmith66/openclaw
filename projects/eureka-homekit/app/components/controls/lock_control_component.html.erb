@@ -1,0 +1,70 @@
+<div data-controller="lock-control"
+     data-lock-control-accessory-id-value="<%= @accessory.uuid %>"
+     data-lock-control-current-state-value="<%= current_state %>"
+     data-lock-control-offline-value="<%= offline?.to_s %>">
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="text-4xl" aria-hidden="true"><%= state_icon %></div>
+        <div class="flex-1">
+          <h2 class="card-title"><%= @accessory.name %></h2>
+          <p class="text-sm text-gray-500" aria-live="polite">
+            Status: <%= state_text %>
+          </p>
+        </div>
+      </div>
+
+      <!-- Lock/Unlock Actions -->
+      <div class="flex items-center space-x-3">
+        <% if jammed? %>
+          <div class="alert alert-error flex-1">
+            <span>⚠️ Lock Jammed - Manual Intervention Required</span>
+          </div>
+        <% elsif locked? %>
+          <button class="btn btn-warning flex-1"
+                  data-action="click->lock-control#showUnlockConfirmation"
+                  disabled="<%= offline? ? 'disabled' : nil %>"
+                  aria-label="Unlock <%= @accessory.name %>">
+            Unlock
+          </button>
+        <% else %>
+          <button class="btn btn-primary flex-1"
+                  data-action="click->lock-control#lock"
+                  disabled="<%= offline? ? 'disabled' : nil %>"
+                  aria-label="Lock <%= @accessory.name %>">
+            Lock
+          </button>
+        <% end %>
+      </div>
+
+      <!-- Unlock Confirmation Modal -->
+      <dialog data-lock-control-target="confirmDialog" class="modal">
+        <div class="modal-box">
+          <h3 class="font-bold text-lg">Confirm Unlock</h3>
+          <p class="py-4">
+            Are you sure you want to unlock <strong><%= @accessory.name %></strong>?
+            <br>
+            <span class="text-sm text-gray-500">This will send a command to the lock device.</span>
+          </p>
+          <div class="modal-action">
+            <button class="btn"
+                    data-action="click->lock-control#cancelUnlock"
+                    aria-label="Cancel unlock">
+              Cancel
+            </button>
+            <form data-action="click->lock-control#confirmUnlock" method="dialog">
+              <button class="btn btn-warning"
+                      aria-label="Confirm unlock">
+                Unlock
+              </button>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
+    </div>
+  </div>
+</div>

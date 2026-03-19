@@ -1,0 +1,50 @@
+<div class="p-6">
+  <h2 class="text-lg font-semibold"><%= conversation.title %></h2>
+  <div class="mt-4 flex flex-col gap-3" 
+       data-controller="streaming-chat"
+       data-streaming-chat-persona-id-value="<%= conversation.persona_id %>"
+       data-streaming-chat-conversation-id-value="<%= conversation.id %>">
+    <% if params[:debug].to_s == "1" %>
+      <div class="alert alert-warning text-xs">
+        <div class="flex flex-col gap-1 w-full">
+          <div>
+            <span class="font-semibold">Chat Debug</span>
+            <span class="ml-2" data-streaming-chat-target="status">(initializing)</span>
+          </div>
+          <pre class="whitespace-pre-wrap" data-streaming-chat-target="debugLog"></pre>
+        </div>
+      </div>
+    <% end %>
+    <div class="flex flex-col gap-3 max-h-[60vh] overflow-y-auto" role="log" aria-label="Chat messages" data-streaming-chat-target="messages">
+    <% conversation.persona_messages.order(:created_at).each do |message| %>
+      <% if message.role == "user" %>
+        <div class="chat chat-end">
+          <div class="chat-bubble chat-bubble-primary"><%= message.content %></div>
+        </div>
+      <% else %>
+        <div class="chat chat-start">
+          <div class="chat-bubble">
+            <%= PersonaChats::AssistantMessageRenderer.call(
+                  content: message.content,
+                  sources: message.metadata["sources"],
+                  model: message.metadata["model"],
+                  provider_model: message.metadata["provider_model"]
+                ).html_safe %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+    </div>
+
+    <form class="mt-4 flex gap-2 sticky bottom-0 bg-base-100 pt-2 pb-[env(safe-area-inset-bottom)]" data-action="submit->streaming-chat#send">
+      <label class="sr-only" for="persona-chat-input">Message</label>
+      <input type="text"
+             id="persona-chat-input"
+             class="input input-bordered w-full"
+             placeholder="Ask a question..."
+             autocomplete="off"
+             data-streaming-chat-target="input" />
+      <button class="btn btn-primary min-h-11" type="submit" aria-label="Send message">Send</button>
+    </form>
+  </div>
+</div>

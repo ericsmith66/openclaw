@@ -1,0 +1,56 @@
+<header class="navbar bg-base-100 border-b border-base-200 px-4 sticky top-0 z-30 h-16">
+  <div class="flex-none lg:hidden">
+    <label for="left-sidebar" class="btn btn-square btn-ghost">
+      <%= helpers.lucide_icon("menu", size: 20) %>
+    </label>
+  </div>
+
+  <div class="flex-1 px-2 mx-2">
+    <div class="flex items-center gap-2">
+      <div class="bg-primary text-primary-content p-1.5 rounded-lg shadow-sm">
+        <%= helpers.lucide_icon("home", size: 20) %>
+      </div>
+      <span class="text-xl font-bold tracking-tight hidden md:inline-block">Eureka</span>
+    </div>
+
+    <nav class="ml-8 hidden lg:flex gap-1">
+      <% nav_items.each do |item| %>
+        <%= link_to item[:path], 
+            class: "btn btn-ghost btn-sm normal-case gap-2 #{'btn-active bg-base-200' if item[:active]}" do %>
+          <%= helpers.lucide_icon(item[:icon], size: 16) %>
+          <%= item[:label] %>
+        <% end %>
+      <% end %>
+    </nav>
+  </div>
+
+  <div class="flex-none gap-4 items-center">
+    <div class="hidden sm:flex flex-col items-end text-right mr-2">
+      <div class="flex items-center gap-2">
+        <%= render Shared::StatusBadgeComponent.new(status: @sync_status, label: @sync_status.to_s.upcase) %>
+      </div>
+      <% if @last_sync %>
+        <span class="text-[10px] opacity-50 uppercase font-medium mt-0.5">Updated <%= @last_sync %></span>
+      <% end %>
+    </div>
+
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar online">
+        <div class="w-10 rounded-full">
+          <img alt="User Avatar" src="/icon.png" />
+        </div>
+      </div>
+      <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52 border border-base-200">
+        <li><a>Profile</a></li>
+        <li><a>Settings</a></li>
+        <li><a>Logout</a></li>
+      </ul>
+    </div>
+    
+    <div class="lg:hidden">
+      <label for="right-sidebar" class="btn btn-square btn-ghost">
+        <%= helpers.lucide_icon("panel-right", size: 20) %>
+      </label>
+    </div>
+  </div>
+</header>

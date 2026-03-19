@@ -1,0 +1,50 @@
+<%= render(LayoutComponent.new(title: "Mission Control • Edit Plaid Item", current_user: current_user)) do %>
+  <div class="max-w-2xl space-y-6">
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+      <div class="card-body">
+        <h2 class="text-xl font-semibold">Edit Plaid Item</h2>
+        <div class="text-sm text-base-content/70">
+          <div><span class="font-medium">Institution:</span> <%= @plaid_item.institution_name %></div>
+          <div><span class="font-medium">Item ID:</span> <%= @plaid_item.item_id %></div>
+        </div>
+
+        <%= form_with url: mission_control_plaid_item_path(@plaid_item), method: :patch, local: true, class: "space-y-6 mt-4" do %>
+          <div>
+            <label class="block text-sm font-medium mb-2">Intended products</label>
+            <div class="flex flex-col gap-2">
+              <% PlaidItem::INTENDED_PRODUCT_OPTIONS.each do |product| %>
+                <label class="inline-flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="intended_products[]"
+                    value="<%= product %>"
+                    class="checkbox checkbox-sm"
+                    <%= "checked" if @plaid_item.intended_products_list.include?(product) %>
+                  />
+                  <span class="text-sm"><%= product %></span>
+                </label>
+              <% end %>
+            </div>
+            <p class="text-xs text-base-content/60 mt-2">
+              Note: Liabilities should only be enabled when the user has explicitly consented to Liabilities.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Status</label>
+            <select name="status" class="select select-bordered w-full">
+              <% PlaidItem.statuses.keys.each do |s| %>
+                <option value="<%= s %>" <%= "selected" if @plaid_item.status == s %>><%= s.humanize %></option>
+              <% end %>
+            </select>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <%= link_to "Cancel", mission_control_path, class: "btn btn-ghost" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

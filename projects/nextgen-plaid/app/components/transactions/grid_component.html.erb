@@ -1,0 +1,91 @@
+  <% if transactions.empty? %>
+    <div class="card bg-base-100 shadow">
+      <div class="card-body">
+        <div class="font-medium">No transactions found</div>
+        <div class="text-sm opacity-80">Try adjusting filters.</div>
+      </div>
+    </div>
+  <% else %>
+    <%# Transactions Table %>
+    <div class="overflow-x-auto">
+      <table class="table table-zebra table-sm w-full border border-base-300 bg-base-100" role="table" aria-label="Transactions">
+        <thead>
+          <tr>
+            <th class="px-3 py-2 text-left">
+              <%= link_to "Date #{sort_icon('date')}".html_safe, url_for(sort_params('date')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by date" %>
+            </th>
+            <% if investments_view? %>
+              <th class="px-3 py-2 text-left font-bold">
+                <%= link_to "Account #{sort_icon('account')}".html_safe, url_for(sort_params('account')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by account" %>
+              </th>
+            <% end %>
+            <% unless transfers_view? %>
+              <th class="px-3 py-2 text-left">
+                <%= link_to "Name #{sort_icon('name')}".html_safe, url_for(sort_params('name')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by name" %>
+              </th>
+            <% end %>
+            <th class="px-3 py-2 text-left">
+              <%= link_to "Type #{sort_icon('type')}".html_safe, url_for(sort_params('type')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by type" %>
+            </th>
+            <% if show_investment_columns %>
+              <th class="px-3 py-2 text-left">
+                <%= link_to "Security #{sort_icon('security')}".html_safe, url_for(sort_params('security')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by security" %>
+              </th>
+              <th class="px-3 py-2 text-right">
+                <%= link_to "Quantity #{sort_icon('quantity')}".html_safe, url_for(sort_params('quantity')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by quantity" %>
+              </th>
+              <th class="px-3 py-2 text-right">
+                <%= link_to "Price #{sort_icon('price')}".html_safe, url_for(sort_params('price')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by price" %>
+              </th>
+            <% end %>
+            <% if transfers_view? %>
+              <th class="px-3 py-2 text-left">Details</th>
+              <th class="px-3 py-2 text-left">Description</th>
+            <% end %>
+            <% if show_merchant_column? && !show_investment_columns %>
+              <th class="px-3 py-2 text-left hidden lg:table-cell">
+                Merchant
+              </th>
+            <% end %>
+            <% unless investments_view? || transfers_view? %>
+              <th class="px-3 py-2 text-left hidden lg:table-cell">
+                Account
+              </th>
+            <% end %>
+            <th class="px-3 py-2 text-right">
+              <%= link_to "Amount #{sort_icon('amount')}".html_safe, url_for(sort_params('amount')), class: "link link-hover", data: { turbo_action: "advance" }, "aria-label": "Sort by amount" %>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <% transactions.each do |transaction| %>
+            <%= render Transactions::RowComponent.new(
+              transaction: transaction,
+              show_investment_columns: show_investment_columns,
+              view_type: view_type
+            ) %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <%# Pagination %>
+    <div class="mt-4 flex items-center justify-between">
+      <div class="text-sm text-base-content/70">
+        Showing <%= showing_from %> – <%= showing_to %> of <%= total_count %> transactions
+      </div>
+      <div class="join">
+        <% if page > 1 %>
+          <%= link_to "Previous", url_for(prev_page_params), class: "join-item btn btn-sm", data: { turbo_action: "advance" } %>
+        <% else %>
+          <button class="join-item btn btn-sm btn-disabled" aria-disabled="true">Previous</button>
+        <% end %>
+        <span class="join-item btn btn-sm btn-ghost">Page <%= page %> of <%= total_pages %></span>
+        <% if page < total_pages %>
+          <%= link_to "Next", url_for(next_page_params), class: "join-item btn btn-sm", data: { turbo_action: "advance" } %>
+        <% else %>
+          <button class="join-item btn btn-sm btn-disabled" aria-disabled="true">Next</button>
+        <% end %>
+      </div>
+    </div>
+  <% end %>

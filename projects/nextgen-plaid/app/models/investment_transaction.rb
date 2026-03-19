@@ -1,0 +1,2 @@
+class InvestmentTransaction < Transaction
+end

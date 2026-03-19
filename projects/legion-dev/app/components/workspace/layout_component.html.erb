@@ -1,0 +1,213 @@
+<%# Workspace::LayoutComponent — Reusable configurable chat workspace %>
+<%# Supports: left/right panels (collapsible), left/right drawers (overlay), toolbar, chat center %>
+
+<div id="<%= dom_id('root') %>"
+     class="flex flex-col h-full bg-base-100 overflow-hidden"
+     data-controller="workspace-layout"
+     data-workspace-layout-workspace-id-value="<%= @workspace_id %>">
+
+  <%# ═══ Left drawer overlay ═══ %>
+  <% if left_drawer? %>
+    <input id="<%= dom_id('left-drawer-toggle') %>" type="checkbox" class="drawer-toggle hidden" />
+    <div id="<%= dom_id('left-drawer') %>"
+         class="fixed inset-0 z-40 hidden"
+         data-workspace-layout-target="leftDrawer">
+      <label for="<%= dom_id('left-drawer-toggle') %>"
+             class="absolute inset-0 bg-black/30 cursor-pointer"
+             data-action="click->workspace-layout#closeLeftDrawer"></label>
+      <aside class="absolute left-0 top-0 bottom-0 w-80 bg-base-200 shadow-xl overflow-y-auto transform -translate-x-full transition-transform duration-200"
+             data-workspace-layout-target="leftDrawerPanel">
+        <div class="p-4">
+          <% if left_drawer_title.present? %>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-sm"><%= left_drawer_title %></h3>
+              <button class="btn btn-ghost btn-xs btn-square" data-action="click->workspace-layout#closeLeftDrawer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          <% end %>
+          <%= left_drawer_content %>
+        </div>
+      </aside>
+    </div>
+  <% end %>
+
+  <%# ═══ Right drawer overlay ═══ %>
+  <% if right_drawer? %>
+    <input id="<%= dom_id('right-drawer-toggle') %>" type="checkbox" class="drawer-toggle hidden" />
+    <div id="<%= dom_id('right-drawer') %>"
+         class="fixed inset-0 z-40 hidden"
+         data-workspace-layout-target="rightDrawer">
+      <label for="<%= dom_id('right-drawer-toggle') %>"
+             class="absolute inset-0 bg-black/30 cursor-pointer"
+             data-action="click->workspace-layout#closeRightDrawer"></label>
+      <aside class="absolute right-0 top-0 bottom-0 w-80 bg-base-200 shadow-xl overflow-y-auto transform translate-x-full transition-transform duration-200"
+             data-workspace-layout-target="rightDrawerPanel">
+        <div class="p-4">
+          <% if right_drawer_title.present? %>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-bold text-sm"><%= right_drawer_title %></h3>
+              <button class="btn btn-ghost btn-xs btn-square" data-action="click->workspace-layout#closeRightDrawer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+          <% end %>
+          <%= right_drawer_content %>
+        </div>
+      </aside>
+    </div>
+  <% end %>
+
+  <%# ═══ Main 3-pane layout ═══ %>
+  <div class="flex-1 flex overflow-hidden min-h-0">
+
+    <%# ── Left Panel (persistent sidebar) ── %>
+    <% if left_panel? %>
+      <aside id="<%= dom_id('left-panel') %>"
+             class="bg-base-200 border-r border-base-300 flex flex-col shrink-0 overflow-hidden transition-all duration-200"
+             style="width: <%= left_panel_width %>"
+             data-workspace-layout-target="leftPanel"
+             data-workspace-layout-default-width-value="<%= left_panel_width %>">
+        <% if left_panel_collapsible? || left_panel_title.present? %>
+          <div class="flex items-center justify-between px-3 py-2 border-b border-base-300 shrink-0">
+            <span class="text-xs font-bold uppercase tracking-wider opacity-60" data-workspace-layout-target="leftPanelTitle">
+              <%= left_panel_title %>
+            </span>
+            <% if left_panel_collapsible? %>
+              <button class="btn btn-ghost btn-xs btn-square"
+                      data-action="click->workspace-layout#toggleLeftPanel"
+                      title="Toggle panel">
+                <i data-lucide="panel-left-close" class="w-3.5 h-3.5" data-workspace-layout-target="leftPanelIcon"></i>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+        <div class="flex-1 overflow-hidden" data-workspace-layout-target="leftPanelBody">
+          <%= left_panel_content %>
+        </div>
+      </aside>
+
+      <%# Left panel resize handle %>
+      <div class="w-1 cursor-col-resize bg-transparent hover:bg-primary/30 active:bg-primary/50 transition-colors shrink-0"
+           data-action="mousedown->workspace-layout#startResizeLeft"
+           data-workspace-layout-target="leftResizeHandle"></div>
+    <% end %>
+
+    <%# ── Center: Chat Pane ── %>
+    <main id="<%= dom_id('chat') %>" class="flex-1 flex flex-col min-w-[320px]" <%= "data-controller=\"chat-scroll\"".html_safe if @task %>>
+
+      <%# Chat Header %>
+      <% if show_chat_header? %>
+        <div class="p-3 border-b border-base-300 flex justify-between items-center bg-base-200/50 shrink-0">
+          <div class="flex items-center gap-2">
+            <% if left_drawer? %>
+              <button class="btn btn-ghost btn-xs btn-square lg:hidden"
+                      data-action="click->workspace-layout#openLeftDrawer"
+                      title="Open navigation">
+                <i data-lucide="menu" class="w-4 h-4"></i>
+              </button>
+            <% end %>
+            <% if chat_header_content? %>
+              <%= chat_header_content %>
+            <% elsif @task %>
+              <div class="badge badge-success badge-xs"></div>
+              <h2 class="text-sm font-bold truncate">Task: <%= @task.respond_to?(:name) ? (@task.name.presence || "Main Thread") : "Main Thread" %></h2>
+            <% end %>
+          </div>
+          <div class="flex items-center gap-2">
+            <% if right_drawer? %>
+              <button class="btn btn-ghost btn-xs btn-square lg:hidden"
+                      data-action="click->workspace-layout#openRightDrawer"
+                      title="Open details">
+                <i data-lucide="panel-right" class="w-4 h-4"></i>
+              </button>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Message List %>
+      <% if @task %>
+        <div class="flex-1 overflow-y-auto p-4 space-y-4"
+             data-chat-scroll-target="messages"
+             id="<%= dom_id('messages') %>">
+          <% if @task.respond_to?(:messages) %>
+            <% @task.messages.try(:ordered)&.each do |message| %>
+              <%= render Chat::BubbleComponent.new(message: message) %>
+            <% end %>
+          <% end %>
+          <%= turbo_frame_tag dom_id("messages-list") %>
+        </div>
+
+        <%# Chat Input %>
+        <div class="p-4 bg-base-200 border-t border-base-300 shrink-0">
+          <%= render Chat::InputComponent.new(
+            task: @task,
+            placeholder: chat_placeholder,
+            show_slash_commands: show_slash_commands?
+          ) %>
+        </div>
+      <% else %>
+        <%# Empty state %>
+        <div class="flex-1 flex items-center justify-center p-8 text-center">
+          <% if chat_empty_state? %>
+            <%= chat_empty_state %>
+          <% else %>
+            <div>
+              <i data-lucide="message-square" class="w-12 h-12 mx-auto mb-4 opacity-20"></i>
+              <h3 class="text-lg font-bold">No Active Conversation</h3>
+              <p class="text-base-content/50 mt-1">Start a new task to begin.</p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </main>
+
+    <%# Right panel resize handle %>
+    <% if right_panel? %>
+      <div class="w-1 cursor-col-resize bg-transparent hover:bg-primary/30 active:bg-primary/50 transition-colors shrink-0"
+           data-action="mousedown->workspace-layout#startResizeRight"
+           data-workspace-layout-target="rightResizeHandle"></div>
+
+      <%# ── Right Panel (persistent sidebar) ── %>
+      <aside id="<%= dom_id('right-panel') %>"
+             class="bg-base-100 border-l border-base-300 flex flex-col shrink-0 overflow-hidden transition-all duration-200"
+             style="width: <%= right_panel_width %>"
+             data-workspace-layout-target="rightPanel"
+             data-workspace-layout-default-width-value="<%= right_panel_width %>">
+        <% if right_panel_collapsible? || right_panel_title.present? %>
+          <div class="flex items-center justify-between px-3 py-2 border-b border-base-300 shrink-0">
+            <span class="text-xs font-bold uppercase tracking-wider opacity-60" data-workspace-layout-target="rightPanelTitle">
+              <%= right_panel_title %>
+            </span>
+            <% if right_panel_collapsible? %>
+              <button class="btn btn-ghost btn-xs btn-square"
+                      data-action="click->workspace-layout#toggleRightPanel"
+                      title="Toggle panel">
+                <i data-lucide="panel-right-close" class="w-3.5 h-3.5" data-workspace-layout-target="rightPanelIcon"></i>
+              </button>
+            <% end %>
+          </div>
+        <% end %>
+        <div class="flex-1 overflow-hidden" data-workspace-layout-target="rightPanelBody">
+          <% if right_panel_content? %>
+            <%= right_panel_content %>
+          <% else %>
+            <div class="flex flex-col h-full items-center justify-center text-center p-8 text-base-content/30 italic">
+              <i data-lucide="file-search" class="w-12 h-12 mb-4 opacity-20"></i>
+              <p>No content selected.</p>
+            </div>
+          <% end %>
+        </div>
+      </aside>
+    <% end %>
+  </div>
+
+  <%# ═══ Bottom Toolbar ═══ %>
+  <% if toolbar? && toolbar_content? %>
+    <div id="<%= dom_id('toolbar') %>"
+         class="h-8 bg-base-200 border-t border-base-300 flex items-center px-4 text-xs shrink-0 gap-4 overflow-x-auto">
+      <%= toolbar_content %>
+    </div>
+  <% end %>
+</div>

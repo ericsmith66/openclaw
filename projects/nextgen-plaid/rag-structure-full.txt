@@ -1,0 +1,2888 @@
+# Full Concatenated Contents of rag-structure/
+# Generated on Sun Jan 18 10:20:46 CST 2026
+# --------------------------------------------------
+
+## FILE: README.md
+
+```
+# Multi-Index RAG Structure for Agentic PRD Generation
+
+## Overview
+
+This directory contains a comprehensive multi-index RAG (Retrieval-Augmented Generation) architecture designed to support the agentic PRD generation system. The structure organizes project knowledge into three complementary indexes (functional, structural, vision) plus cross-references, enabling phase-specific context loading for the 5-phase agentic lifecycle.
+
+## Architecture
+
+### Three-Index Design
+
+```
+RAG Structure
+├── Functional Index (What the app does)
+│   └── User-facing capabilities, features, routes
+├── Structural Index (How the app is built)
+│   └── Code organization, models, services, jobs
+├── Vision Index (Where the app is going)
+│   └── Roadmap, priorities, technical debt
+└── Cross-References (How they connect)
+    └── Links between functional, structural, and vision
+```
+
+### Data Freshness Tiers
+
+1. **Static** (Index files): Updated manually, cached for 1 hour
+2. **Semi-Static** (JSON files): Updated daily by Sidekiq jobs
+3. **On-Demand** (Real-time fetchers): Fetched when needed, cached for 5-10 minutes
+
+## Directory Structure
+
+```
+rag-structure/
+├── config.yml                          # Main configuration file
+├── README.md                           # This file
+│
+├── functional/                         # Functional Index
+│   └── index.yml                       # Capabilities and features
+│
+├── structural/                         # Structural Index
+│   └── index.yml                       # Code architecture
+│
+├── vision/                             # Vision Index
+│   └── index.yml                       # Roadmap and priorities
+│
+├── cross-references/                   # Cross-Reference Map
+│   └── map.json                        # Concept links
+│
+├── semi-static/                        # Daily-updated data
+│   ├── artifact_summary.json           # Recent artifacts from DB
+│   └── backlog_items.json              # Prioritized backlog
+│
+└── on-demand/                          # Real-time fetchers
+    └── README.md                       # Fetcher documentation
+```
+
+## Query Patterns
+
+### Functional Index Queries
+```
+fetch:functional:authentication                    # All auth features
+fetch:functional:agent_orchestration:prd_generation # Specific feature
+search:functional:plaid                            # Keyword search
+```
+
+### Structural Index Queries
+```
+fetch:structural:data_layer:schema                 # Database schema
+fetch:structural:service_layer:ai_services         # AI services
+fetch:structural:data_layer:agent_models:artifact  # Specific model
+```
+
+### Vision Index Queries
+```
+fetch:vision:roadmap:in_progress                   # Current work
+fetch:vision:priorities:sdlc_focus                 # Strategic priorities
+fetch:vision:technical_debt:rag_scalability        # Known issues
+```
+
+### Cross-Reference Queries
+```
+fetch:cross_ref:prd_generation                     # All related paths
+fetch:cross_ref:plaid_sync                         # Plaid integration links
+```
+
+### Semi-Static Queries
+```
+fetch:sdlc:semi_static:artifact_summary            # Recent artifacts
+fetch:sdlc:semi_static:backlog_items               # Current backlog
+```
+
+### On-Demand Queries
+```
+fetch:structural:data_layer:schema                 # Real-time schema
+search:sdlc:on_demand:prds validation              # Search PRDs
+fetch:sdlc:on_demand:commits 3504b54               # Git commit
+```
+
+## Phase-Specific Context Loading
+
+The agentic PRD generation system uses different context for each phase:
+
+### Phase 1: Research (Token Budget: 1K)
+**Goal**: High-level overview
+**Context**:
+- Functional index (summary level)
+- Structural index (summary level)
+- Vision index (summary level)
+- Recent 10 artifacts
+- Top 5 backlog items
+
+### Phase 2: Plan (Token Budget: 3K)
+**Goal**: Structural context + vision alignment
+**Context**:
+- Functional index (detailed level)
+- Structural index (detailed level)
+- Vision index (detailed level)
+- Database schema summary
+- Similar PRDs (search results)
+
+### Phase 3: Verify (Token Budget: 2K)
+**Goal**: Constraints and validation rules
+**Context**:
+- Specific database tables
+- PRD validation strategy
+- Technical debt items
+- Existing PRD patterns
+
+### Phase 4: Execute (Token Budget: 8K)
+**Goal**: Full context for generation
+**Context**:
+- Relevant functional capabilities (full)
+- Relevant structural components (full)
+- Relevant roadmap items (full)
+- Cross-references for primary concept
+- Relevant model files
+- 2 similar PRDs (full content)
+
+### Phase 5: Validate (Token Budget: 1K)
+**Goal**: Validation rules and quality targets
+**Context**:
+- PRD validation strategy
+- Success metrics
+
+## Usage Examples
+
+### Example 1: Research Phase
+```ruby
+provider = MultiIndexProvider.new
+context = provider.query_for_phase(:research, query: "Add validation scoring")
+
+# Returns:
+# {
+#   functional_capabilities: ["authentication", "financial_sync", "agent_orchestration", ...],
+#   structural_layers: ["data_layer", "service_layer", "job_layer", ...],
+#   current_priorities: ["sdlc_focus", "quality_over_speed"],
+#   recent_artifacts: [{id: 123, name: "PRD-AH-012E", ...}, ...],
+#   backlog_items: [{id: 45, title: "Implement agentic planning", ...}, ...]
+# }
+```
+
+### Example 2: Planning Phase
+```ruby
+context = provider.query_for_phase(:plan, query: "Add validation scoring")
+
+# Returns:
+# {
+#   functional: {agent_orchestration: {features: [...]}},
+#   structural: {service_layer: {ai_services: [...]}},
+#   vision: {roadmap: {in_progress: [...]}},
+#   schema: {tables: ["artifacts", "sap_runs", ...]},
+#   similar_prds: [{file: "PRD-AH-012E.md", excerpt: "..."}, ...]
+# }
+```
+
+### Example 3: Cross-Reference Lookup
+```ruby
+cross_ref = provider.fetch_cross_reference("prd_generation")
+
+# Returns:
+# {
+#   functional: {path: "functional:agent_orchestration:prd_generation", ...},
+#   structural: {paths: ["sap_agent_service.rb", "artifact.rb", ...]},
+#   vision: {paths: ["roadmap:completed:sap_agent_v1", ...]},
+#   related_concepts: ["rag_context", "agent_hub_interface"]
+# }
+```
+
+## Implementation Guide
+
+### Step 1: Create MultiIndexProvider Class
+
+```ruby
+# app/services/sap_agent/rag_context/multi_index_provider.rb
+module SapAgent
+  module RagContext
+    class MultiIndexProvider
+      def initialize
+        @config = load_config
+        @functional_index = load_index(:functional)
+        @structural_index = load_index(:structural)
+        @vision_index = load_index(:vision)
+        @cross_refs = load_cross_references
+        @cache = {}
+      end
+      
+      def query_for_phase(phase, query:)
+        phase_config = @config.dig(:phase_context, phase)
+        context = {}
+        
+        phase_config[:sources].each do |source|
+          case source[:type]
+          when 'index'
+            context.merge!(query_index(source[:index], source[:depth]))
+          when 'semi_static'
+            context.merge!(load_semi_static(source[:source], source[:limit]))
+          when 'on_demand'
+            context.merge!(fetch_on_demand(source[:fetcher], source[:params]))
+          end
+        end
+        
+        context
+      end
+      
+      def fetch_cross_reference(concept_id)
+        @cross_refs[:concepts].find { |c| c[:id] == concept_id }
+      end
+      
+      private
+      
+      def load_config
+        YAML.load_file(Rails.root.join('knowledge_base/agentic-planning/rag-structure/config.yml'))
+      end
+      
+      def load_index(index_name)
+        config = @config.dig(:indexes, index_name)
+        path = Rails.root.join(@config[:base_path], config[:path])
+        
+        case config[:format]
+        when 'yaml'
+          YAML.load_file(path)
+        when 'json'
+          JSON.parse(File.read(path), symbolize_names: true)
+        end
+      end
+      
+      # ... additional methods
+    end
+  end
+end
+```
+
+### Step 2: Integrate with AgenticPrdCommand
+
+```ruby
+# app/services/sap_agent/agentic_prd_command.rb
+def research_phase
+  provider = RagContext::MultiIndexProvider.new
+  context = provider.query_for_phase(:research, query: payload[:query])
+  
+  log_lifecycle('RESEARCH_COMPLETED', context.keys.join(', '))
+  context
+end
+
+def planning_phase(research_context)
+  provider = RagContext::MultiIndexProvider.new
+  context = provider.query_for_phase(:plan, query: payload[:query])
+  
+  planning_prompt = build_planning_prompt(context)
+  call_llm(planning_prompt, temperature: 0.3)
+end
+```
+
+### Step 3: Implement On-Demand Fetchers
+
+```ruby
+# app/services/sap_agent/rag_context/on_demand_fetcher.rb
+module SapAgent
+  module RagContext
+    class OnDemandFetcher
+      def self.fetch_schema(table_name = nil)
+        # Implementation from on-demand/README.md
+      end
+      
+      def self.search_prds(keyword)
+        # Implementation from on-demand/README.md
+      end
+      
+      # ... other fetchers
+    end
+  end
+end
+```
+
+### Step 4: Create Daily Update Jobs
+
+```ruby
+# app/jobs/update_artifact_summary_job.rb
+class UpdateArtifactSummaryJob < ApplicationJob
+  def perform
+    artifacts = Artifact.order(updated_at: :desc).limit(20).map do |a|
+      {
+        id: a.id,
+        name: a.name,
+        artifact_type: a.artifact_type,
+        phase: a.phase,
+        owner_persona: a.owner_persona,
+        created_at: a.created_at,
+        updated_at: a.updated_at,
+        summary: a.payload['content']&.first(200) || a.name
+      }
+    end
+    
+    output = {
+      _metadata: {
+        last_updated: Time.current,
+        count: artifacts.size
+      },
+      artifacts: artifacts
+    }
+    
+    path = Rails.root.join('knowledge_base/agentic-planning/rag-structure/semi-static/artifact_summary.json')
+    File.write(path, JSON.pretty_generate(output))
+  end
+end
+
+# Schedule in config/schedule.rb or Sidekiq cron
+# UpdateArtifactSummaryJob.perform_async (daily at 2am)
+```
+
+## Benefits
+
+### 1. Token Efficiency
+- **Research phase**: 1K tokens (vs 4K in current system)
+- **Planning phase**: 3K tokens (focused context)
+- **Execution phase**: 8K tokens (only when needed)
+- **Total savings**: ~40% reduction in token usage
+
+### 2. Context Relevance
+- Phase-specific context loading
+- No irrelevant information
+- Progressive disclosure (summary → detailed → full)
+
+### 3. Maintainability
+- Clear separation of concerns
+- Easy to add new capabilities/features
+- Self-documenting structure
+
+### 4. Scalability
+- Indexes grow independently
+- Caching reduces load
+- On-demand fetching for dynamic data
+
+### 5. Observability
+- Clear query patterns
+- Metrics tracking
+- Cache hit rates
+
+## Metrics to Track
+
+1. **Query Performance**
+   - Index load time
+   - On-demand fetch time
+   - Cache hit rate
+   - Total context load time
+
+2. **Context Quality**
+   - Token usage per phase
+   - Context relevance (% used in output)
+   - Missing context incidents
+
+3. **System Health**
+   - Index update frequency
+   - Semi-static job success rate
+   - On-demand fetch failures
+   - Cache size and evictions
+
+## Next Steps
+
+### Immediate (POC)
+1. ✅ Create index files (functional, structural, vision)
+2. ✅ Create cross-reference map
+3. ✅ Create semi-static placeholders
+4. ✅ Document on-demand fetchers
+5. ✅ Create configuration file
+6. ⬜ Implement `MultiIndexProvider` class
+7. ⬜ Implement `OnDemandFetcher` class
+8. ⬜ Integrate with `AgenticPrdCommand`
+9. ⬜ Test with sample queries
+
+### Short-term (1-2 weeks)
+1. ⬜ Create daily update jobs
+2. ⬜ Add caching layer
+3. ⬜ Implement metrics tracking
+4. ⬜ Add integration tests
+5. ⬜ Performance benchmarking
+
+### Long-term (1-2 months)
+1. ⬜ Add vector embeddings for semantic search
+2. ⬜ Implement A/B testing framework
+3. ⬜ Add automatic index updates on code changes
+4. ⬜ Build RAG inspector UI
+5. ⬜ Optimize for production scale
+
+## Testing
+
+### Unit Tests
+```ruby
+# test/services/sap_agent/rag_context/multi_index_provider_test.rb
+class MultiIndexProviderTest < ActiveSupport::TestCase
+  test "loads functional index" do
+    provider = MultiIndexProvider.new
+    assert_not_nil provider.functional_index
+  end
+  
+  test "queries research phase context" do
+    provider = MultiIndexProvider.new
+    context = provider.query_for_phase(:research, query: "test")
+    
+    assert_includes context.keys, :functional_capabilities
+    assert_includes context.keys, :recent_artifacts
+  end
+end
+```
+
+### Integration Tests
+```ruby
+# test/integration/agentic_prd_generation_test.rb
+class AgenticPrdGenerationTest < ActionDispatch::IntegrationTest
+  test "generates PRD with multi-index RAG" do
+    command = AgenticPrdCommand.new(query: "Add validation scoring")
+    result = command.execute
+    
+    assert result[:success]
+    assert_match /validation/, result[:artifact][:content]
+  end
+end
+```
+
+## Troubleshooting
+
+### Issue: Index file not found
+**Solution**: Check `base_path` in config.yml and ensure index files exist
+
+### Issue: On-demand fetch timeout
+**Solution**: Increase `fetch_timeout` in config.yml or optimize fetcher
+
+### Issue: Cache growing too large
+**Solution**: Reduce `cache_ttl` values or implement LRU eviction
+
+### Issue: Context exceeds token budget
+**Solution**: Adjust `depth` levels or add size limits to fetchers
+
+## Contributing
+
+When adding new capabilities or features:
+1. Update the appropriate index file (functional/structural/vision)
+2. Add cross-references if the concept spans multiple indexes
+3. Update config.yml if new query patterns are needed
+4. Document any new on-demand fetchers
+5. Update this README with examples
+
+## References
+
+- [prd-generation-questions.md](../prd-generation-questions.md) - Questions each phase answers
+- [0070-SAP-Agentic-Refactor-Epic.md](../../ignore/0070-SAP-Agentic-Refactor-Epic.md) - Original epic
+- [rag-architecture.md](../rag-architecture.md) - Detailed architecture discussion
+- [config.yml](config.yml) - Complete configuration reference
+```
+
+
+## FILE: config.yml
+
+```
+# Multi-Index RAG Configuration
+# Defines how to load and query the RAG structure for agentic PRD generation
+
+rag_config:
+  version: "1.0"
+  base_path: "knowledge_base/agentic-planning/rag-structure"
+  
+  # ============================================================================
+  # INDEX DEFINITIONS
+  # ============================================================================
+  indexes:
+    functional:
+      path: "functional/index.yml"
+      format: "yaml"
+      description: "What the app does - user-facing capabilities"
+      query_pattern: "fetch:functional:<capability>:<feature>"
+      cache_ttl: 3600  # 1 hour
+      
+    structural:
+      path: "structural/index.yml"
+      format: "yaml"
+      description: "How the app is built - technical architecture"
+      query_pattern: "fetch:structural:<layer>:<component>"
+      cache_ttl: 3600  # 1 hour
+      
+    vision:
+      path: "vision/index.yml"
+      format: "yaml"
+      description: "Where the app is going - roadmap and priorities"
+      query_pattern: "fetch:vision:<category>:<item>"
+      cache_ttl: 1800  # 30 minutes (more dynamic)
+      
+    cross_references:
+      path: "cross-references/map.json"
+      format: "json"
+      description: "Links between functional, structural, and vision"
+      query_pattern: "fetch:cross_ref:<concept_id>"
+      cache_ttl: 3600  # 1 hour
+  
+  # ============================================================================
+  # SEMI-STATIC DATA (Updated Daily)
+  # ============================================================================
+  semi_static:
+    artifact_summary:
+      path: "semi-static/artifact_summary.json"
+      format: "json"
+      update_frequency: "daily"
+      update_job: "UpdateArtifactSummaryJob"
+      query_pattern: "fetch:sdlc:semi_static:artifact_summary"
+      
+    backlog_items:
+      path: "semi-static/backlog_items.json"
+      format: "json"
+      update_frequency: "daily"
+      update_job: "UpdateBacklogSummaryJob"
+      query_pattern: "fetch:sdlc:semi_static:backlog_items"
+  
+  # ============================================================================
+  # ON-DEMAND DATA (Fetched in Real-Time)
+  # ============================================================================
+  on_demand:
+    schema:
+      fetcher: "OnDemandFetcher.fetch_schema"
+      query_pattern: "fetch:structural:data_layer:schema"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 5000  # chars
+      
+    models:
+      fetcher: "OnDemandFetcher.fetch_model"
+      query_pattern: "fetch:structural:data_layer:<component>:<model_name>"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 3000  # chars
+      
+    services:
+      fetcher: "OnDemandFetcher.fetch_service"
+      query_pattern: "fetch:structural:service_layer:<component>:<service_name>"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 3000  # chars
+      
+    routes:
+      fetcher: "OnDemandFetcher.fetch_routes"
+      query_pattern: "fetch:structural:interface_layer:routing"
+      cache_ttl: 300  # 5 minutes
+      size_limit: 2000  # chars
+      
+    prds:
+      fetcher: "OnDemandFetcher.search_prds"
+      query_pattern: "search:sdlc:on_demand:prds <keyword>"
+      cache_ttl: 0  # No cache (search results vary)
+      size_limit: 5000  # chars total
+      
+    commits:
+      fetcher: "OnDemandFetcher.fetch_commit"
+      query_pattern: "fetch:sdlc:on_demand:commits <sha>"
+      cache_ttl: 600  # 10 minutes
+      size_limit: 3000  # chars
+  
+  # ============================================================================
+  # PHASE-SPECIFIC CONTEXT LOADING
+  # ============================================================================
+  phase_context:
+    research:
+      description: "High-level overview - summaries only"
+      token_budget: 1000
+      sources:
+        - type: "index"
+          index: "functional"
+          depth: "summary"  # Capability names and summaries only
+        - type: "index"
+          index: "structural"
+          depth: "summary"  # Layer names and component summaries only
+        - type: "index"
+          index: "vision"
+          depth: "summary"  # Roadmap phases and priority names only
+        - type: "semi_static"
+          source: "artifact_summary"
+          limit: 10  # Recent 10 artifacts
+        - type: "semi_static"
+          source: "backlog_items"
+          limit: 5  # Top 5 priority items
+      
+    plan:
+      description: "Structural context + vision alignment"
+      token_budget: 3000
+      sources:
+        - type: "index"
+          index: "functional"
+          depth: "detailed"  # Include routes, models, services
+        - type: "index"
+          index: "structural"
+          depth: "detailed"  # Include file paths and key methods
+        - type: "index"
+          index: "vision"
+          depth: "detailed"  # Include PRD references and priorities
+        - type: "on_demand"
+          fetcher: "schema"
+          params: null  # Full schema summary
+        - type: "on_demand"
+          fetcher: "prds"
+          params: "<query_keywords>"  # Search for similar PRDs
+      
+    verify:
+      description: "Constraints and validation rules"
+      token_budget: 2000
+      sources:
+        - type: "on_demand"
+          fetcher: "schema"
+          params: "<relevant_tables>"  # Specific tables only
+        - type: "index"
+          index: "structural"
+          depth: "full"
+          filter: "prd_strategy"  # Validation rules
+        - type: "index"
+          index: "vision"
+          depth: "full"
+          filter: "technical_debt"  # Known constraints
+        - type: "on_demand"
+          fetcher: "prds"
+          params: "<query_keywords>"  # Existing patterns
+      
+    execute:
+      description: "Full context for generation"
+      token_budget: 8000
+      sources:
+        - type: "index"
+          index: "functional"
+          depth: "full"
+          filter: "<relevant_capabilities>"
+        - type: "index"
+          index: "structural"
+          depth: "full"
+          filter: "<relevant_components>"
+        - type: "index"
+          index: "vision"
+          depth: "full"
+          filter: "<relevant_roadmap_items>"
+        - type: "cross_references"
+          concept_id: "<primary_concept>"
+        - type: "on_demand"
+          fetcher: "models"
+          params: "<relevant_models>"
+        - type: "on_demand"
+          fetcher: "prds"
+          params: "<query_keywords>"
+          limit: 2  # Full content of 2 similar PRDs
+      
+    validate:
+      description: "Validation rules and patterns"
+      token_budget: 1000
+      sources:
+        - type: "index"
+          index: "structural"
+          depth: "full"
+          filter: "prd_strategy"  # Validation logic
+        - type: "index"
+          index: "vision"
+          depth: "summary"
+          filter: "success_metrics"  # Quality targets
+  
+  # ============================================================================
+  # QUERY ROUTING RULES
+  # ============================================================================
+  query_routing:
+    # Pattern matching for query strings
+    patterns:
+      - pattern: "^fetch:functional:"
+        handler: "FunctionalIndexQuery"
+        index: "functional"
+        
+      - pattern: "^fetch:structural:"
+        handler: "StructuralIndexQuery"
+        index: "structural"
+        
+      - pattern: "^fetch:vision:"
+        handler: "VisionIndexQuery"
+        index: "vision"
+        
+      - pattern: "^fetch:cross_ref:"
+        handler: "CrossReferenceQuery"
+        index: "cross_references"
+        
+      - pattern: "^fetch:sdlc:semi_static:"
+        handler: "SemiStaticQuery"
+        source: "semi_static"
+        
+      - pattern: "^fetch:sdlc:on_demand:"
+        handler: "OnDemandQuery"
+        source: "on_demand"
+        
+      - pattern: "^search:"
+        handler: "SearchQuery"
+        indexes: ["functional", "structural", "vision"]
+  
+  # ============================================================================
+  # PERFORMANCE SETTINGS
+  # ============================================================================
+  performance:
+    max_concurrent_fetches: 5
+    fetch_timeout: 2000  # milliseconds
+    cache_backend: "memory"  # or "redis"
+    max_cache_size: 100  # MB
+    enable_metrics: true
+    metrics_log: "agent_logs/rag_metrics.log"
+  
+  # ============================================================================
+  # FALLBACK BEHAVIOR
+  # ============================================================================
+  fallback:
+    on_index_load_failure: "use_cache"
+    on_fetch_timeout: "return_partial"
+    on_cache_miss: "fetch_fresh"
+    on_parse_error: "log_and_skip"
+    default_context: "minimal"  # Use minimal context if all else fails
+
+# Query Examples:
+# - fetch:functional:agent_orchestration:prd_generation
+# - fetch:structural:data_layer:schema
+# - fetch:vision:roadmap:in_progress
+# - fetch:cross_ref:prd_generation
+# - fetch:sdlc:semi_static:artifact_summary
+# - search:functional:plaid
+```
+
+
+## FILE: cross-references/map.json
+
+```
+{
+  "cross_references": {
+    "summary": "Links between functional capabilities, structural implementation, and vision roadmap",
+    "last_updated": "2026-01-17",
+    "concepts": [
+      {
+        "id": "prd_generation",
+        "name": "PRD Generation",
+        "summary": "SAP agent generates PRDs from user requests",
+        "functional": {
+          "path": "functional:agent_orchestration:prd_generation",
+          "summary": "User-facing PRD generation capability",
+          "routes": ["/agent_hub", "/admin/sap_collaborate"]
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:ai_services:sap_agent_service.rb",
+            "structural:service_layer:ai_services:sap_agent/command.rb",
+            "structural:service_layer:ai_services:sap_agent/artifact_command.rb",
+            "structural:service_layer:ai_services:sap_agent/prd_strategy.rb",
+            "structural:data_layer:agent_models:artifact.rb",
+            "structural:data_layer:agent_models:sap_run.rb",
+            "structural:interface_layer:agent_controllers:agent_hubs_controller.rb"
+          ],
+          "summary": "Implementation across service, data, and interface layers"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:sap_agent_v1",
+            "vision:roadmap:in_progress:agentic_refactor",
+            "vision:priorities:sdlc_focus",
+            "vision:priorities:quality_over_speed"
+          ],
+          "summary": "V1 completed (reactive mode), V2 in progress (agentic mode)"
+        },
+        "related_concepts": ["rag_context", "agent_hub_interface", "artifact_workflow"]
+      },
+      {
+        "id": "rag_context",
+        "name": "RAG Context Integration",
+        "summary": "Context gathering for LLM calls",
+        "functional": {
+          "path": "functional:agent_orchestration:rag_context_integration",
+          "summary": "RAG provider for context-aware agent responses",
+          "routes": []
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:ai_services:sap_agent/rag_provider.rb",
+            "structural:data_layer:agent_models:snapshot.rb",
+            "structural:configuration_layer:knowledge_base_config:context_map.md",
+            "structural:job_layer:snapshot_jobs:financial_snapshot_job.rb"
+          ],
+          "summary": "RAG provider service + snapshot model + context map"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:rag_context_integration",
+            "vision:roadmap:in_progress:multi_index_rag",
+            "vision:technical_debt:rag_scalability"
+          ],
+          "summary": "V1 completed (context map + snapshots), V2 in progress (multi-index)"
+        },
+        "related_concepts": ["prd_generation", "multi_index_rag"]
+      },
+      {
+        "id": "multi_index_rag",
+        "name": "Multi-Index RAG Architecture",
+        "summary": "Functional, structural, and vision indexes for phase-specific context",
+        "functional": {
+          "path": null,
+          "summary": "No user-facing feature yet (infrastructure)"
+        },
+        "structural": {
+          "paths": [
+            "structural:configuration_layer:knowledge_base_config:rag-structure/"
+          ],
+          "summary": "Index files in knowledge_base/agentic-planning/rag-structure/"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:in_progress:multi_index_rag",
+            "vision:technical_debt:rag_scalability"
+          ],
+          "summary": "In development, addresses RAG scalability debt"
+        },
+        "related_concepts": ["rag_context", "agentic_refactor"]
+      },
+      {
+        "id": "agentic_refactor",
+        "name": "Agentic Refactor",
+        "summary": "Move from reactive to agentic PRD generation (research → plan → verify → execute → validate)",
+        "functional": {
+          "path": "functional:agent_orchestration:prd_generation",
+          "summary": "Enhances existing PRD generation capability"
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:ai_services:sap_agent/agentic_prd_command.rb",
+            "structural:service_layer:ai_services:sap_agent/rag_strategy/"
+          ],
+          "summary": "New agentic command class + pluggable RAG strategies (to be implemented)"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:in_progress:agentic_refactor",
+            "vision:priorities:sdlc_focus",
+            "vision:priorities:quality_over_speed",
+            "vision:technical_debt:retry_logic_inefficiency"
+          ],
+          "summary": "High priority, addresses retry logic inefficiency"
+        },
+        "related_concepts": ["prd_generation", "multi_index_rag", "validation_scoring"]
+      },
+      {
+        "id": "plaid_sync",
+        "name": "Plaid Integration",
+        "summary": "Financial data sync from Plaid",
+        "functional": {
+          "path": "functional:financial_sync",
+          "summary": "All Plaid sync features (Link, holdings, transactions, webhooks)",
+          "routes": ["/plaid/link_token", "/plaid/exchange", "/plaid/webhook"]
+        },
+        "structural": {
+          "paths": [
+            "structural:service_layer:plaid_services:plaid_service.rb",
+            "structural:service_layer:plaid_services:plaid_holdings_sync_service.rb",
+            "structural:service_layer:plaid_services:plaid_transaction_sync_service.rb",
+            "structural:data_layer:plaid_models:plaid_item.rb",
+            "structural:data_layer:plaid_models:account.rb",
+            "structural:data_layer:plaid_models:holding.rb",
+            "structural:data_layer:plaid_models:transaction.rb",
+            "structural:job_layer:plaid_sync_jobs",
+            "structural:interface_layer:plaid_controllers"
+          ],
+          "summary": "Models, services, jobs, and controllers for Plaid integration"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:plaid_integration"
+          ],
+          "summary": "Production-ready, no active work"
+        },
+        "related_concepts": ["financial_snapshot", "mission_control"]
+      },
+      {
+        "id": "agent_hub_interface",
+        "name": "Agent Hub Interface",
+        "summary": "Real-time agent conversation and monitoring interface",
+        "functional": {
+          "path": "functional:agent_orchestration:agent_hub_interface",
+          "summary": "Owner-only interface for agent interactions",
+          "routes": ["/agent_hub", "/agent_hub/messages/:agent_id", "/agent_hub/uploads"]
+        },
+        "structural": {
+          "paths": [
+            "structural:interface_layer:agent_controllers:agent_hubs_controller.rb",
+            "structural:interface_layer:agent_controllers:agent_hub/uploads_controller.rb",
+            "structural:service_layer:agent_hub_services:chat_handler.rb",
+            "structural:service_layer:agent_hub_services:command_parser.rb",
+            "structural:service_layer:agent_hub_services:command_executor.rb",
+            "structural:data_layer:agent_models:sap_run.rb",
+            "structural:data_layer:agent_models:sap_message.rb"
+          ],
+          "summary": "Controllers, services, and models for Agent Hub"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:completed:agent_hub_ui",
+            "vision:roadmap:completed:agent_hub_persistence"
+          ],
+          "summary": "Production-ready UI and persistence"
+        },
+        "related_concepts": ["prd_generation", "artifact_workflow", "agent_monitoring"]
+      },
+      {
+        "id": "validation_scoring",
+        "name": "Validation Scoring",
+        "summary": "Quality metrics and scoring for agent outputs",
+        "functional": {
+          "path": "functional:agent_orchestration:agent_monitoring",
+          "summary": "Agent performance monitoring and metrics",
+          "routes": ["/agents/monitor"]
+        },
+        "structural": {
+          "paths": [
+            "structural:interface_layer:agent_controllers:agents/monitor_controller.rb",
+            "structural:service_layer:ai_services:sap_agent/prd_strategy.rb"
+          ],
+          "summary": "Monitor controller + validation strategy (to be enhanced)"
+        },
+        "vision": {
+          "paths": [
+            "vision:roadmap:in_progress:sdlc_validation",
+            "vision:priorities:quality_over_speed",
+            "vision:success_metrics:PRD Quality"
+          ],
+          "summary": "In development, high priority"
+        },
+        "related_concepts": ["prd_generation", "agentic_refactor"]
+      }
+    ]
+  },
+  "_query_examples": [
+    "fetch:cross_ref:prd_generation → Returns all related paths across indexes",
+    "fetch:cross_ref:plaid_sync → Returns Plaid integration cross-references",
+    "search:cross_ref:validation → Returns all concepts mentioning validation",
+    "list:cross_ref:in_progress → Returns all concepts with in_progress vision items"
+  ]
+}
+```
+
+
+## FILE: functional/index.yml
+
+```
+# Functional Index: Application Capabilities Organized by User-Facing Features
+# Purpose: Answers "What does the app do?" for PRD generation research phase
+# Query Pattern: fetch:functional:<capability>:<feature>
+
+functional_index:
+  summary: "NextGen Plaid application capabilities organized by user-facing features"
+  last_updated: "2026-01-17"
+  
+  capabilities:
+    
+    # ============================================================================
+    # AUTHENTICATION & USER MANAGEMENT
+    # ============================================================================
+    - name: "authentication"
+      summary: "User login, signup, session management via Devise"
+      status: "production"
+      owner: "Core Rails"
+      
+      features:
+        - name: "user_login"
+          summary: "Standard Devise authentication flow"
+          routes:
+            - "/users/sign_in"
+            - "/users/sign_out"
+            - "/users/sign_up"
+            - "/users/password"
+          models: ["User"]
+          services: ["Devise"]
+          controllers: ["Devise::SessionsController", "Devise::RegistrationsController"]
+          status: "production"
+          prd: null
+          notes: "Standard Devise setup, no customization"
+        
+        - name: "dashboard_routing"
+          summary: "Authenticated users routed to dashboard, public to welcome"
+          routes:
+            - "/" 
+            - "/dashboard"
+          models: ["User"]
+          controllers: ["DashboardController", "WelcomeController"]
+          status: "production"
+          prd: null
+          notes: "Authenticated root vs public root routing"
+        
+        - name: "oauth_flow"
+          summary: "OAuth initiation and callback (INCOMPLETE)"
+          routes:
+            - "/plaid_oauth/initiate"
+            - "/plaid_oauth/callback"
+          models: []
+          services: []
+          controllers: []
+          status: "incomplete"
+          prd: null
+          notes: "🛑 ORPHAN ROUTES - No controller specified, OAuth flow not implemented"
+    
+    # ============================================================================
+    # FINANCIAL DATA SYNC (PLAID INTEGRATION)
+    # ============================================================================
+    - name: "financial_sync"
+      summary: "Plaid integration for account/transaction/holdings sync"
+      status: "production"
+      owner: "Plaid Integration Team"
+      
+      features:
+        - name: "plaid_link"
+          summary: "Plaid Link token generation and public token exchange"
+          routes:
+            - "/plaid/link_token"
+            - "/plaid/exchange"
+          models: ["PlaidItem", "Account"]
+          services: ["PlaidService"]
+          controllers: ["PlaidController"]
+          jobs: []
+          status: "production"
+          prd: "PRD-PLAID-001"
+          notes: "Core onboarding flow for connecting financial institutions"
+        
+        - name: "plaid_webhook"
+          summary: "Webhook receiver for Plaid events"
+          routes:
+            - "/plaid/webhook"
+          models: ["PlaidItem", "Account", "Holding", "Transaction"]
+          services: ["PlaidService"]
+          controllers: ["PlaidWebhookController"]
+          jobs: ["SyncHoldingsJob", "SyncTransactionsJob"]
+          status: "production"
+          prd: "PRD-PLAID-002"
+          notes: "Handles INITIAL_UPDATE, HISTORICAL_UPDATE, DEFAULT_UPDATE events"
+        
+        - name: "manual_refresh"
+          summary: "Manual refresh trigger for Plaid items"
+          routes:
+            - "/plaid_items/:id/refresh"
+          models: ["PlaidItem"]
+          services: ["PlaidService"]
+          controllers: ["PlaidRefreshesController"]
+          jobs: ["SyncHoldingsJob", "SyncTransactionsJob"]
+          status: "production"
+          prd: "PRD-PLAID-002"
+          notes: "User-initiated refresh for stale data"
+        
+        - name: "sync_logs"
+          summary: "View Plaid sync logs and status"
+          routes:
+            - "/plaid/sync_logs"
+          models: ["PlaidItem", "Account"]
+          services: ["PlaidService"]
+          controllers: ["PlaidController"]
+          status: "production"
+          prd: null
+          notes: "Debugging and monitoring interface"
+    
+    # ============================================================================
+    # AGENT ORCHESTRATION (AI WORKFLOWS)
+    # ============================================================================
+    - name: "agent_orchestration"
+      summary: "AI agent workflows for PRD generation and development assistance"
+      status: "production"
+      owner: "SAP Agent Team"
+      
+      features:
+        - name: "prd_generation"
+          summary: "SAP agent generates PRDs from user requests"
+          routes:
+            - "/agent_hub"
+            - "/admin/sap_collaborate"
+            - "/admin/sap_collaborate/ask"
+          models: ["Artifact", "SapRun", "SapMessage"]
+          services: ["SapAgent", "AiFinancialAdvisor", "SapAgent::RagProvider"]
+          controllers: ["AgentHubsController", "Admin::SapCollaborateController"]
+          jobs: ["SapAgentJob"]
+          status: "production"
+          prd: "PRD-AH-011"
+          notes: "Core SAP agent capability, reactive mode (zero-shot + validation)"
+        
+        - name: "agent_hub_interface"
+          summary: "Real-time agent conversation and monitoring interface"
+          routes:
+            - "/agent_hub"
+            - "/agent_hub/messages/:agent_id"
+            - "/agent_hub/uploads"
+          models: ["SapRun", "SapMessage", "Artifact"]
+          services: ["SapAgent"]
+          controllers: ["AgentHubsController", "AgentHub::UploadsController"]
+          status: "production"
+          prd: "PRD-AH-011"
+          notes: "Owner-only interface for agent interactions"
+        
+        - name: "agent_hub_actions"
+          summary: "Agent Hub collection actions (model switching, context inspection, etc.)"
+          routes:
+            - "/agent_hubs/update_model"
+            - "/agent_hubs/inspect_context"
+            - "/agent_hubs/archive_run"
+            - "/agent_hubs/create_conversation"
+            - "/agent_hubs/switch_conversation"
+            - "/agent_hubs/archive_conversation"
+          models: ["SapRun", "SapMessage"]
+          services: ["SapAgent"]
+          controllers: ["AgentHubsController"]
+          status: "production"
+          prd: "PRD-AH-011"
+          notes: "Collection actions for agent management"
+        
+        - name: "agent_monitoring"
+          summary: "Agent performance monitoring and metrics"
+          routes:
+            - "/agents/monitor"
+          models: ["SapRun", "Artifact"]
+          services: ["SapAgent"]
+          controllers: ["Agents::MonitorController"]
+          status: "in_development"
+          prd: "PRD-AH-012E"
+          notes: "Validation scoring and quality metrics"
+        
+        - name: "rag_context_integration"
+          summary: "RAG provider for context-aware agent responses"
+          routes: []
+          models: ["Snapshot", "Artifact"]
+          services: ["SapAgent::RagProvider"]
+          controllers: []
+          jobs: ["FinancialSnapshotJob"]
+          status: "production"
+          prd: "PRD-0120-RAG"
+          notes: "Context map + daily snapshots for LLM context"
+    
+    # ============================================================================
+    # MISSION CONTROL (ADMIN TOOLS)
+    # ============================================================================
+    - name: "mission_control"
+      summary: "Owner-only admin panel for system management and debugging"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "sync_controls"
+          summary: "Manual triggers for all Plaid sync operations"
+          routes:
+            - "/mission_control/sync_holdings_now"
+            - "/mission_control/sync_transactions_now"
+            - "/mission_control/sync_liabilities_now"
+            - "/mission_control/refresh_everything_now"
+          models: ["PlaidItem", "Account", "Holding", "Transaction"]
+          services: ["PlaidService"]
+          controllers: ["MissionControlController"]
+          jobs: ["SyncHoldingsJob", "SyncTransactionsJob", "SyncLiabilitiesJob"]
+          status: "production"
+          prd: null
+          notes: "Emergency sync controls for debugging"
+        
+        - name: "plaid_item_management"
+          summary: "Relink, remove, and manage Plaid items"
+          routes:
+            - "/mission_control/relink/:id"
+            - "/mission_control/relink_success/:id"
+            - "/mission_control/remove_item/:id"
+          models: ["PlaidItem"]
+          services: ["PlaidService"]
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "Handle expired/broken Plaid connections"
+        
+        - name: "webhook_management"
+          summary: "Fire webhooks and update webhook URLs"
+          routes:
+            - "/mission_control/fire_webhook/:id"
+            - "/mission_control/update_webhook_url/:id"
+          models: ["PlaidItem"]
+          services: ["PlaidService"]
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "Testing and debugging webhook flows"
+        
+        - name: "system_monitoring"
+          summary: "View logs, costs, and system health"
+          routes:
+            - "/mission_control/logs"
+            - "/mission_control/costs"
+            - "/mission_control/costs/export.csv"
+          models: []
+          services: []
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "JSON logs and CSV cost exports"
+        
+        - name: "nuke_command"
+          summary: "Dangerous: Delete all Plaid data (dev/test only)"
+          routes:
+            - "/mission_control/nuke"
+          models: ["PlaidItem", "Account", "Holding", "Transaction"]
+          services: []
+          controllers: ["MissionControlController"]
+          status: "production"
+          prd: null
+          notes: "⚠️ DANGEROUS - Should be disabled in production"
+    
+    # ============================================================================
+    # ADMIN NAMESPACE (CRUD & TOOLS)
+    # ============================================================================
+    - name: "admin_tools"
+      summary: "Admin namespace for CRUD operations and AI workflow tools"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "user_management"
+          summary: "Admin CRUD for users"
+          routes:
+            - "/admin/users"
+          models: ["User"]
+          services: []
+          controllers: ["Admin::UsersController"]
+          status: "production"
+          prd: "PRD-UI-4"
+          notes: "Full CRUD for user management"
+        
+        - name: "account_management"
+          summary: "Admin CRUD for accounts"
+          routes:
+            - "/admin/accounts"
+          models: ["Account"]
+          services: []
+          controllers: ["Admin::AccountsController"]
+          status: "production"
+          prd: "PRD-UI-4"
+          notes: "Full CRUD for account management"
+        
+        - name: "ai_workflow_viewer"
+          summary: "View AI workflow status and history"
+          routes:
+            - "/admin/ai_workflow"
+          models: ["SapRun", "Artifact"]
+          services: []
+          controllers: ["Admin::AiWorkflowController"]
+          status: "production"
+          prd: null
+          notes: "Monitoring interface for AI workflows"
+        
+        - name: "health_check"
+          summary: "System health check endpoint"
+          routes:
+            - "/admin/health"
+          models: []
+          services: []
+          controllers: ["Admin::HealthController"]
+          status: "production"
+          prd: null
+          notes: "Basic health check for monitoring"
+        
+        - name: "rag_inspector"
+          summary: "Inspect RAG context and debug context selection"
+          routes:
+            - "/admin/rag_inspector"
+          models: ["Snapshot"]
+          services: ["SapAgent::RagProvider"]
+          controllers: ["Admin::RagInspectorController"]
+          status: "production"
+          prd: "PRD-AH-011D"
+          notes: "Debug tool for RAG context issues"
+    
+    # ============================================================================
+    # MODEL INSPECTION (READ-ONLY VIEWS)
+    # ============================================================================
+    - name: "model_inspection"
+      summary: "Read-only views for financial data models"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "holdings_viewer"
+          summary: "View holdings data"
+          routes:
+            - "/holdings"
+          models: ["Holding"]
+          services: []
+          controllers: ["HoldingsController"]
+          status: "production"
+          prd: null
+          notes: "Index and show actions only"
+        
+        - name: "transactions_viewer"
+          summary: "View transactions data"
+          routes:
+            - "/transactions"
+          models: ["Transaction"]
+          services: []
+          controllers: ["TransactionsController"]
+          status: "production"
+          prd: null
+          notes: "Index and show actions only"
+        
+        - name: "accounts_viewer"
+          summary: "View accounts data"
+          routes:
+            - "/accounts"
+          models: ["Account"]
+          services: []
+          controllers: ["AccountsController"]
+          status: "production"
+          prd: null
+          notes: "Index and show actions only"
+    
+    # ============================================================================
+    # INFRASTRUCTURE
+    # ============================================================================
+    - name: "infrastructure"
+      summary: "Core infrastructure services (WebSocket, ActionCable)"
+      status: "production"
+      owner: "Platform Team"
+      
+      features:
+        - name: "action_cable"
+          summary: "WebSocket support for Turbo Streams and live updates"
+          routes:
+            - "/cable"
+          models: []
+          services: ["ActionCable"]
+          controllers: []
+          status: "production"
+          prd: null
+          notes: "Required for Turbo Streams and real-time features"
+
+# Query Examples:
+# - fetch:functional:authentication → Returns all authentication features
+# - fetch:functional:agent_orchestration:prd_generation → Returns PRD generation feature details
+# - search:functional:plaid → Returns all features mentioning Plaid
+# - fetch:functional:* → Returns all capabilities (summary level)
+```
+
+
+## FILE: on-demand/README.md
+
+```
+# On-Demand Data Fetchers
+
+This directory contains documentation for on-demand data fetchers that retrieve real-time information when requested by the RAG provider.
+
+## Overview
+
+On-demand fetchers are called dynamically during agent execution to retrieve the most current data. Unlike semi-static data (updated daily), on-demand data is fetched in real-time for each query.
+
+## Fetcher Types
+
+### 1. **schema.md** - Database Schema
+- **Query**: `fetch:structural:data_layer:schema`
+- **Source**: `db/schema.rb`
+- **Returns**: Full database schema or specific table definitions
+- **Use Case**: Planning phase needs to know available tables and columns
+
+### 2. **models.md** - Model Files
+- **Query**: `fetch:structural:data_layer:core_models` or specific model
+- **Source**: `app/models/*.rb`
+- **Returns**: Model file content with associations and methods
+- **Use Case**: Execution phase needs to understand model relationships
+
+### 3. **services.md** - Service Files
+- **Query**: `fetch:structural:service_layer:ai_services` or specific service
+- **Source**: `app/services/**/*.rb`
+- **Returns**: Service file content with key methods
+- **Use Case**: Planning phase needs to know available services
+
+### 4. **jobs.md** - Background Job Files
+- **Query**: `fetch:structural:job_layer:plaid_sync_jobs` or specific job
+- **Source**: `app/jobs/*.rb`
+- **Returns**: Job file content with perform method
+- **Use Case**: Planning phase needs to know available background jobs
+
+### 5. **routes.md** - Application Routes
+- **Query**: `fetch:structural:interface_layer:routing`
+- **Source**: `config/routes.rb`
+- **Returns**: Routes definition or specific route details
+- **Use Case**: Research phase needs to check if route exists
+
+### 6. **prds.md** - PRD Files
+- **Query**: `fetch:sdlc:on_demand:prds` or search by keyword
+- **Source**: `knowledge_base/epics/**/*-PRD.md`
+- **Returns**: PRD file content or search results
+- **Use Case**: Research phase needs to find similar PRDs
+
+### 7. **commits.md** - Git Commit History
+- **Query**: `fetch:sdlc:on_demand:commits <sha>` or search by keyword
+- **Source**: Git repository
+- **Returns**: Commit diff or log entries
+- **Use Case**: Verification phase needs to check recent changes
+
+## Implementation Pattern
+
+Each fetcher should follow this pattern:
+
+```ruby
+module SapAgent
+  module RagContext
+    class OnDemandFetcher
+      def self.fetch_schema(table_name = nil)
+        schema_path = Rails.root.join('db/schema.rb')
+        return {error: "Schema not found"} unless File.exist?(schema_path)
+        
+        content = File.read(schema_path)
+        
+        if table_name
+          # Extract specific table
+          table_def = extract_table(content, table_name)
+          {
+            source: "db/schema.rb",
+            table: table_name,
+            content: table_def
+          }
+        else
+          # Return full schema (or summary)
+          {
+            source: "db/schema.rb",
+            tables: extract_table_names(content),
+            content: content[0..5000] # Limit size
+          }
+        end
+      end
+      
+      def self.fetch_model(model_name)
+        model_path = Rails.root.join("app/models/#{model_name.underscore}.rb")
+        return {error: "Model not found"} unless File.exist?(model_path)
+        
+        {
+          source: model_path.to_s,
+          content: File.read(model_path)
+        }
+      end
+      
+      def self.search_prds(keyword)
+        prd_files = Dir.glob(Rails.root.join('knowledge_base/epics/**/*-PRD.md'))
+        
+        results = prd_files.map do |file|
+          content = File.read(file)
+          score = keyword.downcase.split.count { |word| content.downcase.include?(word) }
+          next if score == 0
+          
+          {
+            file: file,
+            score: score,
+            excerpt: content[0..500]
+          }
+        end.compact
+        
+        results.sort_by { |r| -r[:score] }.first(5)
+      end
+      
+      def self.fetch_commit(sha)
+        diff = `git show #{sha} 2>&1`
+        return {error: "Commit not found"} unless $?.success?
+        
+        {
+          sha: sha,
+          diff: diff[0..3000] # Limit size
+        }
+      end
+    end
+  end
+end
+```
+
+## Query Examples
+
+```ruby
+# Fetch full schema
+OnDemandFetcher.fetch_schema
+# => {source: "db/schema.rb", tables: ["users", "artifacts", ...], content: "..."}
+
+# Fetch specific table
+OnDemandFetcher.fetch_schema("artifacts")
+# => {source: "db/schema.rb", table: "artifacts", content: "create_table 'artifacts' do..."}
+
+# Fetch model
+OnDemandFetcher.fetch_model("Artifact")
+# => {source: "app/models/artifact.rb", content: "class Artifact < ApplicationRecord..."}
+
+# Search PRDs
+OnDemandFetcher.search_prds("validation scoring")
+# => [{file: "PRD-AH-012E.md", score: 5, excerpt: "..."}, ...]
+
+# Fetch commit
+OnDemandFetcher.fetch_commit("3504b54")
+# => {sha: "3504b54", diff: "diff --git a/lib/sdlc_validation.rb..."}
+```
+
+## Performance Considerations
+
+1. **Caching**: Cache frequently accessed files (schema.rb, routes.rb) for 5 minutes
+2. **Size Limits**: Truncate large files to 5KB max
+3. **Timeouts**: Set 2-second timeout for git commands
+4. **Rate Limiting**: Limit to 10 on-demand fetches per agent request
+
+## Integration with Multi-Index RAG
+
+On-demand fetchers are called by the RAG provider when:
+1. Index references a file path (e.g., `structural:data_layer:schema`)
+2. Agent explicitly requests real-time data
+3. Phase-specific context loading requires current state
+
+Example integration:
+```ruby
+def planning_phase(research_context)
+  # Load structural context on-demand
+  schema = OnDemandFetcher.fetch_schema
+  relevant_models = OnDemandFetcher.fetch_model("Artifact")
+  
+  context = research_context.merge(
+    schema: schema,
+    models: relevant_models
+  )
+  
+  planning_prompt = build_planning_prompt(context)
+  call_llm(planning_prompt)
+end
+```
+
+## Next Steps
+
+1. Implement `OnDemandFetcher` class in `app/services/sap_agent/rag_context/`
+2. Add caching layer with Redis or in-memory cache
+3. Integrate with `MultiIndexProvider` for seamless fetching
+4. Add metrics tracking for fetch performance
+5. Create tests for each fetcher method
+```
+
+
+## FILE: semi-static/artifact_summary.json
+
+```
+{
+  "_metadata": {
+    "description": "Recent artifacts from the database for RAG context",
+    "update_frequency": "daily",
+    "generated_by": "UpdateArtifactSummaryJob (to be implemented)",
+    "last_updated": null,
+    "query": "Artifact.order(updated_at: :desc).limit(20)",
+    "purpose": "Provides agents with recent PRDs, epics, and development artifacts"
+  },
+  "_schema": {
+    "id": "integer - Artifact ID",
+    "name": "string - Artifact name/title",
+    "artifact_type": "string - Type (prd, epic, plan, etc.)",
+    "phase": "string - Current phase (backlog, in_analysis, in_development, in_qa, completed, rejected)",
+    "owner_persona": "string - Assigned agent (SAP, Coordinator, CWA)",
+    "created_at": "datetime - Creation timestamp",
+    "updated_at": "datetime - Last update timestamp",
+    "summary": "string - Brief description or first 200 chars of content"
+  },
+  "_example_data": [
+    {
+      "id": 123,
+      "name": "PRD-AH-012E Validation Scoring",
+      "artifact_type": "prd",
+      "phase": "in_development",
+      "owner_persona": "SAP",
+      "created_at": "2026-01-15T10:00:00Z",
+      "updated_at": "2026-01-17T09:30:00Z",
+      "summary": "Validation scoring and quality metrics for agent outputs"
+    },
+    {
+      "id": 122,
+      "name": "0070-SAP-Agentic-Refactor-Epic",
+      "artifact_type": "epic",
+      "phase": "in_development",
+      "owner_persona": "SAP",
+      "created_at": "2026-01-10T14:00:00Z",
+      "updated_at": "2026-01-16T16:45:00Z",
+      "summary": "Move SAP agent from reactive to agentic (5-phase lifecycle)"
+    }
+  ],
+  "artifacts": [],
+  "_note": "This file should be auto-generated daily by a Sidekiq job. Current data is empty - implement UpdateArtifactSummaryJob to populate."
+}
+```
+
+
+## FILE: semi-static/backlog_items.json
+
+```
+{
+  "_metadata": {
+    "description": "Prioritized backlog items from the database for RAG context",
+    "update_frequency": "daily",
+    "generated_by": "UpdateBacklogSummaryJob (to be implemented)",
+    "last_updated": null,
+    "query": "BacklogItem.where(status: ['todo', 'in_progress']).order(priority: :desc, created_at: :desc).limit(30)",
+    "purpose": "Provides agents with current work items and priorities"
+  },
+  "_schema": {
+    "id": "integer - Backlog item ID",
+    "title": "string - Item title/description",
+    "status": "string - Status (todo, in_progress, done, blocked)",
+    "priority": "integer - Priority (1=highest, 5=lowest)",
+    "assigned_to": "string - Assigned persona or user",
+    "created_at": "datetime - Creation timestamp",
+    "updated_at": "datetime - Last update timestamp",
+    "tags": "array - Tags for categorization",
+    "related_artifact_id": "integer - Related artifact ID (optional)"
+  },
+  "_example_data": [
+    {
+      "id": 45,
+      "title": "Implement agentic planning phase for PRD generation",
+      "status": "in_progress",
+      "priority": 1,
+      "assigned_to": "SAP",
+      "created_at": "2026-01-10T09:00:00Z",
+      "updated_at": "2026-01-17T08:15:00Z",
+      "tags": ["agentic", "prd", "high-priority"],
+      "related_artifact_id": 122
+    },
+    {
+      "id": 44,
+      "title": "Build multi-index RAG architecture",
+      "status": "in_progress",
+      "priority": 1,
+      "assigned_to": "SAP",
+      "created_at": "2026-01-09T14:30:00Z",
+      "updated_at": "2026-01-17T10:00:00Z",
+      "tags": ["rag", "infrastructure", "high-priority"],
+      "related_artifact_id": null
+    },
+    {
+      "id": 43,
+      "title": "Add validation scoring dashboard",
+      "status": "in_progress",
+      "priority": 2,
+      "assigned_to": "SAP",
+      "created_at": "2026-01-08T11:00:00Z",
+      "updated_at": "2026-01-16T15:30:00Z",
+      "tags": ["validation", "metrics", "quality"],
+      "related_artifact_id": 123
+    },
+    {
+      "id": 42,
+      "title": "Complete OAuth flow for Plaid",
+      "status": "todo",
+      "priority": 4,
+      "assigned_to": null,
+      "created_at": "2025-12-15T10:00:00Z",
+      "updated_at": "2025-12-15T10:00:00Z",
+      "tags": ["plaid", "oauth", "low-priority"],
+      "related_artifact_id": null
+    }
+  ],
+  "backlog_items": [],
+  "_note": "This file should be auto-generated daily by a Sidekiq job. Current data is empty - implement UpdateBacklogSummaryJob to populate."
+}
+```
+
+
+## FILE: structural/index.yml
+
+```
+# Structural Index: Application Architecture Organized by Technical Layers
+# Purpose: Answers "How is the app built?" for PRD generation planning/execution phases
+# Query Pattern: fetch:structural:<layer>:<component>
+
+structural_index:
+  summary: "NextGen Plaid application architecture organized by technical layers"
+  last_updated: "2026-01-17"
+  
+  layers:
+    
+    # ============================================================================
+    # DATA LAYER (Models, Schema, Database)
+    # ============================================================================
+    - name: "data_layer"
+      summary: "Database schema, models, and data persistence"
+      
+      components:
+        - name: "core_models"
+          summary: "Core application models (User, authentication)"
+          files:
+            - path: "app/models/user.rb"
+              summary: "User authentication and profile management"
+              tables: ["users"]
+              associations:
+                - "has_many :plaid_items"
+                - "has_many :snapshots"
+                - "has_many :artifacts"
+                - "has_many :sap_runs"
+              key_methods: ["owner?", "admin?"]
+              
+            - path: "app/models/application_record.rb"
+              summary: "Base model class for all ActiveRecord models"
+              tables: []
+              associations: []
+              notes: "Inherits from ActiveRecord::Base"
+        
+        - name: "agent_models"
+          summary: "AI agent workflow and artifact models"
+          files:
+            - path: "app/models/artifact.rb"
+              summary: "Agent workflow artifacts (PRDs, plans, epics)"
+              tables: ["artifacts"]
+              associations:
+                - "belongs_to :user"
+                - "has_many :sap_runs"
+              state_machine: true
+              phases: ["backlog", "in_analysis", "in_development", "in_qa", "completed", "rejected"]
+              key_methods: ["transition_to!", "can_transition_to?", "owner_persona"]
+              notes: "Central model for SDLC workflow, tracks PRDs and development artifacts"
+            
+            - path: "app/models/sap_run.rb"
+              summary: "SAP agent execution runs and conversation history"
+              tables: ["sap_runs"]
+              associations:
+                - "belongs_to :user"
+                - "belongs_to :artifact, optional: true"
+                - "has_many :sap_messages"
+              key_methods: ["complete!", "fail!", "output_json"]
+              notes: "Tracks individual agent interactions and outputs"
+            
+            - path: "app/models/sap_message.rb"
+              summary: "Individual messages in SAP agent conversations"
+              tables: ["sap_messages"]
+              associations:
+                - "belongs_to :sap_run"
+              key_methods: ["role", "content"]
+              notes: "Stores conversation history for agent context"
+            
+            - path: "app/models/snapshot.rb"
+              summary: "Daily user data snapshots for RAG context"
+              tables: ["snapshots"]
+              associations:
+                - "belongs_to :user"
+              key_methods: ["data", "anonymize"]
+              notes: "JSONB storage for daily financial/project state"
+            
+            - path: "app/models/backlog_item.rb"
+              summary: "Backlog items and task tracking"
+              tables: ["backlog_items"]
+              associations:
+                - "belongs_to :user, optional: true"
+              key_methods: ["priority", "status"]
+              notes: "Task management for development workflow"
+            
+            - path: "app/models/ai_workflow_run.rb"
+              summary: "AI workflow execution tracking"
+              tables: ["ai_workflow_runs"]
+              associations: []
+              key_methods: ["status", "result"]
+              notes: "Tracks multi-step AI workflow executions"
+        
+        - name: "plaid_models"
+          summary: "Plaid integration and financial data models"
+          files:
+            - path: "app/models/plaid_item.rb"
+              summary: "Plaid connection tokens and institution links"
+              tables: ["plaid_items"]
+              associations:
+                - "belongs_to :user"
+                - "has_many :accounts"
+              encrypted_fields: ["access_token"]
+              key_methods: ["refresh!", "relink_required?", "institution_name"]
+              notes: "Stores encrypted Plaid access tokens"
+            
+            - path: "app/models/account.rb"
+              summary: "Financial accounts from Plaid"
+              tables: ["accounts"]
+              associations:
+                - "belongs_to :plaid_item"
+                - "has_many :holdings"
+                - "has_many :transactions"
+              key_methods: ["balance", "account_type", "official_name"]
+              notes: "Checking, savings, investment, credit accounts"
+            
+            - path: "app/models/holding.rb"
+              summary: "Investment holdings (stocks, bonds, funds)"
+              tables: ["holdings"]
+              associations:
+                - "belongs_to :account"
+              key_methods: ["quantity", "institution_value", "ticker_symbol"]
+              notes: "Synced from Plaid investments endpoint"
+            
+            - path: "app/models/transaction.rb"
+              summary: "Financial transactions"
+              tables: ["transactions"]
+              associations:
+                - "belongs_to :account"
+                - "has_one :enriched_transaction"
+              key_methods: ["amount", "date", "merchant_name", "category"]
+              notes: "Synced from Plaid transactions endpoint"
+            
+            - path: "app/models/enriched_transaction.rb"
+              summary: "AI-enriched transaction data"
+              tables: ["enriched_transactions"]
+              associations:
+                - "belongs_to :transaction"
+              key_methods: ["enriched_category", "confidence"]
+              notes: "AI-enhanced categorization and insights"
+            
+            - path: "app/models/option_contract.rb"
+              summary: "Options contracts from investment accounts"
+              tables: ["option_contracts"]
+              associations:
+                - "belongs_to :holding, optional: true"
+              key_methods: ["strike_price", "expiration_date", "contract_type"]
+              notes: "Calls and puts from Plaid"
+            
+            - path: "app/models/fixed_income.rb"
+              summary: "Fixed income securities (bonds, CDs)"
+              tables: ["fixed_incomes"]
+              associations:
+                - "belongs_to :holding, optional: true"
+              key_methods: ["interest_rate", "maturity_date"]
+              notes: "Bond holdings from Plaid"
+            
+            - path: "app/models/plaid_api_call.rb"
+              summary: "Plaid API call logging and cost tracking"
+              tables: ["plaid_api_calls"]
+              associations:
+                - "belongs_to :user, optional: true"
+              key_methods: ["endpoint", "cost", "response_time"]
+              notes: "Tracks API usage for billing and monitoring"
+        
+        - name: "supporting_models"
+          summary: "Supporting models for categorization and metadata"
+          files:
+            - path: "app/models/personal_finance_category.rb"
+              summary: "Plaid personal finance category taxonomy"
+              tables: ["personal_finance_categories"]
+              associations: []
+              key_methods: ["primary", "detailed"]
+              notes: "Plaid's standardized category hierarchy"
+            
+            - path: "app/models/transaction_code.rb"
+              summary: "Transaction type codes"
+              tables: ["transaction_codes"]
+              associations: []
+              key_methods: ["code", "description"]
+              notes: "ISO transaction codes"
+            
+            - path: "app/models/queue_record.rb"
+              summary: "Job queue records (Solid Queue)"
+              tables: ["solid_queue_*"]
+              associations: []
+              notes: "Solid Queue internal tables"
+        
+        - name: "schema"
+          summary: "Complete database schema definition"
+          files:
+            - path: "db/schema.rb"
+              summary: "Rails schema with all table definitions"
+              tables:
+                - "users"
+                - "artifacts"
+                - "sap_runs"
+                - "sap_messages"
+                - "snapshots"
+                - "backlog_items"
+                - "plaid_items"
+                - "accounts"
+                - "holdings"
+                - "transactions"
+                - "enriched_transactions"
+                - "option_contracts"
+                - "fixed_incomes"
+                - "plaid_api_calls"
+                - "personal_finance_categories"
+                - "transaction_codes"
+                - "ai_workflow_runs"
+                - "solid_queue_*"
+              notes: "Authoritative source for database structure"
+    
+    # ============================================================================
+    # SERVICE LAYER (Business Logic, External Integrations)
+    # ============================================================================
+    - name: "service_layer"
+      summary: "Business logic and external integrations"
+      
+      components:
+        - name: "ai_services"
+          summary: "AI and LLM integration services"
+          files:
+            - path: "app/services/ai_financial_advisor.rb"
+              summary: "LLM proxy routing (Grok/Ollama)"
+              dependencies: ["SmartProxy", "SapAgent::Router"]
+              key_methods: ["ask", "route_to_model"]
+              notes: "Central LLM call interface with request tracking"
+            
+            - path: "app/services/sap_agent_service.rb"
+              summary: "SAP agent orchestration service"
+              dependencies: ["SapAgent::Command", "SapAgent::RagProvider"]
+              key_methods: ["process", "generate_prd"]
+              notes: "High-level SAP agent interface"
+            
+            - path: "app/services/sap_agent/command.rb"
+              summary: "Base command class for SAP agent operations"
+              dependencies: ["Logger"]
+              key_methods: ["execute", "validate!", "call_proxy"]
+              notes: "Command pattern base class"
+            
+            - path: "app/services/sap_agent/artifact_command.rb"
+              summary: "Artifact generation command (PRDs, plans)"
+              dependencies: ["SapAgent::Command", "SapAgent::RagProvider"]
+              key_methods: ["execute", "prompt", "validate_artifact!"]
+              notes: "Handles PRD generation with retry logic"
+            
+            - path: "app/services/sap_agent/prd_strategy.rb"
+              summary: "PRD validation and storage strategy"
+              dependencies: []
+              key_methods: ["validate_output!", "parse_output", "store!"]
+              notes: "Validates PRD structure (5-8 AC bullets, required sections)"
+            
+            - path: "app/services/sap_agent/rag_provider.rb"
+              summary: "RAG context gathering for LLM calls"
+              dependencies: ["Snapshot", "Artifact", "context_map.md"]
+              key_methods: ["build_prefix", "fetch_snapshot", "fetch_backlog"]
+              notes: "Builds context from snapshots, docs, schema (4K char limit)"
+            
+            - path: "app/services/sap_agent/router.rb"
+              summary: "Routes requests to Grok vs Ollama"
+              dependencies: []
+              key_methods: ["route"]
+              notes: "Model selection logic"
+        
+        - name: "plaid_services"
+          summary: "Plaid API integration services"
+          files:
+            - path: "app/services/plaid_service.rb"
+              summary: "Core Plaid API client"
+              dependencies: ["Plaid gem"]
+              key_methods: ["link_token_create", "item_public_token_exchange", "accounts_get"]
+              notes: "Wrapper around Plaid Ruby SDK"
+            
+            - path: "app/services/plaid_holdings_sync_service.rb"
+              summary: "Sync holdings from Plaid investments endpoint"
+              dependencies: ["PlaidService", "Holding", "OptionContract", "FixedIncome"]
+              key_methods: ["sync", "sync_for_item"]
+              notes: "Handles investments/holdings/get endpoint"
+            
+            - path: "app/services/plaid_transaction_sync_service.rb"
+              summary: "Sync transactions from Plaid"
+              dependencies: ["PlaidService", "Transaction"]
+              key_methods: ["sync", "sync_for_item"]
+              notes: "Handles transactions/sync endpoint with cursor"
+        
+        - name: "agent_hub_services"
+          summary: "Agent Hub orchestration and command services"
+          files:
+            - path: "app/services/agent_hub/backlog_service.rb"
+              summary: "Backlog management for Agent Hub"
+              dependencies: ["Artifact", "BacklogItem"]
+              key_methods: ["fetch_backlog", "update_item"]
+              notes: "Manages artifact backlog visibility"
+            
+            - path: "app/services/agent_hub/command_parser.rb"
+              summary: "Parse agent commands from messages"
+              dependencies: []
+              key_methods: ["parse", "extract_intent"]
+              notes: "Extracts [ACTION: INTENT: ID] tags"
+            
+            - path: "app/services/agent_hub/command_executor.rb"
+              summary: "Execute parsed agent commands"
+              dependencies: ["Artifact", "SapRun"]
+              key_methods: ["execute", "handle_transition"]
+              notes: "Executes artifact transitions"
+            
+            - path: "app/services/agent_hub/autonomous_command_service.rb"
+              summary: "Autonomous agent command execution"
+              dependencies: ["CommandParser", "CommandExecutor"]
+              key_methods: ["process_message"]
+              notes: "Enables agents to self-execute commands"
+            
+            - path: "app/services/agent_hub/workflow_bridge.rb"
+              summary: "Bridge between Agent Hub and SDLC workflow"
+              dependencies: ["Artifact"]
+              key_methods: ["transition_artifact", "validate_transition"]
+              notes: "Enforces workflow rules"
+            
+            - path: "app/services/agent_hub/chat_handler.rb"
+              summary: "Handle Agent Hub chat interactions"
+              dependencies: ["SapRun", "SapMessage"]
+              key_methods: ["handle_message", "stream_response"]
+              notes: "Real-time chat interface"
+            
+            - path: "app/services/agent_hub/smart_proxy_client.rb"
+              summary: "Client for SmartProxy research capabilities"
+              dependencies: ["SmartProxy"]
+              key_methods: ["research", "search"]
+              notes: "Optional research phase integration"
+            
+            - path: "app/services/agent_hub/mention_parser.rb"
+              summary: "Parse @mentions in agent messages"
+              dependencies: []
+              key_methods: ["parse_mentions"]
+              notes: "Extracts @agent mentions for routing"
+            
+            - path: "app/services/agent_hub/command_discovery_service.rb"
+              summary: "Discover available agent commands"
+              dependencies: []
+              key_methods: ["available_commands"]
+              notes: "Lists valid agent actions"
+            
+            - path: "app/services/agent_hub/model_discovery_service.rb"
+              summary: "Discover available LLM models"
+              dependencies: ["AiFinancialAdvisor"]
+              key_methods: ["available_models"]
+              notes: "Lists Grok/Ollama models"
+        
+        - name: "ai_workflow_services"
+          summary: "AI workflow orchestration services"
+          files:
+            - path: "app/services/ai_workflow/agent_factory.rb"
+              summary: "Factory for creating AI agents"
+              dependencies: []
+              key_methods: ["create_agent"]
+              notes: "Instantiates SAP/Coordinator/CWA agents"
+            
+            - path: "app/services/ai_workflow/context_manager.rb"
+              summary: "Manage context across workflow steps"
+              dependencies: ["SapAgent::RagProvider"]
+              key_methods: ["build_context", "merge_context"]
+              notes: "Context accumulation for multi-step workflows"
+            
+            - path: "app/services/ai_workflow/artifact_writer.rb"
+              summary: "Write artifacts to knowledge base"
+              dependencies: ["Artifact"]
+              key_methods: ["write", "store_prd"]
+              notes: "Persists generated artifacts to filesystem"
+            
+            - path: "app/services/ai_workflow/guardrail_enforcer.rb"
+              summary: "Enforce guardrails on AI outputs"
+              dependencies: []
+              key_methods: ["validate", "check_constraints"]
+              notes: "Safety checks for AI-generated content"
+        
+        - name: "import_services"
+          summary: "Data import and CSV processing services"
+          files:
+            - path: "app/services/csv_holdings_importer.rb"
+              summary: "Import holdings from CSV"
+              dependencies: ["Holding"]
+              key_methods: ["import"]
+              notes: "Manual holdings import for testing"
+            
+            - path: "app/services/csv_accounts_importer.rb"
+              summary: "Import accounts from CSV"
+              dependencies: ["Account"]
+              key_methods: ["import"]
+              notes: "Manual accounts import for testing"
+    
+    # ============================================================================
+    # JOB LAYER (Background Jobs, Scheduled Tasks)
+    # ============================================================================
+    - name: "job_layer"
+      summary: "Background jobs and scheduled tasks"
+      
+      components:
+        - name: "plaid_sync_jobs"
+          summary: "Plaid data synchronization jobs"
+          files:
+            - path: "app/jobs/sync_holdings_job.rb"
+              summary: "Sync holdings from Plaid"
+              schedule: "triggered"
+              dependencies: ["PlaidHoldingsSyncService"]
+              key_methods: ["perform"]
+              notes: "Triggered by webhook or manual refresh"
+            
+            - path: "app/jobs/sync_transactions_job.rb"
+              summary: "Sync transactions from Plaid"
+              schedule: "triggered"
+              dependencies: ["PlaidTransactionSyncService"]
+              key_methods: ["perform"]
+              notes: "Triggered by webhook or manual refresh"
+            
+            - path: "app/jobs/sync_liabilities_job.rb"
+              summary: "Sync liabilities from Plaid"
+              schedule: "triggered"
+              dependencies: ["PlaidService"]
+              key_methods: ["perform"]
+              notes: "Credit cards, loans, mortgages"
+            
+            - path: "app/jobs/sync_all_items_job.rb"
+              summary: "Sync all data for all Plaid items"
+              schedule: "triggered"
+              dependencies: ["SyncHoldingsJob", "SyncTransactionsJob", "SyncLiabilitiesJob"]
+              key_methods: ["perform"]
+              notes: "Orchestrates full sync"
+            
+            - path: "app/jobs/daily_plaid_sync_job.rb"
+              summary: "Daily scheduled Plaid sync"
+              schedule: "daily"
+              dependencies: ["SyncAllItemsJob"]
+              key_methods: ["perform"]
+              notes: "Cron job for daily refresh"
+            
+            - path: "app/jobs/force_plaid_sync_job.rb"
+              summary: "Force immediate Plaid sync"
+              schedule: "triggered"
+              dependencies: ["PlaidService"]
+              key_methods: ["perform"]
+              notes: "Emergency sync bypass"
+        
+        - name: "agent_jobs"
+          summary: "AI agent background jobs"
+          files:
+            - path: "app/jobs/sap_agent_job.rb"
+              summary: "Async SAP agent execution"
+              schedule: "triggered"
+              dependencies: ["SapAgent"]
+              key_methods: ["perform"]
+              notes: "Queued agent requests"
+            
+            - path: "app/jobs/sap_process_job.rb"
+              summary: "SAP agent processing job"
+              schedule: "triggered"
+              dependencies: ["SapAgent"]
+              key_methods: ["perform"]
+              notes: "Alternative agent job interface"
+            
+            - path: "app/jobs/sap_refresh_job.rb"
+              summary: "Refresh SAP agent context"
+              schedule: "triggered"
+              dependencies: ["SapAgent::RagProvider"]
+              key_methods: ["perform"]
+              notes: "Rebuild RAG context"
+            
+            - path: "app/jobs/agent_queue_job.rb"
+              summary: "Agent request queue processor"
+              schedule: "triggered"
+              dependencies: ["SapRun"]
+              key_methods: ["perform"]
+              notes: "Processes queued agent requests"
+        
+        - name: "snapshot_jobs"
+          summary: "Data snapshot and context jobs"
+          files:
+            - path: "app/jobs/financial_snapshot_job.rb"
+              summary: "Generate daily financial snapshots"
+              schedule: "daily"
+              dependencies: ["Snapshot", "Account", "Holding"]
+              key_methods: ["perform"]
+              notes: "Creates daily JSON snapshots for RAG"
+        
+        - name: "enrichment_jobs"
+          summary: "Data enrichment and processing jobs"
+          files:
+            - path: "app/jobs/transaction_enrich_job.rb"
+              summary: "AI-enrich transaction data"
+              schedule: "triggered"
+              dependencies: ["Transaction", "AiFinancialAdvisor"]
+              key_methods: ["perform"]
+              notes: "Adds AI categorization to transactions"
+        
+        - name: "maintenance_jobs"
+          summary: "System maintenance and cleanup jobs"
+          files:
+            - path: "app/jobs/cleanup_old_runs_job.rb"
+              summary: "Clean up old SAP runs"
+              schedule: "daily"
+              dependencies: ["SapRun"]
+              key_methods: ["perform"]
+              notes: "Removes old agent execution records"
+            
+            - path: "app/jobs/application_job.rb"
+              summary: "Base job class"
+              schedule: null
+              dependencies: []
+              notes: "Inherits from ActiveJob::Base"
+    
+    # ============================================================================
+    # INTERFACE LAYER (Controllers, Views, Routes)
+    # ============================================================================
+    - name: "interface_layer"
+      summary: "Controllers, views, and HTTP routing"
+      
+      components:
+        - name: "core_controllers"
+          summary: "Core application controllers"
+          files:
+            - path: "app/controllers/application_controller.rb"
+              summary: "Base controller with authentication"
+              routes: []
+              key_methods: ["authenticate_user!", "current_user"]
+              notes: "Devise integration"
+            
+            - path: "app/controllers/dashboard_controller.rb"
+              summary: "User dashboard"
+              routes: ["/dashboard", "/"]
+              key_methods: ["index"]
+              notes: "Main authenticated landing page"
+            
+            - path: "app/controllers/welcome_controller.rb"
+              summary: "Public welcome page"
+              routes: ["/"]
+              key_methods: ["index"]
+              notes: "Public landing page"
+        
+        - name: "plaid_controllers"
+          summary: "Plaid integration controllers"
+          files:
+            - path: "app/controllers/plaid_controller.rb"
+              summary: "Plaid Link and exchange endpoints"
+              routes: ["/plaid/link_token", "/plaid/exchange", "/plaid/sync_logs"]
+              key_methods: ["link_token", "exchange", "sync_logs"]
+              notes: "Core Plaid onboarding flow"
+            
+            - path: "app/controllers/plaid_webhook_controller.rb"
+              summary: "Plaid webhook receiver"
+              routes: ["/plaid/webhook"]
+              key_methods: ["create"]
+              notes: "Handles Plaid webhook events"
+            
+            - path: "app/controllers/plaid_refreshes_controller.rb"
+              summary: "Manual Plaid refresh trigger"
+              routes: ["/plaid_items/:id/refresh"]
+              key_methods: ["create"]
+              notes: "User-initiated refresh"
+        
+        - name: "agent_controllers"
+          summary: "Agent Hub and AI workflow controllers"
+          files:
+            - path: "app/controllers/agent_hubs_controller.rb"
+              summary: "Agent Hub main interface"
+              routes: ["/agent_hub", "/agent_hub/messages/:agent_id", "/agent_hub/*"]
+              key_methods: ["show", "messages", "update_model", "inspect_context"]
+              notes: "Real-time agent interface"
+            
+            - path: "app/controllers/agent_hub/uploads_controller.rb"
+              summary: "Agent Hub file uploads"
+              routes: ["/agent_hub/uploads"]
+              key_methods: ["create"]
+              notes: "Upload files for agent context"
+            
+            - path: "app/controllers/agents/monitor_controller.rb"
+              summary: "Agent monitoring interface"
+              routes: ["/agents/monitor"]
+              key_methods: ["index"]
+              notes: "Agent performance metrics"
+        
+        - name: "mission_control_controllers"
+          summary: "Mission Control admin controllers"
+          files:
+            - path: "app/controllers/mission_control_controller.rb"
+              summary: "Mission Control admin panel"
+              routes: ["/mission_control", "/mission_control/*"]
+              key_methods: ["index", "nuke", "sync_holdings_now", "relink"]
+              notes: "Owner-only admin controls"
+        
+        - name: "admin_controllers"
+          summary: "Admin namespace controllers"
+          files:
+            - path: "app/controllers/admin/users_controller.rb"
+              summary: "Admin user CRUD"
+              routes: ["/admin/users"]
+              key_methods: ["index", "show", "edit", "update", "destroy"]
+              notes: "Full CRUD for users"
+            
+            - path: "app/controllers/admin/accounts_controller.rb"
+              summary: "Admin account CRUD"
+              routes: ["/admin/accounts"]
+              key_methods: ["index", "show", "edit", "update", "destroy"]
+              notes: "Full CRUD for accounts"
+            
+            - path: "app/controllers/admin/ai_workflow_controller.rb"
+              summary: "AI workflow viewer"
+              routes: ["/admin/ai_workflow"]
+              key_methods: ["index"]
+              notes: "View AI workflow status"
+            
+            - path: "app/controllers/admin/health_controller.rb"
+              summary: "Health check endpoint"
+              routes: ["/admin/health"]
+              key_methods: ["index"]
+              notes: "System health status"
+            
+            - path: "app/controllers/admin/rag_inspector_controller.rb"
+              summary: "RAG context inspector"
+              routes: ["/admin/rag_inspector"]
+              key_methods: ["index"]
+              notes: "Debug RAG context"
+            
+            - path: "app/controllers/admin/sap_collaborate_controller.rb"
+              summary: "SAP collaboration interface"
+              routes: ["/admin/sap_collaborate", "/admin/sap_collaborate/ask"]
+              key_methods: ["index", "ask"]
+              notes: "Alternative SAP agent interface"
+        
+        - name: "model_controllers"
+          summary: "Model inspection controllers"
+          files:
+            - path: "app/controllers/holdings_controller.rb"
+              summary: "Holdings viewer"
+              routes: ["/holdings"]
+              key_methods: ["index", "show"]
+              notes: "Read-only holdings view"
+            
+            - path: "app/controllers/transactions_controller.rb"
+              summary: "Transactions viewer"
+              routes: ["/transactions"]
+              key_methods: ["index", "show"]
+              notes: "Read-only transactions view"
+            
+            - path: "app/controllers/accounts_controller.rb"
+              summary: "Accounts viewer"
+              routes: ["/accounts"]
+              key_methods: ["index", "show"]
+              notes: "Read-only accounts view"
+        
+        - name: "routing"
+          summary: "Application routing configuration"
+          files:
+            - path: "config/routes.rb"
+              summary: "Rails routes definition"
+              namespaces: ["admin", "agents", "agent_hub"]
+              notes: "Complete routing table"
+    
+    # ============================================================================
+    # CONFIGURATION LAYER (Config, Prompts, Settings)
+    # ============================================================================
+    - name: "configuration_layer"
+      summary: "Configuration files, prompts, and settings"
+      
+      components:
+        - name: "agent_prompts"
+          summary: "LLM system prompts for agents"
+          files:
+            - path: "config/agent_prompts/sap_system.md"
+              summary: "SAP agent system prompt"
+              notes: "Main PRD generation prompt"
+            
+            - path: "config/agent_prompts/coordinator_system.md"
+              summary: "Coordinator agent system prompt"
+              notes: "Workflow orchestration prompt"
+            
+            - path: "config/agent_prompts/cwa_system.md"
+              summary: "CWA (Code Writing Agent) system prompt"
+              notes: "Development agent prompt"
+        
+        - name: "knowledge_base_config"
+          summary: "Knowledge base configuration files"
+          files:
+            - path: "knowledge_base/static_docs/context_map.md"
+              summary: "RAG context selection map"
+              notes: "Maps query types to relevant docs"
+            
+            - path: "knowledge_base/static_docs/MCP.md"
+              summary: "Master Control Plan (product vision)"
+              notes: "High-level product strategy"
+            
+            - path: "knowledge_base/static_docs/0_AI_THINKING_CONTEXT.md"
+              summary: "AI thinking guidelines"
+              notes: "How AI should approach problems"
+        
+        - name: "rails_config"
+          summary: "Rails configuration files"
+          files:
+            - path: "config/database.yml"
+              summary: "Database configuration"
+              notes: "PostgreSQL connection settings"
+            
+            - path: "config/credentials.yml.enc"
+              summary: "Encrypted credentials"
+              notes: "API keys, secrets"
+            
+            - path: "config/environments/*.rb"
+              summary: "Environment-specific configs"
+              notes: "Development, test, production settings"
+
+# Query Examples:
+# - fetch:structural:data_layer:core_models → Returns User, ApplicationRecord models
+# - fetch:structural:service_layer:ai_services → Returns all AI-related services
+# - fetch:structural:data_layer:schema → Returns db/schema.rb
+# - search:structural:plaid → Returns all Plaid-related components across layers
+# - fetch:structural:* → Returns all layers (summary level)
+```
+
+
+## FILE: vision/index.yml
+
+```
+# Vision Index: Product Vision, Roadmap, and Strategic Priorities
+# Purpose: Answers "Where is the app going?" for PRD generation research/planning phases
+# Query Pattern: fetch:vision:<category>:<item>
+
+vision_index:
+  summary: "NextGen Plaid product vision, roadmap, and strategic priorities"
+  last_updated: "2026-01-17"
+  
+  # ============================================================================
+  # PRODUCT VISION
+  # ============================================================================
+  vision:
+    - name: "master_control_plan"
+      file: "knowledge_base/static_docs/MCP.md"
+      summary: "Overall product vision: HNW financial planning with AI agents"
+      themes:
+        - "Shirtsleeves to shirtsleeves prevention"
+        - "CFP-like curriculum for wealth preservation"
+        - "AI-assisted SDLC for rapid feature development"
+        - "Plaid integration for consolidated financial view"
+      target_audience: "High net worth individuals and families"
+      core_value_proposition: "Prevent generational wealth loss through education and AI-assisted planning"
+      notes: "Primary vision document, referenced by all PRDs"
+    
+    - name: "ai_thinking_context"
+      file: "knowledge_base/static_docs/0_AI_THINKING_CONTEXT.md"
+      summary: "AI agent guidelines and thinking framework"
+      themes:
+        - "How AI agents should approach problems"
+        - "Ollama setup and model selection"
+        - "Context gathering strategies"
+      notes: "Guides agent behavior and decision-making"
+  
+  # ============================================================================
+  # ROADMAP
+  # ============================================================================
+  roadmap:
+    
+    # --------------------------------------------------------------------------
+    # COMPLETED WORK
+    # --------------------------------------------------------------------------
+    - phase: "completed"
+      summary: "Production features and completed epics"
+      completion_date: "2025-Q4 to 2026-Q1"
+      
+      epics:
+        - name: "plaid_integration"
+          epic_id: "PLAID-001"
+          summary: "Core Plaid integration for financial data sync"
+          prds:
+            - "PRD-PLAID-001: Plaid Link and token exchange"
+            - "PRD-PLAID-002: Holdings and transactions sync"
+          features:
+            - "Plaid Link onboarding flow"
+            - "Holdings sync from investments endpoint"
+            - "Transaction sync with cursor pagination"
+            - "Webhook receiver for Plaid events"
+            - "Manual refresh triggers"
+          completion_date: "2025-Q4"
+          status: "production"
+          notes: "Stable, no active work"
+        
+        - name: "sap_agent_v1"
+          epic_id: "AH-011"
+          summary: "SAP agent PRD generation (reactive mode)"
+          prds:
+            - "PRD-AH-011: Core SAP agent"
+            - "PRD-AH-011B: Backlog visibility"
+            - "PRD-AH-011C: Artifact transitions"
+            - "PRD-AH-011D: RAG inspector"
+            - "PRD-AH-011E: Agent monitoring"
+          features:
+            - "PRD generation from user requests"
+            - "Artifact workflow (backlog → analysis → dev → QA → completed)"
+            - "Agent Hub real-time interface"
+            - "RAG context integration"
+            - "Validation and retry logic"
+          completion_date: "2026-Q1"
+          status: "production"
+          notes: "Reactive mode (zero-shot + validation), ready for agentic refactor"
+        
+        - name: "rag_context_integration"
+          epic_id: "0120"
+          summary: "RAG provider with context map and snapshots"
+          prds:
+            - "PRD-0120-RAG: Context map and snapshot integration"
+          features:
+            - "Context map for document selection"
+            - "Daily financial snapshots"
+            - "Anonymization of sensitive data"
+            - "4K char context limit with truncation"
+          completion_date: "2026-Q1"
+          status: "production"
+          notes: "Phase 1 RAG, needs upgrade to multi-index"
+        
+        - name: "agent_hub_persistence"
+          epic_id: "AH-007"
+          summary: "Agent Hub conversation persistence and lifecycle"
+          prds:
+            - "PRD-AH-007A through PRD-AH-007F"
+          features:
+            - "Conversation persistence"
+            - "Run archiving"
+            - "Message history"
+            - "Context inspection"
+          completion_date: "2025-Q4"
+          status: "production"
+          notes: "Stable persistence layer"
+        
+        - name: "agent_hub_ui"
+          epic_id: "AH-006"
+          summary: "Agent Hub advanced UI interactions"
+          prds:
+            - "PRD-AH-006A through PRD-AH-006E"
+          features:
+            - "Real-time chat interface"
+            - "Model switching"
+            - "File uploads"
+            - "Turbo Streams integration"
+          completion_date: "2025-Q4"
+          status: "production"
+          notes: "Production UI, minor enhancements ongoing"
+    
+    # --------------------------------------------------------------------------
+    # IN PROGRESS
+    # --------------------------------------------------------------------------
+    - phase: "in_progress"
+      summary: "Current development focus"
+      target_date: "2026-Q1"
+      
+      epics:
+        - name: "agentic_refactor"
+          epic_id: "0070"
+          summary: "Move SAP agent from reactive to agentic (5-phase lifecycle)"
+          prds:
+            - "0070-SAP-Agentic-Refactor-Epic.md"
+          features:
+            - "Research phase: Pluggable RAG strategies"
+            - "Plan phase: AI generates mini-plan before execution"
+            - "Verify phase: Proactive constraint checking"
+            - "Execute phase: Generate artifact from verified plan"
+            - "Validate phase: Final structural check"
+          target_date: "2026-Q1"
+          priority: "high"
+          status: "in_development"
+          blockers: []
+          notes: "POC phase, testing with Ollama"
+          related_work:
+            - "Multi-index RAG architecture"
+            - "Phase-specific context loading"
+            - "Planning prompt engineering"
+        
+        - name: "sdlc_validation"
+          epic_id: "AH-012E"
+          summary: "Validation scoring and quality metrics for agent outputs"
+          prds:
+            - "PRD-AH-012E: Validation scoring"
+          features:
+            - "Scoring system for PRD quality"
+            - "Validation metrics dashboard"
+            - "Agent performance monitoring"
+            - "Quality trend analysis"
+          target_date: "2026-Q1"
+          priority: "high"
+          status: "in_development"
+          blockers: []
+          notes: "Aligns with quality-over-speed priority"
+        
+        - name: "multi_index_rag"
+          epic_id: "RAG-002"
+          summary: "Multi-index RAG architecture (functional, structural, vision)"
+          prds: []
+          features:
+            - "Functional index: What the app does"
+            - "Structural index: How the app is built"
+            - "Vision index: Where the app is going"
+            - "Cross-reference map"
+            - "Phase-specific context loading"
+          target_date: "2026-Q1"
+          priority: "high"
+          status: "in_development"
+          blockers: []
+          notes: "Foundation for agentic refactor"
+        
+        - name: "ollama_tool_use"
+          epic_id: "OLLAMA-001"
+          summary: "Ollama tool use and function calling"
+          prds: []
+          features:
+            - "Tool definitions for Ollama"
+            - "Function calling integration"
+            - "Tool result handling"
+          target_date: "2026-Q1"
+          priority: "medium"
+          status: "experimental"
+          blockers: []
+          notes: "Exploring Ollama capabilities"
+    
+    # --------------------------------------------------------------------------
+    # PLANNED
+    # --------------------------------------------------------------------------
+    - phase: "planned"
+      summary: "Backlog and future work"
+      target_date: "2026-Q2+"
+      
+      epics:
+        - name: "financial_planning_curriculum"
+          epic_id: "FIN-001"
+          summary: "CFP-like curriculum with simulations"
+          prds: []
+          features:
+            - "Estate tax simulations"
+            - "Monte Carlo projections"
+            - "Trust planning tools"
+            - "Tax optimization strategies"
+          target_date: "2026-Q2"
+          priority: "medium"
+          status: "planned"
+          dependencies: ["Agent Hub maturity"]
+          notes: "Deferred until SDLC agents are stable"
+        
+        - name: "oauth_completion"
+          epic_id: "AUTH-002"
+          summary: "Complete OAuth flow for Plaid"
+          prds: []
+          features:
+            - "OAuth initiate endpoint"
+            - "OAuth callback handler"
+            - "OAuth state management"
+          target_date: "TBD"
+          priority: "low"
+          status: "planned"
+          blockers: ["🛑 No controller specified for orphan routes"]
+          notes: "Low priority, standard Plaid Link works fine"
+        
+        - name: "coordinator_agent"
+          epic_id: "AH-020"
+          summary: "Coordinator agent for multi-agent orchestration"
+          prds: []
+          features:
+            - "Coordinator system prompt"
+            - "Agent-to-agent handoffs"
+            - "Workflow orchestration"
+            - "Task delegation"
+          target_date: "2026-Q2"
+          priority: "medium"
+          status: "planned"
+          dependencies: ["Agentic refactor completion"]
+          notes: "Requires stable agentic foundation"
+        
+        - name: "cwa_agent"
+          epic_id: "AH-021"
+          summary: "Code Writing Agent (CWA) for implementation"
+          prds: []
+          features:
+            - "CWA system prompt"
+            - "Code generation from PRDs"
+            - "Test generation"
+            - "Implementation validation"
+          target_date: "2026-Q2"
+          priority: "medium"
+          status: "planned"
+          dependencies: ["Coordinator agent"]
+          notes: "Completes SAP → Coordinator → CWA pipeline"
+  
+  # ============================================================================
+  # STRATEGIC PRIORITIES
+  # ============================================================================
+  priorities:
+    - name: "sdlc_focus"
+      summary: "Agent Hub maturity before financial simulations"
+      rationale: "Need stable agent workflows before complex financial features"
+      current_focus:
+        - "Agentic PRD generation (5-phase lifecycle)"
+        - "Multi-index RAG architecture"
+        - "Validation scoring and quality metrics"
+        - "Ollama optimization for local development"
+      success_criteria:
+        - "PRD validation pass rate: 70% → 90%"
+        - "First-time execution success: 40% → 70%"
+        - "Planning phase produces valid JSON 80%+ of time"
+        - "Verification catches issues before generation"
+      timeline: "2026-Q1"
+      notes: "Primary focus until Agent Hub is production-ready"
+    
+    - name: "quality_over_speed"
+      summary: "High-quality PRDs reduce downstream bugs"
+      rationale: "Better upfront planning saves debugging time"
+      metrics:
+        - "PRD validation pass rate: Target 90%"
+        - "First-time execution success: Target 70%"
+        - "Retry attempts: Reduce from 3 to 1"
+        - "Context relevance: Increase via multi-index RAG"
+      initiatives:
+        - "Agentic refactor with planning phase"
+        - "Proactive verification vs reactive validation"
+        - "Phase-specific context loading"
+        - "Validation scoring dashboard"
+      timeline: "Ongoing"
+      notes: "Core principle guiding all development"
+    
+    - name: "local_first_development"
+      summary: "Ollama for local development, Grok for production"
+      rationale: "Reduce API costs, faster iteration, offline capability"
+      current_state:
+        - "Ollama: llama3.1:8b for local dev"
+        - "Grok: grok-beta for production"
+        - "Router: Automatic model selection"
+      challenges:
+        - "Ollama 8B struggles with JSON planning"
+        - "Context window limitations"
+        - "Tool use support varies"
+      initiatives:
+        - "Optimize prompts for smaller models"
+        - "Few-shot examples for JSON generation"
+        - "Structured output formats"
+      timeline: "Ongoing"
+      notes: "Balancing cost vs capability"
+    
+    - name: "observability_first"
+      summary: "Comprehensive logging and monitoring for agent workflows"
+      rationale: "Agent debugging requires detailed execution traces"
+      current_state:
+        - "agent_logs/sap.log: Lifecycle events"
+        - "RAG context logging"
+        - "Request ID tracking"
+      gaps:
+        - "No centralized metrics dashboard"
+        - "Limited phase-level insights"
+        - "No A/B testing framework"
+      initiatives:
+        - "Validation scoring dashboard (PRD-AH-012E)"
+        - "Phase-level metrics collection"
+        - "Agent performance monitoring"
+      timeline: "2026-Q1"
+      notes: "Critical for agentic refactor success"
+  
+  # ============================================================================
+  # TECHNICAL DEBT
+  # ============================================================================
+  technical_debt:
+    - name: "orphan_routes"
+      summary: "Routes without controllers"
+      items:
+        - route: "/plaid_oauth/initiate"
+          issue: "No controller specified"
+          impact: "OAuth flow incomplete"
+          workaround: "Standard Plaid Link works"
+        - route: "/plaid_oauth/callback"
+          issue: "No controller specified"
+          impact: "OAuth flow incomplete"
+          workaround: "Standard Plaid Link works"
+      priority: "low"
+      estimated_effort: "2-4 hours"
+      notes: "Low priority, not blocking any features"
+    
+    - name: "rag_scalability"
+      summary: "Current RAG approach doesn't scale"
+      items:
+        - issue: "4K char truncation too aggressive"
+          impact: "Context quality degrades with project growth"
+          current_state: "Truncates oldest-first, loses important context"
+        - issue: "No vector DB for semantic search"
+          impact: "Can't find relevant context by meaning"
+          current_state: "Simple keyword matching via context_map.md"
+        - issue: "Monolithic context loading"
+          impact: "Loads everything, wastes tokens"
+          current_state: "All-or-nothing approach"
+      priority: "high"
+      estimated_effort: "2-3 weeks"
+      solution: "Multi-index RAG architecture (in progress)"
+      notes: "Actively being addressed by RAG-002 epic"
+    
+    - name: "retry_logic_inefficiency"
+      summary: "Reactive validation wastes tokens and time"
+      items:
+        - issue: "3 retry attempts with full context"
+          impact: "High token usage on failures"
+          current_state: "Retry with same context + error message"
+        - issue: "No learning between retries"
+          impact: "Same mistakes repeated"
+          current_state: "Appends error but doesn't adjust strategy"
+      priority: "high"
+      estimated_effort: "1-2 weeks"
+      solution: "Agentic refactor with proactive verification (in progress)"
+      notes: "Addressed by 0070 epic"
+    
+    - name: "test_coverage_gaps"
+      summary: "Limited test coverage for agent workflows"
+      items:
+        - issue: "No integration tests for agentic phases"
+          impact: "Hard to validate multi-step workflows"
+          current_state: "Unit tests only"
+        - issue: "No RAG context testing"
+          impact: "Context quality regressions undetected"
+          current_state: "Manual inspection only"
+      priority: "medium"
+      estimated_effort: "1 week"
+      solution: "Add integration test suite"
+      notes: "Should be addressed alongside agentic refactor"
+    
+    - name: "prompt_versioning"
+      summary: "No versioning for agent prompts"
+      items:
+        - issue: "Prompts in config/agent_prompts/ not versioned"
+          impact: "Hard to track prompt changes and their effects"
+          current_state: "Direct file edits, no history"
+        - issue: "No A/B testing for prompts"
+          impact: "Can't measure prompt improvements"
+          current_state: "Manual comparison only"
+      priority: "low"
+      estimated_effort: "3-5 days"
+      solution: "Prompt versioning system with metrics"
+      notes: "Nice to have, not blocking"
+  
+  # ============================================================================
+  # SUCCESS METRICS
+  # ============================================================================
+  success_metrics:
+    - category: "PRD Quality"
+      metrics:
+        - name: "Validation Pass Rate"
+          current: "40-50%"
+          target: "90%"
+          measurement: "% of PRDs passing validation on first attempt"
+        - name: "Acceptance Criteria Quality"
+          current: "Variable (3-10 bullets)"
+          target: "Consistent (5-8 bullets)"
+          measurement: "% of PRDs with 5-8 AC bullets"
+        - name: "Required Sections Present"
+          current: "80%"
+          target: "100%"
+          measurement: "% of PRDs with all required sections"
+    
+    - category: "Agent Performance"
+      metrics:
+        - name: "First-Time Success Rate"
+          current: "40%"
+          target: "70%"
+          measurement: "% of requests completed without retries"
+        - name: "Average Retry Count"
+          current: "1.5"
+          target: "0.5"
+          measurement: "Average retries per request"
+        - name: "Context Relevance"
+          current: "Unknown"
+          target: "80%"
+          measurement: "% of context used in final output"
+    
+    - category: "Development Velocity"
+      metrics:
+        - name: "PRD Generation Time"
+          current: "5-10 seconds"
+          target: "10-20 seconds (with planning)"
+          measurement: "Time from request to completed PRD"
+        - name: "Token Efficiency"
+          current: "Unknown"
+          target: "30% reduction"
+          measurement: "Tokens per successful PRD"
+        - name: "Epic Completion Rate"
+          current: "1-2 per week"
+          target: "2-3 per week"
+          measurement: "Completed epics per week"
+    
+    - category: "System Health"
+      metrics:
+        - name: "Agent Uptime"
+          current: "95%"
+          target: "99%"
+          measurement: "% of time agents are responsive"
+        - name: "Error Rate"
+          current: "10%"
+          target: "2%"
+          measurement: "% of requests resulting in errors"
+        - name: "Context Load Time"
+          current: "<200ms"
+          target: "<100ms"
+          measurement: "Time to load RAG context"
+
+# Query Examples:
+# - fetch:vision:vision:master_control_plan → Returns MCP summary
+# - fetch:vision:roadmap:completed → Returns all completed epics
+# - fetch:vision:roadmap:in_progress → Returns current work
+# - fetch:vision:priorities:sdlc_focus → Returns SDLC focus details
+# - fetch:vision:technical_debt → Returns all technical debt items
+# - search:vision:validation → Returns all items mentioning validation
+```
+
+

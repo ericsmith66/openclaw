@@ -1,0 +1,49 @@
+<% summary_frame_id = "transactions_summary" %>
+
+<% if turbo_frame_request? %>
+  <%= turbo_frame_tag summary_frame_id do %>
+    <div class="flex items-center justify-between mb-4">
+      <div></div>
+      <%= render SavedAccountFilterSelectorComponent.new(
+        saved_account_filters: @saved_account_filters,
+        selected_id: @saved_account_filter_id,
+        base_params: request.query_parameters,
+        turbo_frame_id: summary_frame_id,
+        path_helper: :transactions_summary_path
+      ) %>
+    </div>
+
+    <div class="container mx-auto">
+      <%= render "transactions/tabs" %>
+      <%= render partial: "transactions/summary_content" %>
+    </div>
+  <% end %>
+<% else %>
+  <%# Breadcrumb row %>
+  <div class="flex items-center justify-between mb-4">
+    <div class="text-sm breadcrumbs">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="<%= transactions_summary_path %>">Transactions</a></li>
+        <li>Summary</li>
+      </ul>
+    </div>
+  </div>
+
+  <%= turbo_frame_tag summary_frame_id do %>
+    <div class="flex items-center justify-end mb-4">
+      <%= render SavedAccountFilterSelectorComponent.new(
+        saved_account_filters: @saved_account_filters,
+        selected_id: @saved_account_filter_id,
+        base_params: request.query_parameters,
+        turbo_frame_id: summary_frame_id,
+        path_helper: :transactions_summary_path
+      ) %>
+    </div>
+
+    <div class="container mx-auto">
+      <%= render "transactions/tabs" %>
+      <%= render partial: "transactions/summary_content" %>
+    </div>
+  <% end %>
+<% end %>

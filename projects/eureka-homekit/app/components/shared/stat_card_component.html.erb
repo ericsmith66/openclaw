@@ -1,0 +1,14 @@
+<div class="stats shadow bg-base-100 w-full">
+  <div class="stat">
+    <% if @icon %>
+      <div class="stat-figure <%= status_color %>">
+        <%= helpers.lucide_icon(@icon, size: 24) %>
+      </div>
+    <% end %>
+    <div class="stat-title"><%= @label %></div>
+    <div class="stat-value <%= status_color %>"><%= @value %></div>
+    <% if @trend %>
+      <div class="stat-desc <%= trend_color %>"><%= @trend %></div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,6 @@
+<%= helpers.turbo_frame_tag "sync-status-frame" do %>
+  <%= helpers.turbo_stream_from "net_worth:sync_status:#{user.id}" %>
+
+  <%= render partial: "net_worth/sync_status",
+        locals: { status: status, snapshot: snapshot, error_reason: error_reason, retry_after: retry_after } %>
+<% end %>

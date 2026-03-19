@@ -1,0 +1,46 @@
+<div class="drawer lg:drawer-open">
+  <input id="left-sidebar" type="checkbox" class="drawer-toggle" />
+  
+  <div class="drawer-content flex flex-col min-h-screen bg-base-200/50">
+    <% if helpers.flash.any? %>
+      <div class="fixed top-20 right-4 z-[100] space-y-2 pointer-events-none">
+        <% helpers.flash.each do |type, message| %>
+          <div class="alert <%= type == 'notice' ? 'alert-success' : 'alert-error' %> shadow-lg pointer-events-auto min-w-[300px]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span><%= message %></span>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%= render Layouts::HeaderComponent.new(sync_status: @sync_status, last_sync: @last_sync) %>
+    
+    <div class="drawer drawer-end lg:drawer-open flex-1">
+      <input id="right-sidebar" type="checkbox" class="drawer-toggle" />
+      
+      <div class="drawer-content flex flex-col h-full">
+        <main class="flex-1 p-4 md:p-8 lg:p-10 max-w-[1600px] mx-auto w-full flex flex-col">
+          <%= content %>
+        </main>
+      </div>
+
+      <div class="drawer-side z-40">
+        <label for="right-sidebar" aria-label="close sidebar" class="drawer-overlay lg:hidden"></label>
+        <%= render Layouts::RightSidebarComponent.new(grouped_events: @grouped_events, title: @sidebar_title) %>
+      </div>
+    </div>
+  </div>
+
+  <div class="drawer-side z-40">
+    <label for="left-sidebar" aria-label="close sidebar" class="drawer-overlay lg:hidden"></label>
+    <%= render Layouts::LeftSidebarComponent.new(homes: @homes) %>
+  </div>
+
+  <%= render Debug::ActionCableComponent.new %>
+
+  <!-- Toast notification container -->
+  <div class="fixed bottom-4 right-4 z-[100] flex flex-col-reverse items-end pointer-events-none"
+       data-controller="toast"
+       data-toast-target="container">
+  </div>
+</div>

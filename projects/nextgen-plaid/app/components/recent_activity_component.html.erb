@@ -1,0 +1,40 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title">Recent Activity</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+      <div class="bg-base-200 rounded p-4">
+        <div class="text-sm opacity-70">Income</div>
+        <div class="text-xl font-bold"><%= number_to_currency(summary["income"].to_f, precision: 0) %></div>
+      </div>
+      <div class="bg-base-200 rounded p-4">
+        <div class="text-sm opacity-70">Expenses</div>
+        <div class="text-xl font-bold"><%= number_to_currency(summary["expenses"].to_f, precision: 0) %></div>
+      </div>
+    </div>
+
+    <% if categories.any? %>
+      <div class="mt-4">
+        <div class="text-sm opacity-70 mb-2">Top Categories</div>
+        <div class="overflow-x-auto">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% categories.each do |row| %>
+                <tr>
+                  <td><%= row["category"].to_s %></td>
+                  <td class="text-right"><%= number_to_currency(row["amount"].to_f, precision: 0) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

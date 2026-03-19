@@ -1,0 +1,19 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <h2 class="card-title">Performance</h2>
+
+    <% if points.empty? %>
+      <div class="text-sm opacity-70">Trend chart will appear after a few daily snapshots.</div>
+    <% else %>
+      <div class="text-sm opacity-70 mb-2">Last <%= points.size %> days</div>
+      <div class="space-y-1">
+        <% points.last(5).each do |p| %>
+          <div class="flex items-center justify-between text-sm">
+            <div><%= p["date"].to_s %></div>
+            <div class="font-medium"><%= number_to_currency(p["value"].to_f, precision: 0) %></div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

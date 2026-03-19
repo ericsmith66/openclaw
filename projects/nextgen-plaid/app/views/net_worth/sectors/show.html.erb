@@ -1,0 +1,29 @@
+<% if turbo_frame_request? %>
+  <%= turbo_frame_tag "sector-table-frame" do %>
+    <%= render NetWorth::SectorWeightsComponent.new(
+          data: @snapshot_data,
+          sort: params[:sort],
+          dir: params[:dir]
+        ) %>
+  <% end %>
+<% else %>
+  <div class="p-4 sm:p-6 overflow-x-hidden">
+    <div class="breadcrumbs text-sm mb-3" aria-label="Breadcrumb">
+      <ul>
+        <li><%= link_to "Home", authenticated_root_path, class: "link link-hover" %></li>
+        <li><%= link_to "Net Worth", net_worth_dashboard_path, class: "link link-hover" %></li>
+        <li>Sectors</li>
+      </ul>
+    </div>
+
+    <h1 class="text-xl sm:text-2xl font-bold mb-4">Sector Weights</h1>
+
+    <%= turbo_frame_tag "sector-table-frame" do %>
+      <%= render NetWorth::SectorWeightsComponent.new(
+            data: @snapshot_data,
+            sort: params[:sort],
+            dir: params[:dir]
+          ) %>
+    <% end %>
+  </div>
+<% end %>

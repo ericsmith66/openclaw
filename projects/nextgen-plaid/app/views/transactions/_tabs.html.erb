@@ -1,0 +1,22 @@
+<%# Transaction type tabs - Order: Summary, Cash, Credit, Transfers, Investments %>
+<%# data-turbo-frame="_top" ensures tab clicks do full-page navigation,
+    breaking out of whichever turbo frame the tabs are rendered inside. %>
+<div class="mb-6">
+  <div class="tabs tabs-lifted">
+    <%= link_to "Summary", transactions_summary_path,
+                class: "tab #{request.path == transactions_summary_path ? 'tab-active' : ''}",
+                data: { turbo_frame: "_top" } %>
+    <%= link_to "Cash", transactions_regular_path,
+                class: "tab #{request.path == transactions_regular_path ? 'tab-active' : ''}",
+                data: { turbo_frame: "_top" } %>
+    <%= link_to "Credit", transactions_credit_path,
+                class: "tab #{request.path == transactions_credit_path ? 'tab-active' : ''}",
+                data: { turbo_frame: "_top" } %>
+    <%= link_to "Transfers", transactions_transfers_path,
+                class: "tab #{request.path == transactions_transfers_path ? 'tab-active' : ''}",
+                data: { turbo_frame: "_top" } %>
+    <%= link_to "Investments", transactions_investment_path,
+                class: "tab #{request.path == transactions_investment_path ? 'tab-active' : ''}",
+                data: { turbo_frame: "_top" } %>
+  </div>
+</div>

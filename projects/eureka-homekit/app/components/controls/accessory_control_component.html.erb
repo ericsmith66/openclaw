@@ -1,0 +1,15 @@
+<% if renderable? %>
+  <div class="relative group" data-favorite-uuid="<%= accessory.uuid %>">
+    <% if show_favorite? %>
+      <button class="absolute top-1 right-1 z-10 text-lg cursor-pointer hover:scale-110 transition-transform text-base-content/30"
+              data-favorites-target="star"
+              data-accessory-uuid="<%= accessory.uuid %>"
+              data-accessory-name="<%= accessory.name %>"
+              data-action="click->favorites#toggleFavorite"
+              aria-label="Add <%= accessory.name %> to favorites">
+        ☆
+      </button>
+    <% end %>
+    <%= render component_class.new(accessory: accessory, compact: compact) %>
+  </div>
+<% end %>

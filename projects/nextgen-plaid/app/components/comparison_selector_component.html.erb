@@ -1,0 +1,31 @@
+<div>
+  <div class="text-xs opacity-70 mb-1">Compare to</div>
+
+  <div class="<%= comparison_enabled? ? '' : 'tooltip' %>" data-tip="<%= tooltip_text unless comparison_enabled? %>" tabindex="0">
+    <%= form_with url: holdings_path({}), method: :get, local: true, class: "join" do %>
+      <% form_params_for(nil).except(:compare_to, "compare_to").each do |k, v| %>
+        <%= hidden_field_tag k, v %>
+      <% end %>
+
+      <%= select_tag :compare_to,
+            options_for_select(
+              [["None", "none"], ["Current (live)", "current"]] + snapshots.map { |s| [option_label(s), s.id] },
+              compare_to.presence || "none"
+            ),
+            class: "select select-bordered select-sm join-item",
+            aria: { label: "Compare to" },
+            disabled: !comparison_enabled?,
+            data: (turbo_frame_id.present? ? { turbo_frame: turbo_frame_id } : {}),
+            onchange: "this.form.requestSubmit()" %>
+    <% end %>
+  </div>
+
+  <% if compare_to.present? && compare_to != "none" && comparison_enabled? %>
+    <div class="mt-1 text-xs opacity-70">
+      <%= link_to "Clear comparison",
+            holdings_path(form_params_for(nil).except(:compare_to, "compare_to")),
+            class: "link link-hover",
+            data: (turbo_frame_id.present? ? { turbo_frame: turbo_frame_id } : {}) %>
+    </div>
+  <% end %>
+</div>

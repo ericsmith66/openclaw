@@ -1,0 +1,65 @@
+<%= form_with(model: other_income, local: true, class: "space-y-4") do |form| %>
+  <% if other_income.errors.any? %>
+    <div class="alert alert-error">
+      <p class="font-semibold mb-2">Please fix the following errors:</p>
+      <ul class="list-disc pl-6">
+        <% other_income.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :name, class: "label" %>
+    <%= form.text_field :name, class: "input input-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :amount, class: "label" %>
+    <%= form.number_field :amount, step: 0.01, class: "input input-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :frequency, class: "label" %>
+    <%= form.select :frequency,
+                    options_for_select(OtherIncome::FREQUENCIES.map { |v| [v.humanize, v] }, other_income.frequency),
+                    {},
+                    class: "select select-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :start_date, class: "label" %>
+    <%= form.date_field :start_date, class: "input input-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :end_date, class: "label" %>
+    <%= form.date_field :end_date, class: "input input-bordered w-full" %>
+  </div>
+
+  <div>
+    <%= form.label :category, class: "label" %>
+    <%= form.select :category,
+                    options_for_select([["(none)", nil]] + OtherIncome::CATEGORIES.map { |v| [v.humanize, v] }, other_income.category),
+                    {},
+                    class: "select select-bordered w-full" %>
+  </div>
+
+  <div>
+    <label class="label cursor-pointer justify-start gap-3">
+      <%= form.check_box :taxable, class: "checkbox" %>
+      <span class="label-text">Taxable</span>
+    </label>
+  </div>
+
+  <div>
+    <%= form.label :notes, class: "label" %>
+    <%= form.text_area :notes, class: "textarea textarea-bordered w-full", rows: 4 %>
+  </div>
+
+  <div class="flex gap-3">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", other_incomes_path, class: "btn btn-outline" %>
+  </div>
+<% end %>

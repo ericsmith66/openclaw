@@ -1,0 +1,57 @@
+{
+  "bridge": {
+    "name": "Homebridge XXXX",
+    "username": "XX:XX:XX:XX:XX:XX",
+    "port": 51171,
+    "pin": "XXX-XX-XXX",
+    "advertiser": "bonjour-hap"
+  },
+  "accessories": [],
+  "platforms": [
+    {
+      "name": "UniFi Protect",
+      "platform": "UniFi Protect",
+      "username": "YOUR_UNIFI_USERNAME",
+      "password": "YOUR_UNIFI_PASSWORD",
+      "address": "YOUR_UNIFI_ADDRESS"
+    },
+    {
+      "name": "Flo-by-Moen",
+      "platform": "Flo-by-Moen",
+      "auth": {
+        "username": "YOUR_MOEN_EMAIL",
+        "password": "YOUR_MOEN_PASSWORD"
+      }
+    },
+    {
+      "name": "Lutron Caseta",
+      "platform": "LutronCasetaPro",
+      "host": "YOUR_BRIDGE_IP",
+      "keyFile": "/path/to/caseta.key",
+      "certFile": "/path/to/caseta.crt",
+      "caFile": "/path/to/caseta-bridge.crt"
+    },
+    {
+      "name": "Rachio",
+      "platform": "Rachio",
+      "api_key": "YOUR_RACHIO_API_KEY"
+    },
+    {
+      "name": "Samsung Tizen",
+      "platform": "SamsungTizen",
+      "devices": [
+        {
+          "name": "TV Name",
+          "ip": "YOUR_TV_IP",
+          "mac": "YOUR_TV_MAC",
+          "apiKey": "YOUR_SAMSUNG_API_KEY"
+        }
+      ]
+    },
+    {
+      "name": "NotifyEvents",
+      "platform": "NotifyEvents",
+      "token": "YOUR_NOTIFYEVENTS_TOKEN"
+    }
+  ]
+}

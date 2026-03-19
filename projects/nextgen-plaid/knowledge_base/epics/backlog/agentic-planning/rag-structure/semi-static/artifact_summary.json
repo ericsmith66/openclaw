@@ -1,0 +1,44 @@
+{
+  "_metadata": {
+    "description": "Recent artifacts from the database for RAG context",
+    "update_frequency": "daily",
+    "generated_by": "UpdateArtifactSummaryJob (to be implemented)",
+    "last_updated": null,
+    "query": "Artifact.order(updated_at: :desc).limit(20)",
+    "purpose": "Provides agents with recent PRDs, epics, and development artifacts"
+  },
+  "_schema": {
+    "id": "integer - Artifact ID",
+    "name": "string - Artifact name/title",
+    "artifact_type": "string - Type (prd, epic, plan, etc.)",
+    "phase": "string - Current phase (backlog, in_analysis, in_development, in_qa, completed, rejected)",
+    "owner_persona": "string - Assigned agent (SAP, Coordinator, CWA)",
+    "created_at": "datetime - Creation timestamp",
+    "updated_at": "datetime - Last update timestamp",
+    "summary": "string - Brief description or first 200 chars of content"
+  },
+  "_example_data": [
+    {
+      "id": 123,
+      "name": "PRD-AH-012E Validation Scoring",
+      "artifact_type": "prd",
+      "phase": "in_development",
+      "owner_persona": "SAP",
+      "created_at": "2026-01-15T10:00:00Z",
+      "updated_at": "2026-01-17T09:30:00Z",
+      "summary": "Validation scoring and quality metrics for agent outputs"
+    },
+    {
+      "id": 122,
+      "name": "0070-SAP-Agentic-Refactor-Epic",
+      "artifact_type": "epic",
+      "phase": "in_development",
+      "owner_persona": "SAP",
+      "created_at": "2026-01-10T14:00:00Z",
+      "updated_at": "2026-01-16T16:45:00Z",
+      "summary": "Move SAP agent from reactive to agentic (5-phase lifecycle)"
+    }
+  ],
+  "artifacts": [],
+  "_note": "This file should be auto-generated daily by a Sidekiq job. Current data is empty - implement UpdateArtifactSummaryJob to populate."
+}

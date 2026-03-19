@@ -1,0 +1,24 @@
+Got it, Eric—incorporating these refinements into Epic 1: a new Trust lookup table/model for standardized trust names/associations (with admin/parent-restricted CRUD), user-maintainable CRUD for OtherIncome (interns can manage their own), and restricted access for trust fields on Account (e.g., trust_name or trust_id selectable only by admins/parents). This enhances HNW estate/trust curriculum without exposing sensitive data to interns.
+
+From repo browse (as of Jan 16, 2026): No Trust or OtherIncome models yet (db/schema lacks them; recent commit c707878 focuses on LLM artifacts, not data models). Account likely has basic fields (name, mask, balances); sync jobs (SyncHoldingsJob etc.) updated Jan 15 but no new fields. We'll add these via migrations, scoping CRUD with Pundit or before_actions (admin for Trusts, user-owned for OtherIncome).
+
+**Revised Epic 1 Narrative (Incorporating All Expansions)**  
+**Epic Overview**: Establish reliable, normalized, deduplicated data models and sync processes for Plaid products (investments, transactions, liabilities, enrichment) from JPMC, Schwab, Amex, Stellar — with validation, error recovery, consistent enrichment, and HNW extensions (account strategies, external income, trust lookup/associations with restricted CRUD, sharing controls, basic UI for new elements scoped by role).  
+**User Capabilities**: Interns (normal users) view strategy/trust info, add/view/edit/delete their own other income; trigger manual syncs; see status/timestamps. Advisors (AI) query accurate, augmented data (including trusts/other income in snapshots). Admins/parents monitor logs/health, force actions, share/exclude accounts, create/edit/delete trusts (lookup table), assign trusts to accounts (restricted fields).  
+**Fit into Big Picture**: Unbreakable foundation for trustworthy AI education — complete income/net worth with trusts enables accurate estate/tax/philanthropy simulations; restricted CRUD ensures privacy in family/intern scenarios; user-maintainable income supports personal engagement without admin bottlenecks.
+
+**Potential PRD Table (Updated Atomic Breakdown — Prioritized for Data First, UI/Access Last)**  
+| Priority | PRD Title | Scope | Dependencies | Suggested Branch | Notes / LLM Suggestion |
+|----------|-----------|-------|--------------|------------------|------------------------|
+| 1 | Plaid Sync Completeness & Balance Assurance | Ensure /accounts/get called; store/update current/available balances; validate non-null | Existing sync jobs | feature/prd-1-sync-balances | Core — Claude Sonnet 4.5. |
+| 2 | Account Strategy & Trust Association Extensions | Add `strategy:string` and `trust_id:integer` (nullable, belongs_to :trust) to Account; migration + validations | Account model | feature/prd-1-account-extensions | Update to FK for lookup. |
+| 3 | Trust Lookup Model & Restricted CRUD | New Trust model (name:string, details:text?); admin/parent-only CRUD service/controller | User roles (Devise) | feature/prd-1-trust-model-crud | Pundit for restrictions. |
+| 4 | Other Income Model & Integration | New OtherIncome model (user_id, name:string, date:date, projected_amount:decimal, accrued_amount:decimal, suggested_tax_rate:decimal); include in FinancialSnapshotJob aggregation | User model + Epic 2 stub | feature/prd-1-other-income-model | User-owned scoping. |
+| 5 | Null Field Detection & Logging | Consistency job scans Plaid responses for persistent nulls; log to admin | Sync jobs | feature/prd-1-null-detection | Diagnostic. |
+| 6 | Investment & Transaction Retrieval Validation | Confirm /investments/transactions/get coverage; incremental sync; fixed income handling | Holdings/Transactions jobs | feature/prd-1-inv-trans-validation | Verify institutions. |
+| 7 | Dedicated Job Server Health Check | Admin endpoint (/admin/health) checks worker on 192.168.4.253 | Solid Queue | feature/prd-1-job-health | Human: Server config. |
+| 8 | Account Sharing & Exclusion Mechanism | New AccountSharing model; scope queries/views | User + Account | feature/prd-1-account-sharing | Privacy-critical. |
+| 9 | Basic UI for Strategy & Trust Editing (Restricted) | Inline editable strategy field (all users); trust selector dropdown (admin/parent only) in Account views | #2 + #3 + ViewComponent | feature/prd-1-ui-account-edits | DaisyUI; role checks. |
+| 10 | Basic UI for Other Income CRUD (User-Maintainable) | New page/controller for list/add/edit/delete; table view; integrate link in dashboard; scoped to current_user | #4 | feature/prd-1-ui-other-income | Simple forms; no admin restriction. |
+| 12| identify null fiels |Identify all fields in Holdings, transactions and liabilities that are always null | feature/prd-1-null-detection | build a document to identify null fields and store it in the knowledg_base | |  |
+Next steps? Lock this epic and draft a full atomic PRD for Priority 1 (sync balances)? Or expand another epic/detail?

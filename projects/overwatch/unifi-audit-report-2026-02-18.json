@@ -1,0 +1,49 @@
+{
+  "audit_metadata": {
+    "timestamp": "2026-02-18T16:43:26-06:00",
+    "operator": "ericsmith66",
+    "unifi_host": "192.168.4.1",
+    "site": "default"
+  },
+  "exposure_window": {
+    "start": "2026-02-06T00:00:00Z",
+    "end": "2026-02-18T23:59:59Z",
+    "duration_days": 13.0
+  },
+  "summary": {
+    "authentication_events": 0,
+    "suspicious_logins": 0,
+    "failed_logins": 0,
+    "total_clients": 93,
+    "unknown_clients": 2,
+    "firewall_rules": 0,
+    "port_forwards": 2,
+    "enabled_port_forwards": 1
+  },
+  "findings": {
+    "high_severity": [],
+    "medium_severity": [],
+    "low_severity": []
+  },
+  "detailed_data": {
+    "suspicious_logins": [],
+    "unknown_clients": [
+      {
+        "mac": "98:a1:4a:be:19:ce",
+        "ip": "192.168.4.179",
+        "hostname": "unknown",
+        "first_seen": "2025-11-30T01:01:31-06:00",
+        "last_seen": "2026-02-18T16:43:12-06:00"
+      },
+      {
+        "mac": "b8:2c:a0:cf:3e:1e",
+        "ip": "192.168.4.12",
+        "hostname": "android-2ceae8a74e7cd787",
+        "first_seen": "2023-12-08T18:14:39-06:00",
+        "last_seen": "2026-02-18T16:43:22-06:00"
+      }
+    ],
+    "admin_port_forwards": []
+  },
+  "overall_status": "PASS - No security issues detected"
+}

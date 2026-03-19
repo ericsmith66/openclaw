@@ -1,0 +1,23 @@
+<div class="space-y-3">
+  <% if @alerts[:low_battery].any? %>
+    <div role="alert" class="alert alert-warning shadow-sm border-warning/20 bg-warning/10">
+      <%= helpers.lucide_icon("battery-low", class: "text-warning") %>
+      <div class="flex-1">
+        <h3 class="font-bold text-warning-content text-sm">Low Battery Warning</h3>
+        <div class="text-xs opacity-70"><%= @alerts[:low_battery].count %> sensors require battery replacement soon.</div>
+      </div>
+      <%= link_to "View Sensors", sensors_path(status: "low_battery"), class: "btn btn-xs btn-warning" %>
+    </div>
+  <% end %>
+
+  <% if @alerts[:offline].any? %>
+    <div role="alert" class="alert alert-error shadow-sm border-error/20 bg-error/10">
+      <%= helpers.lucide_icon("wifi-off", class: "text-error") %>
+      <div class="flex-1">
+        <h3 class="font-bold text-error-content text-sm">Sensors Offline</h3>
+        <div class="text-xs opacity-70"><%= @alerts[:offline].count %> sensors have not reported data in over an hour.</div>
+      </div>
+      <%= link_to "View Sensors", sensors_path(status: "offline"), class: "btn btn-xs btn-error" %>
+    </div>
+  <% end %>
+</div>

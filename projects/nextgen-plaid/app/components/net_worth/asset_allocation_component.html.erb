@@ -1,0 +1,81 @@
+<div class="card bg-base-100 shadow-xl" data-controller="chart-toggle" data-chart-toggle-initial-value="pie">
+  <div class="card-body">
+    <div class="flex items-center justify-between gap-3">
+      <h2 class="card-title">Asset Allocation</h2>
+
+      <div class="join" role="tablist" aria-label="Asset allocation chart type">
+        <button
+          type="button"
+          class="btn btn-md sm:btn-sm join-item"
+          role="tab"
+          data-chart-toggle-target="tab"
+          data-chart-toggle-view-param="pie"
+          data-action="chart-toggle#select"
+        >
+          Pie
+        </button>
+        <button
+          type="button"
+          class="btn btn-md sm:btn-sm join-item"
+          role="tab"
+          data-chart-toggle-target="tab"
+          data-chart-toggle-view-param="bar"
+          data-action="chart-toggle#select"
+        >
+          Bar
+        </button>
+      </div>
+    </div>
+
+    <% if empty? %>
+      <%= render NetWorth::EmptyStateComponent.new(
+            context: :data_missing,
+            message_override: "No allocation details available yet."
+          ) %>
+    <% else %>
+      <div class="mt-4">
+        <div data-chart-toggle-target="panel" data-chart-toggle-view="pie">
+          <%= pie_chart(
+                pie_series,
+                height: "260px",
+                legend: "bottom",
+                donut: true,
+                thousands: ",",
+                prefix: "$",
+                messages: { empty: "No allocation data" }
+              ) %>
+        </div>
+
+        <div class="hidden" data-chart-toggle-target="panel" data-chart-toggle-view="bar">
+          <%= bar_chart(
+                bar_series,
+                height: "260px",
+                min: 0,
+                max: 1,
+                suffix: "%",
+                messages: { empty: "No allocation data" }
+              ) %>
+        </div>
+      </div>
+
+      <table class="sr-only" aria-label="Asset allocation breakdown">
+        <thead>
+          <tr>
+            <th>Asset Class</th>
+            <th>Percentage</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% allocation_rows.each do |row| %>
+            <tr>
+              <td><%= row[:label] %></td>
+              <td><%= number_to_percentage((row[:pct].to_f * 100.0), precision: 0) %></td>
+              <td><%= number_to_currency(row[:value_usd].to_f, precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+</div>

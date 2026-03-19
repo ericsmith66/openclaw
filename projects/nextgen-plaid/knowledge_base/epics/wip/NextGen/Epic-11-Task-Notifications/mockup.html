@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Epic 11 — Task Management & Notifications Mockup</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Drag ghost styling */
+    .task-card.dragging { opacity: 0.5; }
+    .kanban-column.drag-over { outline: 2px dashed oklch(var(--p)); outline-offset: -2px; }
+    /* Toast animation */
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+    .toast-enter { animation: slideIn 0.3s ease-out; }
+    .toast-exit { animation: slideOut 0.3s ease-in forwards; }
+    /* Notification dropdown */
+    .notification-dropdown { min-width: 380px; max-height: 480px; overflow-y: auto; }
+    /* Smooth column transitions */
+    .kanban-column { transition: background-color 0.15s ease; }
+  </style>
+</head>
+
+<body data-theme="business" class="min-h-screen bg-base-200">
+
+<!-- ════════════════════════════════════════════════════════════════
+     SECTION 1: FULL APP LAYOUT — Kanban Board with Sidebar & Navbar
+     ════════════════════════════════════════════════════════════════ -->
+
+<div class="drawer lg:drawer-open" data-theme="business">
+  <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+
+  <div class="drawer-content flex flex-col">
+
+    <!-- ─── Navbar with Notification Bell ─── -->
+    <div class="navbar bg-base-100 shadow-lg">
+      <div class="flex-none lg:hidden">
+        <label for="main-drawer" class="btn btn-square btn-ghost">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="inline-block w-6 h-6 stroke-current">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </label>
+      </div>
+
+      <div class="flex-1">
+        <a class="btn btn-ghost text-xl normal-case">NextGen Wealth</a>
+      </div>
+
+      <div class="flex-none gap-2">
+
+        <!-- 🎨 Theme Selector -->
+        <div class="dropdown dropdown-end" id="theme-selector">
+          <label tabindex="0" class="btn btn-ghost btn-circle" aria-label="Select theme">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+          </label>
+          <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow-lg bg-base-100 rounded-box w-52 mt-3">
+            <li class="menu-title"><span>Theme</span></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','business'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','business'))" class="flex justify-between">Business <span class="badge badge-xs badge-primary">Active</span></a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','corporate'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','corporate'))">Corporate</a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','dark'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','dark'))">Dark</a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','night'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','night'))">Night</a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','luxury'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','luxury'))">Luxury</a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','dracula'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','dracula'))">Dracula</a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','dim'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','dim'))">Dim</a></li>
+            <li class="menu-title"><span>Light</span></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','nord'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','nord'))">Nord</a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','winter'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','winter'))">Winter</a></li>
+            <li><a onclick="document.body.closest('html').querySelector('body').setAttribute('data-theme','emerald'); document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','emerald'))">Emerald</a></li>
+          </ul>
+        </div>
+
+        <!-- 🔔 Notification Bell (PRD 11-03) -->
+        <div class="dropdown dropdown-end" id="notification-bell">
+          <label tabindex="0" class="btn btn-ghost btn-circle" aria-label="Notifications (3 unread)">
+            <div class="indicator">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span class="badge badge-primary badge-xs indicator-item">3</span>
+            </div>
+          </label>
+
+          <!-- Notification Dropdown Panel (PRD 11-03) -->
+          <div tabindex="0" class="dropdown-content z-[1] shadow-xl bg-base-100 rounded-box mt-3 notification-dropdown">
+            <div class="flex items-center justify-between p-4 border-b border-base-300">
+              <h3 class="font-bold text-base">Notifications</h3>
+              <button class="btn btn-ghost btn-xs text-primary">Mark all read</button>
+            </div>
+            <ul class="menu p-0">
+              <!-- Unread notification -->
+              <li>
+                <a class="flex gap-3 p-4 bg-primary/5 border-l-4 border-primary rounded-none hover:bg-primary/10">
+                  <div class="flex-shrink-0">
+                    <div class="bg-primary/20 text-primary rounded-full w-10 h-10 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold truncate">New task assigned: Monte Carlo Simulation</p>
+                    <p class="text-xs text-base-content/60">Advisor assigned you a new task</p>
+                    <p class="text-xs text-primary mt-1">2 min ago</p>
+                  </div>
+                  <div class="badge badge-primary badge-xs self-start mt-1"></div>
+                </a>
+              </li>
+              <!-- Unread notification -->
+              <li>
+                <a class="flex gap-3 p-4 bg-warning/5 border-l-4 border-warning rounded-none hover:bg-warning/10">
+                  <div class="flex-shrink-0">
+                    <div class="bg-warning/20 text-warning rounded-full w-10 h-10 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold truncate">Sync failed: Schwab Brokerage</p>
+                    <p class="text-xs text-base-content/60">ITEM_LOGIN_REQUIRED — re-authentication needed</p>
+                    <p class="text-xs text-warning mt-1">15 min ago</p>
+                  </div>
+                  <div class="badge badge-warning badge-xs self-start mt-1"></div>
+                </a>
+              </li>
+              <!-- Unread notification -->
+              <li>
+                <a class="flex gap-3 p-4 bg-info/5 border-l-4 border-info rounded-none hover:bg-info/10">
+                  <div class="flex-shrink-0">
+                    <div class="bg-info/20 text-info rounded-full w-10 h-10 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 7-4-4-6 6" /></svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold truncate">Allocation drift alert: Tech sector at 38%</p>
+                    <p class="text-xs text-base-content/60">Exceeds 30% concentration threshold</p>
+                    <p class="text-xs text-info mt-1">1 hr ago</p>
+                  </div>
+                  <div class="badge badge-info badge-xs self-start mt-1"></div>
+                </a>
+              </li>
+              <!-- Read notification -->
+              <li>
+                <a class="flex gap-3 p-4 rounded-none hover:bg-base-200 opacity-70">
+                  <div class="flex-shrink-0">
+                    <div class="bg-success/20 text-success rounded-full w-10 h-10 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm truncate">Task completed: Review Q4 Tax Implications</p>
+                    <p class="text-xs text-base-content/60">Marked done by you</p>
+                    <p class="text-xs text-base-content/40 mt-1">Yesterday</p>
+                  </div>
+                </a>
+              </li>
+              <!-- Read notification -->
+              <li>
+                <a class="flex gap-3 p-4 rounded-none hover:bg-base-200 opacity-70">
+                  <div class="flex-shrink-0">
+                    <div class="bg-success/20 text-success rounded-full w-10 h-10 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm truncate">Sync complete: All accounts refreshed</p>
+                    <p class="text-xs text-base-content/60">4 items synced successfully</p>
+                    <p class="text-xs text-base-content/40 mt-1">2 days ago</p>
+                  </div>
+                </a>
+              </li>
+            </ul>
+            <div class="p-3 border-t border-base-300 text-center">
+              <a class="btn btn-ghost btn-sm text-primary">View all notifications</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Avatar -->
+        <div class="dropdown dropdown-end">
+          <label tabindex="0" class="btn btn-ghost btn-circle avatar placeholder">
+            <div class="bg-primary text-primary-content rounded-full w-10">
+              <span class="text-lg">E</span>
+            </div>
+          </label>
+          <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+            <li class="menu-title"><span>eric@example.com</span></li>
+            <li><a>Dashboard</a></li>
+            <li><a>Settings</a></li>
+            <li><a class="text-error">Sign Out</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Main Content: Kanban Board (PRD 11-06) ─── -->
+    <main class="flex-1 p-6 bg-base-200">
+      <!-- Breadcrumb + Header -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-sm breadcrumbs">
+          <ul>
+            <li><a href="#">Home</a></li>
+            <li>Tasks</li>
+          </ul>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-primary btn-sm gap-2" onclick="document.getElementById('new-task-modal').showModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+            New Task
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats shadow mb-6 w-full bg-base-100">
+        <div class="stat">
+          <div class="stat-title">Total Tasks</div>
+          <div class="stat-value text-lg">8</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">To Do</div>
+          <div class="stat-value text-lg text-warning">3</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">In Progress</div>
+          <div class="stat-value text-lg text-info">3</div>
+        </div>
+        <div class="stat">
+          <div class="stat-title">Done</div>
+          <div class="stat-value text-lg text-success">2</div>
+        </div>
+      </div>
+
+      <!-- Kanban Board -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- ── Column: To Do ── -->
+        <div class="kanban-column bg-base-100 rounded-xl p-4 min-h-[500px]" data-status="todo"
+             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="this.classList.remove('drag-over')">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <div class="badge badge-warning badge-lg gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                To Do
+              </div>
+              <span class="text-base-content/50 text-sm font-mono">3</span>
+            </div>
+          </div>
+
+          <div class="space-y-3" role="list" aria-label="To Do tasks">
+            <!-- Task Card: High Priority -->
+            <div class="card bg-base-200 shadow-sm cursor-grab active:cursor-grabbing task-card hover:shadow-md transition-shadow" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm">Monte Carlo Simulation on Portfolio</h3>
+                  <!-- Keyboard-accessible status dropdown (a11y fallback) -->
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option selected>To Do</option>
+                    <option>Doing</option>
+                    <option>Done</option>
+                  </select>
+                </div>
+                <p class="text-xs text-base-content/60 mt-1">Run 10,000 iterations with current allocation to assess risk-adjusted return scenarios</p>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-error badge-sm gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" /></svg>
+                      High
+                    </div>
+                    <span class="text-xs text-base-content/50">Due Mar 7</span>
+                  </div>
+                  <div class="tooltip" data-tip="Assigned to Eric">
+                    <div class="avatar placeholder">
+                      <div class="bg-primary text-primary-content rounded-full w-7">
+                        <span class="text-xs">E</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Task Card: Medium Priority -->
+            <div class="card bg-base-200 shadow-sm cursor-grab active:cursor-grabbing task-card hover:shadow-md transition-shadow" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm">Review Bond Maturity Schedule</h3>
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option selected>To Do</option>
+                    <option>Doing</option>
+                    <option>Done</option>
+                  </select>
+                </div>
+                <p class="text-xs text-base-content/60 mt-1">Identify upcoming maturities in Q2 and reinvestment options</p>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-warning badge-sm gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                      Medium
+                    </div>
+                    <span class="text-xs text-base-content/50">Due Mar 15</span>
+                  </div>
+                  <div class="tooltip" data-tip="Assigned to Eric">
+                    <div class="avatar placeholder">
+                      <div class="bg-primary text-primary-content rounded-full w-7">
+                        <span class="text-xs">E</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Task Card: Low Priority -->
+            <div class="card bg-base-200 shadow-sm cursor-grab active:cursor-grabbing task-card hover:shadow-md transition-shadow" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm">Read Chapter 3: Asset Allocation</h3>
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option selected>To Do</option>
+                    <option>Doing</option>
+                    <option>Done</option>
+                  </select>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-ghost badge-sm gap-1">Low</div>
+                    <span class="text-xs text-base-content/50">Due Mar 20</span>
+                  </div>
+                  <div class="tooltip" data-tip="Assigned to Eric">
+                    <div class="avatar placeholder">
+                      <div class="bg-primary text-primary-content rounded-full w-7">
+                        <span class="text-xs">E</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Column: Doing ── -->
+        <div class="kanban-column bg-base-100 rounded-xl p-4 min-h-[500px]" data-status="doing"
+             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="this.classList.remove('drag-over')">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <div class="badge badge-info badge-lg gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                Doing
+              </div>
+              <span class="text-base-content/50 text-sm font-mono">3</span>
+            </div>
+          </div>
+
+          <div class="space-y-3" role="list" aria-label="In Progress tasks">
+            <!-- Task Card -->
+            <div class="card bg-base-200 shadow-sm cursor-grab active:cursor-grabbing task-card hover:shadow-md transition-shadow border-l-4 border-info" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm">Analyze Schwab Fee Structure</h3>
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option>To Do</option>
+                    <option selected>Doing</option>
+                    <option>Done</option>
+                  </select>
+                </div>
+                <p class="text-xs text-base-content/60 mt-1">Compare advisory fees vs. self-directed. Calculate breakeven point.</p>
+                <div class="w-full bg-base-300 rounded-full h-1.5 mt-2">
+                  <div class="bg-info h-1.5 rounded-full" style="width: 60%"></div>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-error badge-sm gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" /></svg>
+                      High
+                    </div>
+                    <span class="text-xs text-base-content/50">Due Mar 5</span>
+                  </div>
+                  <div class="tooltip" data-tip="Assigned to Eric">
+                    <div class="avatar placeholder">
+                      <div class="bg-primary text-primary-content rounded-full w-7">
+                        <span class="text-xs">E</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Task Card -->
+            <div class="card bg-base-200 shadow-sm cursor-grab active:cursor-grabbing task-card hover:shadow-md transition-shadow border-l-4 border-info" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm">Map Tax-Loss Harvesting Candidates</h3>
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option>To Do</option>
+                    <option selected>Doing</option>
+                    <option>Done</option>
+                  </select>
+                </div>
+                <p class="text-xs text-base-content/60 mt-1">Identify positions with unrealized losses > $1,000 for year-end strategy</p>
+                <div class="w-full bg-base-300 rounded-full h-1.5 mt-2">
+                  <div class="bg-info h-1.5 rounded-full" style="width: 30%"></div>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-warning badge-sm">Medium</div>
+                    <span class="text-xs text-base-content/50">Due Mar 10</span>
+                  </div>
+                  <div class="tooltip" data-tip="Assigned to Eric">
+                    <div class="avatar placeholder">
+                      <div class="bg-primary text-primary-content rounded-full w-7">
+                        <span class="text-xs">E</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Task Card -->
+            <div class="card bg-base-200 shadow-sm cursor-grab active:cursor-grabbing task-card hover:shadow-md transition-shadow border-l-4 border-info" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm">Compare JPMC vs Schwab Allocations</h3>
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option>To Do</option>
+                    <option selected>Doing</option>
+                    <option>Done</option>
+                  </select>
+                </div>
+                <div class="w-full bg-base-300 rounded-full h-1.5 mt-2">
+                  <div class="bg-info h-1.5 rounded-full" style="width: 80%"></div>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-ghost badge-sm">Low</div>
+                    <span class="text-xs text-base-content/50">Due Mar 12</span>
+                  </div>
+                  <div class="tooltip" data-tip="Assigned to Eric">
+                    <div class="avatar placeholder">
+                      <div class="bg-primary text-primary-content rounded-full w-7">
+                        <span class="text-xs">E</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Column: Done ── -->
+        <div class="kanban-column bg-base-100 rounded-xl p-4 min-h-[500px]" data-status="done"
+             ondragover="event.preventDefault(); this.classList.add('drag-over')"
+             ondragleave="this.classList.remove('drag-over')"
+             ondrop="this.classList.remove('drag-over')">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <div class="badge badge-success badge-lg gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                Done
+              </div>
+              <span class="text-base-content/50 text-sm font-mono">2</span>
+            </div>
+          </div>
+
+          <div class="space-y-3" role="list" aria-label="Completed tasks">
+            <!-- Completed Task Card -->
+            <div class="card bg-base-200 shadow-sm task-card opacity-75" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm line-through text-base-content/60">Review Q4 Tax Implications</h3>
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option>To Do</option>
+                    <option>Doing</option>
+                    <option selected>Done</option>
+                  </select>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-success badge-sm badge-outline gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                      Completed
+                    </div>
+                    <span class="text-xs text-base-content/40">Mar 1</span>
+                  </div>
+                  <div class="avatar placeholder">
+                    <div class="bg-success/30 text-success rounded-full w-7">
+                      <span class="text-xs">E</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Completed Task Card -->
+            <div class="card bg-base-200 shadow-sm task-card opacity-75" draggable="true">
+              <div class="card-body p-4">
+                <div class="flex items-start justify-between">
+                  <h3 class="card-title text-sm line-through text-base-content/60">Set Up Plaid Account Connections</h3>
+                  <select class="select select-ghost select-xs w-20 flex-shrink-0" aria-label="Change task status">
+                    <option>To Do</option>
+                    <option>Doing</option>
+                    <option selected>Done</option>
+                  </select>
+                </div>
+                <div class="flex items-center justify-between mt-3">
+                  <div class="flex items-center gap-2">
+                    <div class="badge badge-success badge-sm badge-outline gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                      Completed
+                    </div>
+                    <span class="text-xs text-base-content/40">Feb 28</span>
+                  </div>
+                  <div class="avatar placeholder">
+                    <div class="bg-success/30 text-success rounded-full w-7">
+                      <span class="text-xs">E</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ─── Left Sidebar ─── -->
+  <div class="drawer-side">
+    <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+    <aside class="bg-base-100 min-h-full w-64 p-4">
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-base-content px-4">Menu</h2>
+      </div>
+      <ul class="menu bg-base-100 rounded-box">
+        <li><a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+          Dashboard</a></li>
+        <li><a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg>
+          Portfolio</a></li>
+        <li><a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          Transactions</a></li>
+        <!-- Active: Tasks -->
+        <li class="bordered">
+          <a href="#" class="active font-semibold">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+            Tasks
+            <span class="badge badge-primary badge-sm">8</span>
+          </a>
+        </li>
+        <li><a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+          Advisor Chat</a></li>
+        <li><a href="#">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+          Accounts</a></li>
+      </ul>
+    </aside>
+  </div>
+</div>
+
+<!-- ─── Toast Notifications (PRD 11-02) — bottom-right stacked ─── -->
+<div class="toast toast-end toast-bottom z-50" id="toast-container">
+  <!-- Toast: Task Assigned (info) -->
+  <div class="alert alert-info shadow-lg toast-enter" role="alert" aria-live="polite">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+      <div>
+        <div class="font-bold text-sm">New Task Assigned</div>
+        <div class="text-xs">Monte Carlo Simulation on Portfolio</div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-xs" onclick="this.parentElement.classList.add('toast-exit'); setTimeout(() => this.parentElement.remove(), 300)">✕</button>
+  </div>
+
+  <!-- Toast: Sync Complete (success) -->
+  <div class="alert alert-success shadow-lg toast-enter" role="alert" aria-live="polite" style="animation-delay: 0.1s">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+      <div>
+        <div class="font-bold text-sm">Sync Complete</div>
+        <div class="text-xs">All 4 accounts refreshed successfully</div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-xs" onclick="this.parentElement.classList.add('toast-exit'); setTimeout(() => this.parentElement.remove(), 300)">✕</button>
+  </div>
+
+  <!-- Toast: Allocation Drift Warning -->
+  <div class="alert alert-warning shadow-lg toast-enter" role="alert" aria-live="polite" style="animation-delay: 0.2s">
+    <div class="flex items-center gap-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+      <div>
+        <div class="font-bold text-sm">Allocation Drift Alert</div>
+        <div class="text-xs">Tech sector at 38% — exceeds 30% threshold</div>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-xs" onclick="this.parentElement.classList.add('toast-exit'); setTimeout(() => this.parentElement.remove(), 300)">✕</button>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SECTION 2: NEW TASK MODAL (PRD 11-05 / 11-06)
+     ════════════════════════════════════════════════════════════════ -->
+<dialog id="new-task-modal" class="modal">
+  <div class="modal-box w-11/12 max-w-lg">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="font-bold text-lg mb-4">Create New Task</h3>
+    <form class="space-y-4">
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Title</span></label>
+        <input type="text" placeholder="e.g., Run Monte Carlo on portfolio" class="input input-bordered w-full" />
+      </div>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Description</span></label>
+        <textarea class="textarea textarea-bordered w-full" rows="3" placeholder="Describe the task..."></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="form-control w-full">
+          <label class="label"><span class="label-text">Priority</span></label>
+          <select class="select select-bordered w-full">
+            <option disabled selected>Select priority</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+        </div>
+        <div class="form-control w-full">
+          <label class="label"><span class="label-text">Due Date</span></label>
+          <input type="date" class="input input-bordered w-full" />
+        </div>
+      </div>
+      <div class="form-control w-full">
+        <label class="label"><span class="label-text">Assign To</span></label>
+        <select class="select select-bordered w-full">
+          <option disabled selected>Select assignee</option>
+          <option>Eric Smith</option>
+          <option>Sarah Smith</option>
+          <option>James Smith</option>
+        </select>
+      </div>
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('new-task-modal').close()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Task</button>
+      </div>
+    </form>
+  </div>
+  <form method="dialog" class="modal-backdrop"><button>close</button></form>
+</dialog>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SECTION 3: NOTIFICATION PREFERENCES (PRD 11-01 / 11-04)
+     Shown as a separate page mockup below the main board
+     ════════════════════════════════════════════════════════════════ -->
+<div class="divider text-lg font-bold my-12 px-6">⚙️ Notification Preferences (Settings Page)</div>
+
+<div class="max-w-2xl mx-auto p-6">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-xl mb-6">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+        Notification Settings
+      </h2>
+
+      <!-- Channel Toggles -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between p-4 bg-base-200 rounded-lg">
+          <div>
+            <div class="font-semibold">In-App Notifications</div>
+            <div class="text-sm text-base-content/60">Toast alerts within the app</div>
+          </div>
+          <input type="checkbox" class="toggle toggle-primary" checked />
+        </div>
+
+        <div class="flex items-center justify-between p-4 bg-base-200 rounded-lg">
+          <div class="flex items-center gap-3">
+            <div>
+              <div class="font-semibold flex items-center gap-2">
+                iMessage Notifications
+                <div class="badge badge-sm badge-outline">via BlueBubbles</div>
+              </div>
+              <div class="text-sm text-base-content/60">Receive alerts on your iPhone via iMessage</div>
+            </div>
+          </div>
+          <input type="checkbox" class="toggle toggle-primary" checked />
+        </div>
+      </div>
+
+      <!-- Phone Number -->
+      <div class="form-control w-full mt-6">
+        <label class="label">
+          <span class="label-text font-semibold">Phone Number</span>
+          <span class="label-text-alt text-base-content/50">Used for iMessage delivery via BlueBubbles</span>
+        </label>
+        <div class="join w-full">
+          <input type="text" value="+1 (713) 555-0199" class="input input-bordered join-item w-full" placeholder="+1 (xxx) xxx-xxxx" />
+          <button class="btn btn-primary join-item">Verify</button>
+        </div>
+        <label class="label">
+          <span class="label-text-alt text-success flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+            Verified — connected to BlueBubbles
+          </span>
+          <span class="label-text-alt flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            Encrypted at rest
+          </span>
+        </label>
+      </div>
+
+      <!-- Theme Preference -->
+      <div class="mt-6">
+        <div class="font-semibold mb-2">App Theme</div>
+        <div class="grid grid-cols-5 gap-2">
+          <button class="btn btn-sm btn-outline btn-primary" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','business'))">Business</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','corporate'))">Corporate</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','dark'))">Dark</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','night'))">Night</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','luxury'))">Luxury</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','nord'))">Nord</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','winter'))">Winter</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','emerald'))">Emerald</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','dracula'))">Dracula</button>
+          <button class="btn btn-sm btn-outline" onclick="document.querySelectorAll('[data-theme]').forEach(e => e.setAttribute('data-theme','dim'))">Dim</button>
+        </div>
+        <p class="text-xs text-base-content/50 mt-2">Theme persists across sessions. Current: Business</p>
+      </div>
+
+      <!-- Quiet Hours -->
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <div class="font-semibold">Quiet Hours</div>
+            <div class="text-sm text-base-content/60">Pause iMessage notifications during these hours</div>
+          </div>
+          <input type="checkbox" class="toggle toggle-primary" checked />
+        </div>
+        <div class="grid grid-cols-2 gap-4 pl-4">
+          <div class="form-control">
+            <label class="label"><span class="label-text text-sm">Start</span></label>
+            <input type="time" value="22:00" class="input input-bordered input-sm" />
+          </div>
+          <div class="form-control">
+            <label class="label"><span class="label-text text-sm">End</span></label>
+            <input type="time" value="07:00" class="input input-bordered input-sm" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Types -->
+      <div class="mt-8">
+        <h3 class="font-semibold text-lg mb-4">Notification Events</h3>
+        <div class="overflow-x-auto">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th class="text-center">In-App</th>
+                <th class="text-center">iMessage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="font-medium">Task Assigned</div>
+                  <div class="text-xs text-base-content/50">When a new task is assigned to you</div>
+                </td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="font-medium">Task Status Changed</div>
+                  <div class="text-xs text-base-content/50">When a task moves between columns</div>
+                </td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" /></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="font-medium">Sync Complete</div>
+                  <div class="text-xs text-base-content/50">When account data finishes syncing</div>
+                </td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" /></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="font-medium">Sync Failed</div>
+                  <div class="text-xs text-base-content/50">When an account sync encounters an error</div>
+                </td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="font-medium">Allocation Drift Alert</div>
+                  <div class="text-xs text-base-content/50">When a sector exceeds concentration threshold</div>
+                </td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="font-medium">Advisor Message</div>
+                  <div class="text-xs text-base-content/50">When the AI advisor sends a proactive insight</div>
+                </td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+                <td class="text-center"><input type="checkbox" class="checkbox checkbox-sm checkbox-primary" checked /></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-actions justify-end mt-6">
+        <button class="btn btn-ghost">Cancel</button>
+        <button class="btn btn-primary">Save Preferences</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SECTION 4: EMPTY STATES
+     ════════════════════════════════════════════════════════════════ -->
+<div class="divider text-lg font-bold my-12 px-6">📭 Empty States</div>
+
+<div class="max-w-4xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+  <!-- Empty Kanban Board -->
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body items-center text-center py-16">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-base-content/20 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+      <h3 class="font-bold text-lg">No tasks yet</h3>
+      <p class="text-base-content/60 max-w-xs">Your advisor will assign tasks as you progress through the curriculum. You can also create your own.</p>
+      <button class="btn btn-primary btn-sm mt-4 gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+        Create Your First Task
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty Notification Center -->
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body items-center text-center py-16">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-base-content/20 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+      <h3 class="font-bold text-lg">All caught up!</h3>
+      <p class="text-base-content/60 max-w-xs">No new notifications. You'll see alerts here for task assignments, sync events, and advisor messages.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     SECTION 5: iMESSAGE PREVIEW (PRD 11-04 — BlueBubbles)
+     ════════════════════════════════════════════════════════════════ -->
+<div class="divider text-lg font-bold my-12 px-6">💬 iMessage Preview (via BlueBubbles)</div>
+
+<div class="max-w-sm mx-auto p-6">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body p-0">
+      <!-- iPhone-style header -->
+      <div class="bg-primary/10 p-4 rounded-t-2xl">
+        <div class="flex items-center gap-3">
+          <div class="avatar placeholder">
+            <div class="bg-primary text-primary-content rounded-full w-10">
+              <span class="text-sm">NW</span>
+            </div>
+          </div>
+          <div>
+            <div class="font-bold text-sm">NextGen Wealth</div>
+            <div class="text-xs text-base-content/50">iMessage</div>
+          </div>
+        </div>
+      </div>
+      <!-- Message bubbles -->
+      <div class="p-4 space-y-3">
+        <div class="chat chat-start">
+          <div class="chat-bubble chat-bubble-primary text-sm">
+            📋 <strong>New Task Assigned</strong><br>
+            Monte Carlo Simulation on Portfolio<br>
+            <span class="text-xs opacity-75">Priority: High · Due: Mar 7</span><br><br>
+            <span class="text-xs opacity-75">Open NextGen Wealth to view →</span>
+          </div>
+          <div class="chat-footer text-xs text-base-content/40 mt-1">2:34 PM — Delivered</div>
+        </div>
+
+        <div class="chat chat-start">
+          <div class="chat-bubble chat-bubble-warning text-sm">
+            ⚠️ <strong>Sync Failed</strong><br>
+            Schwab Brokerage requires re-authentication.<br><br>
+            <span class="text-xs opacity-75">Open NextGen Wealth to reconnect →</span>
+          </div>
+          <div class="chat-footer text-xs text-base-content/40 mt-1">2:19 PM — Delivered</div>
+        </div>
+
+        <div class="chat chat-start">
+          <div class="chat-bubble text-sm bg-base-300 text-base-content">
+            📊 <strong>Allocation Alert</strong><br>
+            Tech sector is at 38% — exceeds your 30% threshold. Consider rebalancing.<br><br>
+            <span class="text-xs opacity-75">Open NextGen Wealth to review →</span>
+          </div>
+          <div class="chat-footer text-xs text-base-content/40 mt-1">1:05 PM — Read</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="py-12"></div>
+
+</body>
+</html>

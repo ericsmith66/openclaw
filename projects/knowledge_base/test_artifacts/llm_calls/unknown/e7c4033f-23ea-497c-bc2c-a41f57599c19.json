@@ -1,0 +1,53 @@
+{
+  "ts": "2026-03-09T15:39:00Z",
+  "request_id": "e7c4033f-23ea-497c-bc2c-a41f57599c19",
+  "correlation_id": null,
+  "agent": "unknown",
+  "model": "claude-sonnet-4-6",
+  "request_bytes": 93,
+  "response_status": 200,
+  "response_bytes": 349,
+  "usage": {
+    "prompt_tokens": 9,
+    "completion_tokens": 4,
+    "total_tokens": 13
+  },
+  "request": {
+    "model": "claude-sonnet-4-6",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Say OK"
+      }
+    ],
+    "max_tokens": 10
+  },
+  "response": {
+    "id": "msg_01B9KD55sCTD9Z7VCScC8ejv",
+    "object": "chat.completion",
+    "created": 1773070740,
+    "model": "claude-sonnet-4-6",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "OK"
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 9,
+      "completion_tokens": 4,
+      "total_tokens": 13
+    },
+    "smart_proxy": {
+      "tool_loop": {
+        "loop_count": 0,
+        "max_loops": 3
+      },
+      "tools_used": []
+    }
+  }
+}

@@ -1,0 +1,187 @@
+<%= render(LayoutComponent.new(title: "Accounts • Link", current_user: current_user)) do %>
+  <div class="space-y-6">
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+      <div class="card-body">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-semibold">Connect an institution</h2>
+            <p class="text-sm text-base-content/70"><%= t("accounts.link.primary_cta_subtitle") %></p>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <button class="btn btn-primary btn-lg plaid-link-btn" data-product-set="schwab" type="button">
+              <span class="inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                Connect Schwab (Investments + Transactions)
+              </span>
+            </button>
+
+            <button class="btn btn-outline btn-lg plaid-link-btn" data-product-set="amex" type="button">
+              <span class="inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Connect Amex (Transactions + Liabilities)
+              </span>
+            </button>
+
+            <button class="btn btn-outline btn-lg plaid-link-btn" data-product-set="chase" type="button">
+              <span class="inline-flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Connect Chase (All Products)
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-sm border border-base-300">
+      <div class="card-body">
+        <h2 class="text-xl font-semibold mb-2"><%= t("accounts.link.connection_status_title") %></h2>
+
+        <% if @plaid_items.blank? %>
+          <div class="text-base-content/70"><%= t("accounts.link.no_connections_yet") %></div>
+        <% else %>
+          <div class="overflow-x-auto">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Institution</th>
+                  <th>Status</th>
+                  <th>Error</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @plaid_items.each do |item| %>
+                  <tr>
+                    <td class="font-medium"><%= item.institution_name %></td>
+                    <td>
+                      <% badge_class = case item.status
+                        when "good" then "badge-success"
+                        when "needs_reauth" then "badge-warning"
+                        else "badge-error"
+                      end %>
+                      <span class="badge <%= badge_class %>">
+                        <%= t("accounts.link.status.#{item.status}") %>
+                      </span>
+                    </td>
+                    <td class="text-sm text-base-content/70">
+                      <%= item.last_error.presence || "—" %>
+                    </td>
+                    <td class="text-right">
+                      <% if item.failed? %>
+                        <% if item.retry_allowed? %>
+                          <%= button_to t("accounts.link.retry_button"), plaid_item_retry_path(item), method: :post, class: "btn btn-sm btn-outline", form: { data: { turbo: true } }, aria: { label: "Retry sync for #{item.institution_name}" } %>
+                        <% else %>
+                          <button class="btn btn-sm btn-outline" disabled aria-label="<%= "Retry unavailable for #{item.institution_name}" %>">
+                            <%= t("accounts.link.retry_unavailable") %>
+                          </button>
+                        <% end %>
+                      <% else %>
+                        <span class="text-sm text-base-content/50">—</span>
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Plaid Link JS (shared logic copied from dashboard) -->
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script>
+  function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').content;
+  }
+
+  function showToast(message) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'toast toast-top toast-end z-50';
+    wrapper.innerHTML = `<div class="alert alert-success"><span>${message}</span></div>`;
+    document.body.appendChild(wrapper);
+    setTimeout(() => wrapper.remove(), 5000);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('showChatActivatedToast') === '1') {
+      localStorage.removeItem('showChatActivatedToast');
+      showToast('🎉 Great! Your advisor chat is now active. Ask anything!');
+    }
+
+    const buttons = document.querySelectorAll('.plaid-link-btn');
+    if (buttons.length === 0) return;
+
+    // Initialize each button with its own handler
+    buttons.forEach(button => {
+      const productSet = button.dataset.productSet;
+
+      fetch('/plaid/link_token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': getCsrfToken()
+        },
+        body: JSON.stringify({ product_set: productSet })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to get link token');
+        return res.json();
+      })
+      .then(data => {
+        const handler = Plaid.create({
+          token: data.link_token,
+          onSuccess: function(public_token, metadata) {
+            fetch('/plaid/exchange', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': getCsrfToken()
+              },
+              body: JSON.stringify({
+                public_token: public_token,
+                institution_name: metadata.institution?.name || 'Unknown Institution',
+                product_set: productSet
+              })
+            })
+            .then(res => res.json())
+            .then((data) => {
+              if (data && data.first_success) {
+                localStorage.setItem('showChatActivatedToast', '1');
+              }
+              window.location.reload();
+            })
+            .catch(err => {
+              console.error('Exchange failed:', err);
+              alert('Failed to save account');
+            });
+          },
+          onExit: function(err) {
+            if (err) {
+              console.warn('Plaid Link exit:', err);
+            }
+          }
+        });
+
+        button.onclick = function() {
+          handler.open();
+        };
+      })
+      .catch(err => {
+        console.error('Link token failed:', err);
+        button.disabled = true;
+        button.textContent = 'Connection unavailable';
+      });
+    });
+  });
+</script>

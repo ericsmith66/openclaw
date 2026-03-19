@@ -1,0 +1,32 @@
+<div class="h-[calc(100vh-4rem)] flex flex-col" data-controller="chat">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-base-300 bg-base-200">
+    <div>
+      <h1 class="text-lg font-semibold">SAP Collaborate</h1>
+      <p class="text-xs text-base-content/70">Bare-metal streaming chat (one assistant bubble updated over time).</p>
+    </div>
+    <div class="w-10 h-10"></div>
+  </div>
+
+  <%= turbo_stream_from "sap_run_#{@sap_run.id}" %>
+
+  <div
+    id="chat-stream"
+    class="flex-1 overflow-y-auto px-4 py-4 space-y-3"
+    data-chat-target="stream"
+  >
+    <%= render partial: "message", collection: @messages, as: :message %>
+  </div>
+
+  <div class="sticky bottom-0 bg-base-200 border-t border-base-300 px-4 py-3">
+    <%= form_with url: admin_sap_collaborate_ask_path, method: :post, data: { action: "turbo:submit-end->chat#afterSubmit" }, class: "flex gap-2 items-end" do |f| %>
+      <%= f.hidden_field :sap_run_id, value: @sap_run.id %>
+      <%= f.text_area :prompt,
+            required: true,
+            rows: 3,
+            class: "textarea textarea-bordered flex-1",
+            placeholder: "Ask SAP…",
+            data: { chat_target: "input", action: "keydown->chat#maybeSubmit" } %>
+      <%= f.submit "Send", class: "btn btn-primary" %>
+    <% end %>
+  </div>
+</div>

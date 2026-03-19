@@ -1,0 +1,177 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+      skip_backup:
+        description: 'Skip database backup (NOT RECOMMENDED)'
+        required: false
+        type: boolean
+        default: false
+      skip_tests:
+        description: 'Skip test suite'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3.0'
+          bundler-cache: true
+      
+      - name: Run pre-deployment checks
+        run: |
+          echo "::group::Branch Check"
+          BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          if [[ "${BRANCH}" != "main" ]]; then
+            echo "::error::Not on main branch (current: ${BRANCH})"
+            exit 1
+          fi
+          echo "✓ On main branch"
+          echo "::endgroup::"
+      
+      - name: Run tests
+        if: ${{ inputs.skip_tests == false }}
+        run: |
+          echo "::group::Test Suite"
+          bundle exec rails test
+          echo "::endgroup::"
+      
+      - name: Run Brakeman security scan
+        run: |
+          echo "::group::Security Scan"
+          bundle exec brakeman --no-pager
+          echo "::endgroup::"
+      
+      - name: Run RuboCop linter
+        run: |
+          echo "::group::Code Linting"
+          bundle exec rubocop
+          echo "::endgroup::"
+      
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+        run: |
+          echo "::group::SSH Configuration"
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$PROD_HOST" >> ~/.ssh/known_hosts
+          echo "✓ SSH configured"
+          echo "::endgroup::"
+      
+      - name: Test SSH connection
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+        run: |
+          echo "::group::SSH Connection Test"
+          ssh -i ~/.ssh/deploy_key -o ConnectTimeout=10 "${PROD_USER}@${PROD_HOST}" "echo 'SSH connection successful'"
+          echo "::endgroup::"
+      
+      - name: Deploy to production
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+          SKIP_BACKUP: ${{ inputs.skip_backup }}
+          SKIP_TESTS: ${{ inputs.skip_tests }}
+        run: |
+          echo "::group::Deployment"
+          
+          # Build deployment command
+          DEPLOY_CMD="cd /Users/${PROD_USER}/Development/nextgen-plaid && ./bin/deploy-prod"
+          
+          if [[ "$SKIP_BACKUP" == "true" ]]; then
+            DEPLOY_CMD="${DEPLOY_CMD} --skip-backup"
+          fi
+          
+          if [[ "$SKIP_TESTS" == "true" ]]; then
+            DEPLOY_CMD="${DEPLOY_CMD} --skip-tests"
+          fi
+          
+          # Execute deployment
+          ssh -i ~/.ssh/deploy_key "${PROD_USER}@${PROD_HOST}" "${DEPLOY_CMD}"
+          
+          echo "::endgroup::"
+      
+      - name: Verify deployment
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_USER: ${{ secrets.PROD_USER }}
+        run: |
+          echo "::group::Deployment Verification"
+          
+          # Wait for application to fully start
+          sleep 10
+          
+          # Check health endpoint
+          HEALTH_STATUS=$(ssh -i ~/.ssh/deploy_key "${PROD_USER}@${PROD_HOST}" \
+            "curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/health")
+          
+          if [[ "$HEALTH_STATUS" == "200" ]]; then
+            echo "✓ Health check passed (HTTP 200)"
+          else
+            echo "::error::Health check failed (HTTP ${HEALTH_STATUS})"
+            exit 1
+          fi
+          
+          # Get current git commit
+          COMMIT=$(ssh -i ~/.ssh/deploy_key "${PROD_USER}@${PROD_HOST}" \
+            "cd /Users/${PROD_USER}/Development/nextgen-plaid && git rev-parse --short HEAD")
+          
+          echo "✓ Deployed commit: ${COMMIT}"
+          echo "::endgroup::"
+      
+      - name: Deployment summary
+        if: success()
+        run: |
+          echo "## ✓ Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** $(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** $(git rev-parse --short HEAD)" >> $GITHUB_STEP_SUMMARY
+          echo "**Backup:** ${{ inputs.skip_backup == false && 'Created' || 'Skipped' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Tests:** ${{ inputs.skip_tests == false && 'Passed' || 'Skipped' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Application URL:** http://${{ secrets.PROD_HOST }}:3000" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Deployment failure
+        if: failure()
+        run: |
+          echo "## ✗ Deployment Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** $(git rev-parse --abbrev-ref HEAD)" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** $(git rev-parse --short HEAD)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Next Steps:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Check the workflow logs above for error details" >> $GITHUB_STEP_SUMMARY
+          echo "2. See [RUNBOOK.md](../blob/main/RUNBOOK.md) for rollback procedures" >> $GITHUB_STEP_SUMMARY
+          echo "3. If database migration failed, restore from backup timestamp" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          rm -f ~/.ssh/deploy_key

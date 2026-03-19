@@ -1,0 +1,65 @@
+<div class="drawer-side">
+  <label for="<%= @drawer_id %>" aria-label="close sidebar" class="drawer-overlay"></label>
+
+  <aside class="bg-base-100 min-h-full w-72 p-4">
+    <div class="mb-4">
+      <div class="text-xs uppercase tracking-wider text-base-content/60 px-2">Net Worth</div>
+    </div>
+
+    <ul class="menu bg-base-100 rounded-box">
+      <li><a href="/net_worth/dashboard" data-turbo="false" onclick="<%= close_drawer_js %>">Dashboard</a></li>
+      <li><a href="/net_worth/allocations" data-turbo="false" onclick="<%= close_drawer_js %>">Allocations</a></li>
+      <li><a href="/net_worth/sectors" data-turbo="false" onclick="<%= close_drawer_js %>">Sectors</a></li>
+      <li><a href="/net_worth/performance" data-turbo="false" onclick="<%= close_drawer_js %>">Performance</a></li>
+      <li><a href="/portfolio/holdings" data-turbo="false" onclick="<%= close_drawer_js %>">Holdings</a></li>
+      <li><a href="/transactions/summary" data-turbo="false" onclick="<%= close_drawer_js %>">Transactions</a></li>
+      <li><a href="/net_worth/income" data-turbo="false" onclick="<%= close_drawer_js %>">Income</a></li>
+    </ul>
+
+    <div class="divider my-6"></div>
+
+    <div class="text-xs uppercase tracking-wider text-base-content/60 px-2 mb-2">Portfolio</div>
+    <ul class="menu bg-base-100 rounded-box">
+      <li><a href="/portfolio/holdings" data-turbo="false" onclick="<%= close_drawer_js %>">Holdings</a></li>
+    </ul>
+
+    <div class="divider my-6"></div>
+
+    <div class="text-xs uppercase tracking-wider text-base-content/60 px-2 mb-2">Accounts</div>
+    <ul class="menu bg-base-100 rounded-box">
+      <li><a href="/accounts" data-turbo="false" onclick="<%= close_drawer_js %>">List</a></li>
+      <li><a href="/accounts/link" data-turbo="false" onclick="<%= close_drawer_js %>">Link / Relink</a></li>
+    </ul>
+
+    <div class="divider my-6"></div>
+
+    <div class="text-xs uppercase tracking-wider text-base-content/60 px-2 mb-2">Transactions</div>
+    <ul class="menu bg-base-100 rounded-box">
+      <li><a href="/transactions/summary" data-turbo="false" onclick="<%= close_drawer_js %>">Summary</a></li>
+      <li><a href="/transactions/regular" data-turbo="false" onclick="<%= close_drawer_js %>">Cash</a></li>
+      <li><a href="/transactions/credit" data-turbo="false" onclick="<%= close_drawer_js %>">Credit</a></li>
+      <li><a href="/transactions/transfers" data-turbo="false" onclick="<%= close_drawer_js %>">Transfers</a></li>
+      <li><a href="/transactions/investment" data-turbo="false" onclick="<%= close_drawer_js %>">Investments</a></li>
+    </ul>
+
+    <div class="divider my-6"></div>
+
+    <div class="text-xs uppercase tracking-wider text-base-content/60 px-2 mb-2">Settings</div>
+    <ul class="menu bg-base-100 rounded-box">
+      <li><a href="/settings/brokerage_connect" data-turbo="false" onclick="<%= close_drawer_js %>">Brokerage Connect</a></li>
+      <li><a href="/saved_account_filters" data-turbo="false" onclick="<%= close_drawer_js %>">Saved Filters</a></li>
+    </ul>
+
+    <% if owner? %>
+      <div class="divider my-6"></div>
+
+      <div class="text-xs uppercase tracking-wider text-base-content/60 px-2 mb-2">Admin</div>
+      <ul class="menu bg-base-100 rounded-box">
+        <li><a href="/admin/health" data-turbo="false" onclick="<%= close_drawer_js %>">Health</a></li>
+        <li><a href="/mission_control" data-turbo="false" onclick="<%= close_drawer_js %>">Mission Control</a></li>
+        <li><a href="/agent_hub" data-turbo="false" onclick="<%= close_drawer_js %>">Agent Hub</a></li>
+        <li><a href="/simulations" data-turbo="false" onclick="<%= close_drawer_js %>">Simulations</a></li>
+      </ul>
+    <% end %>
+  </aside>
+</div>

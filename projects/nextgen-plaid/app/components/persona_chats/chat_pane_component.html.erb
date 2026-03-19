@@ -1,0 +1,14 @@
+<%= helpers.turbo_frame_tag "chat-pane-frame" do %>
+  <% if conversation.blank? %>
+    <div class="p-8">
+      <div class="max-w-2xl">
+        <h1 class="text-xl font-semibold">Welcome</h1>
+        <p class="text-base-content/70 mt-2">
+          Hi, I'm Warren Buffett. Let's talk about value investing and long-term wealth building.
+        </p>
+      </div>
+    </div>
+  <% else %>
+    <%= render partial: "persona_chats/chat_pane", locals: { conversation: conversation } %>
+  <% end %>
+<% end %>

@@ -1,0 +1,367 @@
+<% if holdings_groups.empty? %>
+  <div class="card bg-base-100 shadow">
+    <div class="card-body">
+      <div class="font-medium">No holdings found</div>
+      <div class="text-sm opacity-80">Try syncing your accounts, or adjust filters.</div>
+      <div class="mt-3">
+        <%= link_to "Sync accounts", net_worth_sync_path, class: "btn btn-sm" %>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <% if show_large_all_warning %>
+    <div class="toast toast-top toast-end z-50">
+      <div class="alert alert-warning shadow-lg">
+        <div>
+          <div class="font-medium">Showing all holdings may be slow on your device — consider using filters</div>
+          <div class="mt-2">
+            <%= link_to "Dismiss", portfolio_holdings_path(dismiss_warning_params), class: "btn btn-xs" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div class="stat bg-base-100 shadow rounded">
+      <div class="stat-title">Portfolio Value</div>
+      <div class="stat-value text-lg"><%= number_to_currency(portfolio_value, precision: 0) %></div>
+    </div>
+    <div class="stat bg-base-100 shadow rounded">
+      <div class="stat-title">Total Gain/Loss</div>
+      <div class="stat-value text-lg <%= loss_or_gain_class(total_gl_dollars) %>">
+        <%= number_to_currency(total_gl_dollars, precision: 0) %>
+        <span class="text-sm opacity-80">(<%= number_to_percentage(total_gl_pct, precision: 1) %>)</span>
+      </div>
+    </div>
+    <div class="stat bg-base-100 shadow rounded">
+      <div class="stat-title">Day’s G/L • Est. Annual Income</div>
+      <div class="stat-value text-lg opacity-60">—</div>
+      <div class="text-xs opacity-70">TODO (PRDs 5-05+/income calculation)</div>
+    </div>
+  </div>
+
+  <% if comparison_active? %>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+      <div class="stat bg-base-100 shadow rounded">
+        <div class="stat-title">Period Return</div>
+        <div class="stat-value text-lg <%= period_return_class(comparison_period_return_pct) %>">
+          <%= number_to_percentage(comparison_period_return_pct.to_f, precision: 1) %>
+        </div>
+      </div>
+      <div class="stat bg-base-100 shadow rounded">
+        <div class="stat-title">Period Delta</div>
+        <div class="stat-value text-lg <%= period_delta_class(comparison_delta_value) %>">
+          <%= number_to_currency(comparison_delta_value.to_f, precision: 0) %>
+        </div>
+      </div>
+      <div class="stat bg-base-100 shadow rounded">
+        <div class="stat-title">Comparison</div>
+        <div class="stat-value text-sm">
+          <span class="badge badge-outline">Comparing snapshot → <%= compare_to == "current" ? "Current (live)" : "Snapshot" %></span>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="flex items-center justify-between gap-3 flex-wrap mt-4">
+    <div class="flex items-center gap-3 flex-wrap">
+      <%= render SavedAccountFilterSelectorComponent.new(
+            saved_account_filters: saved_account_filters,
+            selected_id: saved_account_filter_id,
+            base_params: base_params,
+            turbo_frame_id: HOLDINGS_GRID_TURBO_FRAME_ID,
+            path_helper: :portfolio_holdings_path
+          ) %>
+
+      <div class="flex flex-col gap-2">
+        <%= render SnapshotSelectorComponent.new(
+              user: user,
+              selected_snapshot_id: snapshot_id,
+              base_params: base_params,
+              turbo_frame_id: HOLDINGS_GRID_TURBO_FRAME_ID,
+              holdings_path_helper: :portfolio_holdings_path
+            ) %>
+
+        <%= render ComparisonSelectorComponent.new(
+              user: user,
+              selected_snapshot_id: snapshot_id,
+              compare_to: compare_to,
+              base_params: base_params,
+              turbo_frame_id: HOLDINGS_GRID_TURBO_FRAME_ID,
+              holdings_path_helper: :portfolio_holdings_path
+            ) %>
+      </div>
+
+      <%= form_with url: portfolio_holdings_path, method: :get, local: true, class: "join", data: { turbo_frame: HOLDINGS_GRID_TURBO_FRAME_ID } do %>
+        <% base_params.except(:search_term, :page).each do |k, v| %>
+          <%= hidden_field_tag k, v %>
+        <% end %>
+        <div class="join">
+          <%= text_field_tag :search_term,
+                search_term,
+                placeholder: "Search symbol, name, sector…",
+                class: "input input-bordered input-sm join-item w-64" %>
+          <%= submit_tag "Search", class: "btn btn-sm join-item" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-3 overflow-x-auto">
+    <div class="tabs tabs-bordered whitespace-nowrap">
+      <% Portfolio::HoldingsGridComponent::TABS.each do |tab| %>
+        <%= link_to tab[:label],
+              portfolio_holdings_path(tab_link(tab[:key])),
+              class: "tab #{tab_active?(tab[:key]) ? 'tab-active font-medium' : ''}" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-4 overflow-x-auto">
+    <table class="table table-zebra table-sm w-full table-fixed" aria-label="Holdings grid">
+      <colgroup>
+        <% holdings_grid_column_widths.each do |width| %>
+          <col style="<%= "width: #{width};" %>">
+        <% end %>
+      </colgroup>
+      <thead class="sticky top-0 bg-base-200">
+        <tr>
+          <th>
+            <%= link_to portfolio_holdings_path(sort_link("ticker_symbol")), class: "link link-hover" do %>
+              Symbol <span class="opacity-60"><%= sort_indicator("ticker_symbol") %></span>
+            <% end %>
+          </th>
+          <th>
+            <%= link_to portfolio_holdings_path(sort_link("name")), class: "link link-hover" do %>
+              Description <span class="opacity-60"><%= sort_indicator("name") %></span>
+            <% end %>
+          </th>
+          <th>
+            <%= link_to portfolio_holdings_path(sort_link("asset_class")), class: "link link-hover" do %>
+              Asset Class <span class="opacity-60"><%= sort_indicator("asset_class") %></span>
+            <% end %>
+          </th>
+          <th class="text-right">
+            <%= link_to portfolio_holdings_path(sort_link("price")), class: "link link-hover" do %>
+              Price <span class="opacity-60"><%= sort_indicator("price") %></span>
+            <% end %>
+          </th>
+          <th class="text-right">
+            <%= link_to portfolio_holdings_path(sort_link("quantity")), class: "link link-hover" do %>
+              Quantity <span class="opacity-60"><%= sort_indicator("quantity") %></span>
+            <% end %>
+          </th>
+          <th class="text-right">
+            <%= link_to portfolio_holdings_path(sort_link("market_value")), class: "link link-hover" do %>
+              Value <span class="opacity-60"><%= sort_indicator("market_value") %></span>
+            <% end %>
+          </th>
+          <th class="text-right">
+            <%= link_to portfolio_holdings_path(sort_link("cost_basis")), class: "link link-hover" do %>
+              Cost Basis <span class="opacity-60"><%= sort_indicator("cost_basis") %></span>
+            <% end %>
+          </th>
+          <th class="text-right">
+            <%= link_to portfolio_holdings_path(sort_link("unrealized_gl")), class: "link link-hover" do %>
+              Unrealized G/L ($) <span class="opacity-60"><%= sort_indicator("unrealized_gl") %></span>
+            <% end %>
+          </th>
+          <th class="text-right">
+            <%= link_to portfolio_holdings_path(sort_link("unrealized_gl_pct")), class: "link link-hover" do %>
+              Unrealized G/L (%) <span class="opacity-60"><%= sort_indicator("unrealized_gl_pct") %></span>
+            <% end %>
+          </th>
+          <th class="text-center">
+            <%= link_to portfolio_holdings_path(sort_link("enriched_at")), class: "link link-hover" do %>
+              Enrich <span class="opacity-60"><%= sort_indicator("enriched_at") %></span>
+            <% end %>
+          </th>
+          <th class="text-right">
+            <%= link_to portfolio_holdings_path(sort_link("pct_portfolio")), class: "link link-hover" do %>
+              % of Portfolio <span class="opacity-60"><%= sort_indicator("pct_portfolio") %></span>
+            <% end %>
+          </th>
+          <% if comparison_active? %>
+            <th class="text-right">Period Return (%)</th>
+            <th class="text-right">Period Delta ($)</th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% holdings_groups.each do |group| %>
+          <% parent = group_parent(group) %>
+          <% children = Array(group[:children]) %>
+          <% enriched_at = enrichment_updated_at(parent) %>
+          <% expandable = children.any? %>
+          <% delta = comparison_delta_for(parent) %>
+
+          <% if expandable %>
+            <tr class="bg-base-100 <%= row_comparison_class(delta) %>">
+              <td colspan="<%= comparison_column_count %>" class="p-0">
+                <details class="collapse collapse-arrow" data-testid="holding-collapse">
+                  <summary class="collapse-title p-0" aria-label="Expand holding">
+                    <span class="grid gap-0 items-center w-full" style="<%= expandable_parent_grid_style %>">
+                      <span class="px-4 py-3 font-medium" data-testid="parent-symbol">
+                        <% if parent_security_id(parent).present? %>
+                          <%= link_to parent_symbol(parent),
+                                portfolio_security_path(parent_security_id(parent), return_to: security_detail_return_to),
+                                class: "link link-hover",
+                                data: { turbo_frame: "_top" } %>
+                        <% else %>
+                          <%= parent_symbol(parent) %>
+                        <% end %>
+                      </span>
+                      <span class="px-4 py-3">
+                        <span class="tooltip" data-tip="<%= parent_name(parent) %>" tabindex="0">
+                          <span class="truncate max-w-[18rem] inline-block align-bottom"><%= parent_name(parent) %></span>
+                        </span>
+                      </span>
+                      <span class="px-4 py-3"><%= parent_asset_class(parent) %></span>
+                      <span class="px-4 py-3 text-right"><%= number_to_currency(parent_price(parent), precision: 2) %></span>
+                      <span class="px-4 py-3 text-right <%= changed_cell_class(delta, :quantity) %>"><%= number_with_precision(parent_quantity(parent), precision: 4, strip_insignificant_zeros: true) %></span>
+                      <span class="px-4 py-3 text-right <%= changed_cell_class(delta, :market_value) %>"><%= number_to_currency(parent_value(parent), precision: 0) %></span>
+                      <span class="px-4 py-3 text-right"><%= number_to_currency(parent_cost_basis(parent), precision: 0) %></span>
+                      <% parent_gl = parent_unrealized_gl(parent) %>
+                      <span class="px-4 py-3 text-right <%= loss_or_gain_class(parent_gl) %>">
+                        <%= parent_gl.nil? ? "—" : number_to_currency(parent_gl, precision: 0) %>
+                      </span>
+                      <span class="px-4 py-3 text-right">
+                        <span class="tooltip" data-tip="Approximate. Expand for per-account accuracy." tabindex="0">
+                          <% parent_pct = parent_gl_pct(parent) %>
+                          <%= parent_pct.nil? ? "—" : number_to_percentage(parent_pct, precision: 1) %>
+                        </span>
+                      </span>
+                      <span class="px-2 py-3 flex items-center justify-center">
+                        <% tip = enrichment_tooltip(enriched_at) %>
+                        <span class="tooltip" data-tip="<%= tip %>" tabindex="0">
+                          <span
+                            class="inline-block w-3 h-3 rounded-full ring-1 ring-base-300 <%= enrichment_dot_class(enriched_at) %>"
+                            aria-label="<%= tip %>"
+                          ></span>
+                        </span>
+                      </span>
+                      <span class="px-4 py-3 text-right"><%= number_to_percentage(parent_pct_of_portfolio(parent), precision: 1) %></span>
+                      <% if comparison_active? %>
+                        <span class="px-4 py-3 text-right <%= period_return_class(delta&.dig(:return_pct)) %>">
+                          <%= delta&.dig(:return_pct).nil? ? "—" : number_to_percentage(delta[:return_pct].to_f, precision: 1) %>
+                        </span>
+                        <span class="px-4 py-3 text-right <%= period_delta_class(delta&.dig(:delta_value)) %>">
+                          <%= delta&.dig(:delta_value).nil? ? "—" : number_to_currency(delta[:delta_value].to_f, precision: 0) %>
+                        </span>
+                      <% end %>
+                    </span>
+                  </summary>
+
+                  <div class="collapse-content bg-base-200/40">
+                    <div class="p-2 overflow-x-auto">
+                      <table class="table table-compact table-sm w-full" aria-label="Per-account holdings">
+                        <thead>
+                          <tr>
+                            <th>Account</th>
+                            <th class="text-right">Quantity</th>
+                            <th class="text-right">Value</th>
+                            <th class="text-right">Cost Basis</th>
+                            <th class="text-right">Unrealized G/L ($)</th>
+                            <th class="text-right">Unrealized G/L (%)</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <% children.each do |child| %>
+                            <tr>
+                              <td class="text-sm"><%= child_account_label(child) %></td>
+                              <td class="text-right"><%= number_with_precision(child_quantity(child), precision: 4, strip_insignificant_zeros: true) %></td>
+                              <td class="text-right"><%= number_to_currency(child_value(child), precision: 0) %></td>
+                              <td class="text-right"><%= number_to_currency(child_cost_basis(child), precision: 0) %></td>
+                              <% child_gl = child_unrealized_gl(child) %>
+                              <td class="text-right <%= loss_or_gain_class(child_gl) %>"><%= child_gl.nil? ? "—" : number_to_currency(child_gl, precision: 0) %></td>
+                              <% child_pct = child_gl_pct(child) %>
+                              <td class="text-right"><%= child_pct.nil? ? "—" : number_to_percentage(child_pct, precision: 1) %></td>
+                            </tr>
+                          <% end %>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </details>
+              </td>
+            </tr>
+          <% else %>
+            <tr class="<%= row_comparison_class(delta) %>">
+              <td class="font-medium" data-testid="parent-symbol">
+                <% if parent_security_id(parent).present? %>
+                  <%= link_to parent_symbol(parent),
+                        portfolio_security_path(parent_security_id(parent), return_to: security_detail_return_to),
+                        class: "link link-hover",
+                        data: { turbo_frame: "_top" } %>
+                <% else %>
+                  <%= parent_symbol(parent) %>
+                <% end %>
+              </td>
+              <td>
+                <span class="tooltip" data-tip="<%= parent_name(parent) %>" tabindex="0">
+                  <span class="truncate max-w-[18rem] inline-block align-bottom"><%= parent_name(parent) %></span>
+                </span>
+              </td>
+              <td><%= parent_asset_class(parent) %></td>
+              <td class="text-right"><%= number_to_currency(parent_price(parent), precision: 2) %></td>
+              <td class="text-right <%= changed_cell_class(delta, :quantity) %>"><%= number_with_precision(parent_quantity(parent), precision: 4, strip_insignificant_zeros: true) %></td>
+              <td class="text-right <%= changed_cell_class(delta, :market_value) %>"><%= number_to_currency(parent_value(parent), precision: 0) %></td>
+              <td class="text-right"><%= number_to_currency(parent_cost_basis(parent), precision: 0) %></td>
+              <% parent_gl = parent_unrealized_gl(parent) %>
+              <td class="text-right <%= loss_or_gain_class(parent_gl) %>"><%= parent_gl.nil? ? "—" : number_to_currency(parent_gl, precision: 0) %></td>
+              <% parent_pct = parent_gl_pct(parent) %>
+              <td class="text-right"><%= parent_pct.nil? ? "—" : number_to_percentage(parent_pct, precision: 1) %></td>
+              <td class="px-2 text-center">
+                <% tip = enrichment_tooltip(enriched_at) %>
+                <span class="tooltip" data-tip="<%= tip %>" tabindex="0">
+                  <span
+                    class="inline-block w-3 h-3 rounded-full ring-1 ring-base-300 <%= enrichment_dot_class(enriched_at) %>"
+                    aria-label="<%= tip %>"
+                  ></span>
+                </span>
+              </td>
+              <td class="text-right"><%= number_to_percentage(parent_pct_of_portfolio(parent), precision: 1) %></td>
+              <% if comparison_active? %>
+                <td class="text-right <%= period_return_class(delta&.dig(:return_pct)) %>">
+                  <%= delta&.dig(:return_pct).nil? ? "—" : number_to_percentage(delta[:return_pct].to_f, precision: 1) %>
+                </td>
+                <td class="text-right <%= period_delta_class(delta&.dig(:delta_value)) %>">
+                  <%= delta&.dig(:delta_value).nil? ? "—" : number_to_currency(delta[:delta_value].to_f, precision: 0) %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="flex items-center justify-between gap-4 flex-wrap mt-3">
+    <div class="text-sm opacity-80">
+      Showing <%= showing_from %>–<%= showing_to %> of <%= total_count %> holdings
+    </div>
+
+    <div class="flex items-center gap-2">
+      <%= form_with url: portfolio_holdings_path, method: :get, local: true do |f| %>
+        <% base_params.except(:per_page, :page).each do |k, v| %>
+          <%= hidden_field_tag k, v %>
+        <% end %>
+        <label class="text-sm opacity-80">Rows</label>
+        <%= select_tag :per_page,
+              options_for_select(PER_PAGE_OPTIONS.map { |v| [v.to_s.upcase == "ALL" ? "All" : v.to_s, v] }, per_page),
+              class: "select select-bordered select-sm",
+              onchange: "this.form.submit()" %>
+        <%= submit_tag "Apply", class: "btn btn-sm", data: { testid: "per-page-apply" } %>
+      <% end %>
+    </div>
+  </div>
+
+  <% unless all_view? %>
+    <div class="join mt-3">
+      <%= link_to "«", portfolio_holdings_path(pagination_params([page - 1, 1].max)), class: "join-item btn btn-sm", aria: { label: "Previous page" } %>
+      <span class="join-item btn btn-sm btn-ghost pointer-events-none">Page <%= page %> / <%= total_pages %></span>
+      <%= link_to "»", portfolio_holdings_path(pagination_params([page + 1, total_pages].min)), class: "join-item btn btn-sm", aria: { label: "Next page" } %>
+    </div>
+  <% end %>
+<% end %>

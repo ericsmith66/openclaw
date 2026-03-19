@@ -1,0 +1,50 @@
+<div class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h2 class="card-title">Transactions Summary</h2>
+        <div class="text-sm opacity-70 mt-1"><%= last_30_days_label %></div>
+      </div>
+    </div>
+
+    <% if corrupt? %>
+      <div class="alert alert-warning mt-4">
+        <div>
+          <div class="font-medium">Data temporarily unavailable</div>
+          <div class="text-sm opacity-80">Please try again later.</div>
+        </div>
+      </div>
+    <% elsif missing_data? %>
+      <div class="mt-4">
+        <%= render NetWorth::EmptyStateComponent.new(context: :data_missing, message_override: "No recent transactions—sync accounts") %>
+      </div>
+    <% else %>
+      <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4" aria-label="Transactions summary">
+        <div class="stat rounded-box border" aria-label="Income <%= number_to_currency(income, precision: 0) %>">
+          <div class="stat-title opacity-70">Income</div>
+          <div class="transactions-income stat-value text-success inline-flex items-center gap-2">
+            <span aria-hidden="true">↑</span>
+            <span><%= number_to_currency(income, precision: 0) %></span>
+          </div>
+        </div>
+
+        <div class="stat rounded-box border" aria-label="Expenses <%= expenses_currency %>">
+          <div class="stat-title opacity-70">Expenses</div>
+          <div class="transactions-expenses stat-value text-error inline-flex items-center gap-2">
+            <span aria-hidden="true">↓</span>
+            <span><%= expenses_currency %></span>
+          </div>
+        </div>
+
+        <div class="stat rounded-box border" aria-label="Net flow <%= signed_currency(net) %>">
+          <div class="stat-title opacity-70">Net</div>
+          <div class="transactions-net stat-value inline-flex items-center gap-2 <%= net_style %>">
+            <span aria-hidden="true"><%= net_symbol %></span>
+            <span><%= signed_currency(net) %></span>
+          </div>
+          <div class="stat-desc opacity-70">Income minus expenses</div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

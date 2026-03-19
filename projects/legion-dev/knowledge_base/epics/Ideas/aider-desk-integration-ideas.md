@@ -1,0 +1,8 @@
+- **RAG Engine** for advanced context injection (Epic 5+)
+- **Cost Tracking** across providers and task types
+- **Batch Processing** of multiple tasks in parallel → See **Epic 7** (`knowledge_base/epics/backlog/epic-7-parallel-agent-execution/0000-epic.md`) for the `git worktree`-based approach
+- **Webhook Notifications** for task completion
+- **Custom Failure Classifiers** (plug-in architecture)
+- **Multi-project Concurrency** management → Partially addressed by **Epic 7** (same-project parallelism via worktrees)
+- **Workflow Automation** (chaining multiple agents automatically)
+- **Agent Marketplace** (sharing/importing community agent profiles)

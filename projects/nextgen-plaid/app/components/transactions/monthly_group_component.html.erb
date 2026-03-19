@@ -1,0 +1,33 @@
+<% if groups.any? %>
+  <div class="space-y-4">
+    <% groups.each do |month_key, month_transactions| %>
+      <div class="collapse collapse-arrow bg-base-200">
+        <input type="checkbox" checked />
+        <div class="collapse-title text-xl font-medium">
+          <%= month_label(month_key) %> • <%= monthly_count(month_transactions) %> transactions • <%= number_to_currency(monthly_total(month_transactions)) %>
+        </div>
+        <div class="collapse-content">
+          <table class="table table-zebra w-full">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Merchant</th>
+                <th>Account</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% month_transactions.each do |transaction| %>
+                <%= render Transactions::RowComponent.new(transaction: transaction) %>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="text-center py-8 text-gray-500">No transactions to group.</div>
+<% end %>

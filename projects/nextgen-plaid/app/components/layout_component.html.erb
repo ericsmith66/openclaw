@@ -1,0 +1,88 @@
+<div class="drawer lg:drawer-open" data-theme="business">
+  <input id="main-drawer" type="checkbox" class="drawer-toggle" />
+  
+  <div class="drawer-content flex flex-col">
+    <!-- Top Navbar -->
+    <%= render NavigationComponent.new(current_user: @current_user) %>
+    
+    <!-- Main Content -->
+    <main class="flex-1 p-6 bg-base-200">
+      <% if @title.present? %>
+        <div class="flex items-center justify-between mb-4">
+          <div class="text-sm breadcrumbs">
+            <ul>
+              <li><a href="/">Home</a></li>
+              <% if @breadcrumb_segments.present? %>
+                <% @breadcrumb_segments.each do |label, path| %>
+                  <% if path.present? %>
+                    <li><a href="<%= path %>"><%= label %></a></li>
+                  <% else %>
+                    <li><%= label %></li>
+                  <% end %>
+                <% end %>
+              <% else %>
+                <li><%= @title %></li>
+              <% end %>
+            </ul>
+          </div>
+          <% if show_account_filter? %>
+            <form action="<%= @account_filter_path %>" method="get" class="flex-shrink-0">
+              <select name="account" class="select select-bordered select-sm w-48" aria-label="Filter by account" onchange="this.form.submit()">
+                <% account_options.each do |label, value| %>
+                  <option value="<%= value %>" <%= 'selected' if value == @selected_account %>><%= label %></option>
+                <% end %>
+              </select>
+            </form>
+          <% end %>
+        </div>
+      <% end %>
+      
+      <%= content %>
+    </main>
+  </div>
+  
+  <!-- Left Sidebar -->
+  <div class="drawer-side">
+    <label for="main-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+    <aside class="bg-base-100 min-h-full w-64 p-4">
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-base-content px-4">Menu</h2>
+      </div>
+      <ul class="menu bg-base-100 rounded-box">
+        <li><a href="/dashboard"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg> Dashboard</a></li>
+        <li><a href="/portfolio/holdings"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg> Portfolio</a></li>
+        <li><a href="/transactions/summary"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> Summary</a></li>
+        <li><a href="/transactions/regular"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Cash</a></li>
+        <li><a href="/transactions/credit"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> Credit</a></li>
+        <li><a href="/transactions/transfers"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg> Transfers</a></li>
+        <li><a href="/transactions/investment"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 7-4-4-6 6" /></svg> Investments</a></li>
+        <li><a href="/accounts"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> Accounts</a></li>
+        <li><a href="/other_incomes"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Other Income Sources</a></li>
+        
+        <% if @current_user&.admin? || (@current_user && @current_user.email == (ENV["OWNER_EMAIL"].presence || "ericsmith66@me.com")) %>
+          <li class="menu-title"><span>Admin</span></li>
+          <li>
+            <details>
+              <summary><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg> Users</summary>
+              <ul>
+                <li><a href="/admin/users">List Users</a></li>
+                <li><a href="/admin/users/new">New User</a></li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            <details>
+              <summary><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg> Accounts</summary>
+              <ul>
+                <li><a href="/admin/accounts">List Accounts</a></li>
+                <li><a href="/admin/accounts/new">New Account</a></li>
+              </ul>
+            </details>
+          </li>
+          <li><a href="/mission_control"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" /></svg> Mission Control</a></li>
+          <li><a href="/agents/monitor"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> Agent Monitor</a></li>
+        <% end %>
+      </ul>
+    </aside>
+  </div>
+</div>
